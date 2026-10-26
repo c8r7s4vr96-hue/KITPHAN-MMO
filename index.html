@@ -40,6 +40,10 @@
     <!-- QR Code Generator JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+    <!-- ==================== FIREBASE SDK v9 (Compat) ==================== -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
     <style>
         body { font-family: 'Inter', sans-serif; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -122,12 +126,10 @@
     <!-- ==================== AUTHENTICATION SCREEN (LOGIN / REGISTER / FORGOT) ==================== -->
     <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4 overflow-y-auto">
         <div class="relative w-full max-w-md">
-            <!-- Background Glow Decor -->
             <div class="absolute -top-10 -left-10 w-40 h-40 bg-cyan-500/30 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-500/30 rounded-full blur-3xl pointer-events-none"></div>
 
             <div class="glass-card rounded-2xl p-8 border border-slate-800 shadow-2xl relative z-10">
-                <!-- Brand Header -->
                 <div class="text-center mb-6">
                     <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-500 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-cyan-500/20">
                         <i class="fa-solid fa-bolt text-white text-2xl"></i>
@@ -223,7 +225,6 @@
         <!-- Sidebar Navigation -->
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-900/95 light:bg-white border-r border-slate-800 light:border-slate-200 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col justify-between">
             <div>
-                <!-- Logo & Brand Header -->
                 <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800 light:border-slate-200">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
@@ -239,7 +240,6 @@
                     </button>
                 </div>
 
-                <!-- User Quick Info Card -->
                 <div class="p-4 mx-3 my-4 rounded-xl bg-slate-800/60 light:bg-slate-100 border border-slate-700/50 light:border-slate-300">
                     <div class="flex items-center gap-3 mb-2">
                         <div class="relative">
@@ -263,7 +263,6 @@
                     </div>
                 </div>
 
-                <!-- Navigation Menu Links -->
                 <nav class="px-3 space-y-1 custom-scrollbar overflow-y-auto max-h-[calc(100vh-290px)]">
                     <a href="#dashboard" data-tab="dashboard" class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-white bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 border-l-4 border-cyan-400">
                         <i class="fa-solid fa-chart-pie text-cyan-400 w-5"></i>
@@ -330,7 +329,6 @@
                 </nav>
             </div>
 
-            <!-- Footer Menu Link -->
             <div class="p-4 border-t border-slate-800 light:border-slate-200">
                 <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 font-medium text-sm transition-all border border-rose-500/20">
                     <i class="fa-solid fa-right-from-bracket"></i>
@@ -341,14 +339,11 @@
 
         <!-- Main Content Area Wrapper -->
         <div class="flex-1 flex flex-col min-w-0 md:ml-64 overflow-hidden">
-
-            <!-- Top Header Bar -->
             <header class="h-16 border-b border-slate-800 light:border-slate-200 bg-slate-900/80 light:bg-white backdrop-blur flex items-center justify-between px-4 md:px-6 z-30">
                 <div class="flex items-center gap-3">
                     <button id="open-sidebar-btn" class="md:hidden p-2 rounded-lg text-slate-400 hover:bg-slate-800">
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
-                    <!-- Quick Search Bar -->
                     <div class="relative hidden sm:block w-64 md:w-80">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
                         <input type="text" placeholder="Tìm kiếm dịch vụ, đơn hàng..." class="w-full pl-9 pr-4 py-1.5 rounded-lg bg-slate-800/60 light:bg-slate-100 border border-slate-700 light:border-slate-300 text-sm focus:outline-none focus:border-cyan-500 transition">
@@ -356,13 +351,10 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <!-- Theme Toggle -->
                     <button id="theme-toggle" class="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition">
                         <i class="fa-solid fa-moon text-lg dark:hidden"></i>
                         <i class="fa-solid fa-sun text-lg hidden dark:block text-amber-400"></i>
                     </button>
-
-                    <!-- User Quick Dropdown Button -->
                     <div onclick="switchTab('profile')" class="flex items-center gap-2 pl-2 border-l border-slate-800 light:border-slate-200 cursor-pointer">
                         <img id="topbar-avatar" src="https://placehold.co/100x100/6366f1/ffffff?text=User" alt="Avatar" class="w-8 h-8 rounded-full border border-cyan-500 object-cover">
                         <span class="text-xs font-semibold hidden sm:inline text-slate-300 light:text-slate-700" id="topbar-fullname">User</span>
@@ -370,12 +362,9 @@
                 </div>
             </header>
 
-            <!-- Scrollable Page Content -->
             <main class="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 bg-slate-950 light:bg-slate-50">
-                
                 <!-- TAB 1: DASHBOARD OVERVIEW -->
                 <div id="tab-dashboard" class="tab-content space-y-6">
-                    <!-- Welcome Banner -->
                     <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-700 p-6 text-white shadow-xl">
                         <div class="relative z-10 max-w-2xl">
                             <span class="inline-block px-3 py-1 bg-white/10 backdrop-blur rounded-full text-xs font-semibold mb-3 border border-white/20">🔥 Hệ Thống Dịch Vụ Mạng Xã Hội Uy Tín</span>
@@ -393,7 +382,6 @@
                         <i class="fa-solid fa-rocket absolute -right-6 -bottom-8 text-9xl text-white/10 transform -rotate-45 pointer-events-none"></i>
                     </div>
 
-                    <!-- Statistics Cards Grid -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="glass-card p-5 rounded-xl border border-slate-800 light:border-slate-200">
                             <div class="flex items-center justify-between">
@@ -456,13 +444,11 @@
                         </div>
                     </div>
 
-                    <!-- Platform Quick Selection Cards -->
                     <div>
                         <h2 class="text-lg font-bold text-slate-200 light:text-slate-800 mb-4 flex items-center gap-2">
                             <i class="fa-solid fa-layer-group text-cyan-400"></i> Nền Tảng Dịch Vụ Nổi Bật
                         </h2>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <!-- Locket Card -->
                             <div onclick="switchTab('order', 'locket')" class="glass-card p-5 rounded-xl hover:border-amber-500/50 cursor-pointer transition transform hover:-translate-y-1 group">
                                 <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
                                     <i class="fa-solid fa-heart"></i>
@@ -472,7 +458,6 @@
                                 <span class="inline-block mt-3 text-xs text-amber-400 font-semibold">Tạo đơn ngay &rarr;</span>
                             </div>
 
-                            <!-- Facebook Card -->
                             <div onclick="switchTab('order', 'facebook')" class="glass-card p-5 rounded-xl hover:border-blue-500/50 cursor-pointer transition transform hover:-translate-y-1 group">
                                 <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
                                     <i class="fa-brands fa-facebook"></i>
@@ -482,7 +467,6 @@
                                 <span class="inline-block mt-3 text-xs text-blue-400 font-semibold">Tạo đơn ngay &rarr;</span>
                             </div>
 
-                            <!-- TikTok Card -->
                             <div onclick="switchTab('order', 'tiktok')" class="glass-card p-5 rounded-xl hover:border-pink-500/50 cursor-pointer transition transform hover:-translate-y-1 group">
                                 <div class="w-12 h-12 rounded-xl bg-pink-500/10 text-pink-500 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
                                     <i class="fa-brands fa-tiktok"></i>
@@ -492,7 +476,6 @@
                                 <span class="inline-block mt-3 text-xs text-pink-400 font-semibold">Tạo đơn ngay &rarr;</span>
                             </div>
 
-                            <!-- Instagram Card -->
                             <div onclick="switchTab('order', 'instagram')" class="glass-card p-5 rounded-xl hover:border-purple-500/50 cursor-pointer transition transform hover:-translate-y-1 group">
                                 <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
                                     <i class="fa-brands fa-instagram"></i>
@@ -504,7 +487,6 @@
                         </div>
                     </div>
 
-                    <!-- Recent Orders Dashboard Snippet -->
                     <div class="glass-card rounded-xl p-5 border border-slate-800 light:border-slate-200">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg font-bold text-slate-200 light:text-slate-800 flex items-center gap-2">
@@ -524,17 +506,14 @@
                                         <th class="p-3">Trạng thái</th>
                                     </tr>
                                 </thead>
-                                <tbody id="dashboard-orders-tbody" class="divide-y divide-slate-800 light:divide-slate-200">
-                                    <!-- Dynamic content generated by JS -->
-                                </tbody>
+                                <tbody id="dashboard-orders-tbody" class="divide-y divide-slate-800 light:divide-slate-200"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 2: ORDER FORM (CREATE NEW ORDER) -->
+                <!-- TAB 2: ORDER FORM -->
                 <div id="tab-order" class="tab-content hidden space-y-6">
-                    <!-- Platform Selector Header Tabs -->
                     <div class="flex items-center gap-2 border-b border-slate-800 light:border-slate-200 pb-3 overflow-x-auto custom-scrollbar">
                         <button onclick="selectPlatform('locket')" id="platform-btn-locket" class="platform-tab flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700">
                             <i class="fa-solid fa-heart text-amber-400"></i> Locket
@@ -550,9 +529,7 @@
                         </button>
                     </div>
 
-                    <!-- Main Order Form Grid -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Order Configuration Column -->
                         <div class="lg:col-span-2 glass-card rounded-2xl p-6 border border-slate-800 light:border-slate-200 space-y-5">
                             <div class="flex items-center justify-between border-b border-slate-800 light:border-slate-200 pb-4">
                                 <div>
@@ -562,51 +539,40 @@
                                 <span id="platform-badge" class="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-full text-xs font-bold uppercase">Facebook</span>
                             </div>
 
-                            <!-- Form Field 1: Category Selection -->
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700 mb-2">1. Chọn loại dịch vụ</label>
-                                <select id="service-category-select" onchange="updateServiceServers()" class="w-full px-4 py-3 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-slate-200 light:text-slate-800 text-sm focus:outline-none focus:border-cyan-500 font-medium transition">
-                                    <!-- Dynamic Categories Populated by JS -->
-                                </select>
+                                <select id="service-category-select" onchange="updateServiceServers()" class="w-full px-4 py-3 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-slate-200 light:text-slate-800 text-sm focus:outline-none focus:border-cyan-500 font-medium transition"></select>
                             </div>
 
-                            <!-- Form Field 2: Server Selection -->
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700 mb-2">2. Chọn Máy Chủ (Server)</label>
-                                <div id="server-options-container" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
-                                    <!-- Dynamic Server Options Populated by JS -->
-                                </div>
+                                <div id="server-options-container" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1"></div>
                             </div>
 
-                            <!-- Form Field 3: Target Link / ID Input -->
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700 mb-2" id="label-target-link">3. Link Bài Viết / ID Tài Khoản</label>
                                 <input type="text" id="target-link-input" placeholder="Nhập đường dẫn link hoặc ID đối tượng..." class="w-full px-4 py-3 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-slate-200 light:text-slate-800 text-sm focus:outline-none focus:border-cyan-500 font-medium transition">
                                 <span class="text-[11px] text-slate-400 mt-1 block">Vui lòng kiểm tra kỹ đường dẫn / ID trước khi tạo đơn.</span>
                             </div>
 
-                            <!-- Form Field 4: Comment Text Area (Conditional) -->
                             <div id="comment-container" class="hidden">
                                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700 mb-2">Nội dung (Mỗi dòng là 1 mục)</label>
                                 <textarea id="comment-text-input" rows="3" oninput="calculateCommentQuantity()" placeholder="Nhập thông tin chi tiết từng dòng..." class="w-full px-4 py-3 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-slate-200 light:text-slate-800 text-sm focus:outline-none focus:border-cyan-500 font-medium transition custom-scrollbar"></textarea>
                             </div>
 
-                            <!-- Form Field 5: Quantity Input -->
                             <div>
                                 <div class="flex justify-between items-center mb-2">
-                                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700">4. Số Lượng Cần Xử Lý (chỉ được nhập SL 1)</label>
+                                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700">4. Số Lượng Cần Xử Lý</label>
                                     <span class="text-xs text-cyan-400 font-semibold" id="server-min-max-info">Tối thiểu: 1 - Tối đa: 100</span>
                                 </div>
                                 <input type="number" id="order-quantity-input" value="1" min="1" step="1" oninput="calculateTotalPrice()" class="w-full px-4 py-3 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-slate-200 light:text-slate-800 text-sm focus:outline-none focus:border-cyan-500 font-bold transition">
                             </div>
 
-                            <!-- Note Input -->
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Ghi chú đơn hàng (Không bắt buộc)</label>
                                 <input type="text" id="order-note-input" placeholder="Ví dụ: Xử lý gấp giúp em..." class="w-full px-4 py-2 rounded-xl bg-slate-900/50 light:bg-slate-100 border border-slate-800 light:border-slate-300 text-slate-300 light:text-slate-700 text-xs focus:outline-none focus:border-cyan-500">
                             </div>
 
-                            <!-- Total Payment & Submit Section -->
                             <div class="pt-4 border-t border-slate-800 light:border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                                 <div>
                                     <span class="text-xs text-slate-400 uppercase font-semibold">Tổng Chi Phí Thanh Toán:</span>
@@ -619,9 +585,7 @@
                             </div>
                         </div>
 
-                        <!-- Sidebar Server Information & Rules Note -->
                         <div class="space-y-4">
-                            <!-- Selected Server Info Box -->
                             <div class="glass-card rounded-2xl p-5 border border-slate-800 light:border-slate-200">
                                 <h3 class="font-bold text-slate-200 light:text-slate-800 text-sm flex items-center gap-2 border-b border-slate-800 light:border-slate-200 pb-3 mb-3">
                                     <i class="fa-solid fa-circle-info text-cyan-400"></i> Thông Tin Máy Chủ Đã Chọn
@@ -645,38 +609,20 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- System Instructions Notice Box -->
-                            <div class="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs space-y-2">
-                                <h4 class="font-bold text-amber-400 flex items-center gap-2">
-                                    <i class="fa-solid fa-triangle-exclamation"></i> LƯU Ý QUAN TRỌNG
-                                </h4>
-                                <ul class="list-disc list-inside space-y-1 text-slate-300 light:text-slate-700 leading-relaxed">
-                                    <li>Cung cấp chính xác link hoặc ID tài khoản cần xử lý.</li>
-                                    <li>Các dịch vụ mở khóa cần chuẩn bị giấy tờ/thông tin liên quan nếu có yêu cầu.</li>
-                                    <li>Kiểm tra kỹ thông tin đơn hàng trước khi bấm khởi tạo.</li>
-                                    <li>Thời gian hoàn thành phụ thuộc vào tình trạng hệ thống.</li>
-                                </ul>
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 3: PROFILE MANAGEMENT -->
+                <!-- TAB 3: PROFILE -->
                 <div id="tab-profile" class="tab-content hidden space-y-6">
                     <div>
                         <h1 class="text-xl font-extrabold text-slate-100 light:text-slate-800">Cài Đặt Hồ Sơ Cá Nhân</h1>
                         <p class="text-xs text-slate-400">Quản lý thông tin tài khoản, thay đổi mật khẩu và API Key</p>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Profile Card Overview -->
                         <div class="glass-card rounded-2xl p-6 border border-slate-800 text-center space-y-4">
                             <div class="relative w-24 h-24 mx-auto">
                                 <img id="profile-card-avatar" src="https://placehold.co/100x100/6366f1/ffffff?text=User" alt="Avatar" class="w-24 h-24 rounded-full border-4 border-cyan-500 object-cover shadow-xl">
-                                <button onclick="showToast('Chức năng đổi Avatar đang phát triển!', 'info')" class="absolute bottom-0 right-0 p-2 bg-cyan-500 text-slate-950 rounded-full text-xs font-bold shadow">
-                                    <i class="fa-solid fa-camera"></i>
-                                </button>
                             </div>
                             <div>
                                 <h3 class="font-extrabold text-lg text-slate-100" id="profile-card-fullname">Nguyễn Văn Admin</h3>
@@ -691,16 +637,9 @@
                                     <span class="text-slate-400">Số dư hiện tại:</span>
                                     <span class="font-bold text-emerald-400" id="profile-card-balance">0 đ</span>
                                 </div>
-                                <div class="flex justify-between">
-                                    <span class="text-slate-400">Ngày tham gia:</span>
-                                    <span class="font-semibold text-slate-300">2026-10-25</span>
-                                </div>
                             </div>
                         </div>
-
-                        <!-- Update Info Forms -->
                         <div class="md:col-span-2 space-y-6">
-                            <!-- Update Profile Details -->
                             <form onsubmit="updateProfileInfo(event)" class="glass-card rounded-2xl p-6 border border-slate-800 space-y-4">
                                 <h3 class="font-bold text-slate-200 text-sm border-b border-slate-800 pb-3 flex items-center gap-2">
                                     <i class="fa-solid fa-user-pen text-cyan-400"></i> Thông Tin Cá Nhân
@@ -716,74 +655,25 @@
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <button type="submit" class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs rounded-xl shadow">
-                                        LƯU THAY ĐỔI
-                                    </button>
+                                    <button type="submit" class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs rounded-xl shadow">LƯU THAY ĐỔI</button>
                                 </div>
                             </form>
-
-                            <!-- Change Password Form -->
-                            <form onsubmit="updatePassword(event)" class="glass-card rounded-2xl p-6 border border-slate-800 space-y-4">
-                                <h3 class="font-bold text-slate-200 text-sm border-b border-slate-800 pb-3 flex items-center gap-2">
-                                    <i class="fa-solid fa-key text-amber-400"></i> Đổi Mật Khẩu
-                                </h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-bold text-slate-400 mb-1">Mật khẩu mới</label>
-                                        <input type="password" id="new-pass" required placeholder="••••••••" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-slate-400 mb-1">Xác nhận mật khẩu mới</label>
-                                        <input type="password" id="confirm-new-pass" required placeholder="••••••••" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs">
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <button type="submit" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow">
-                                        CẬP NHẬT MẬT KHẨU
-                                    </button>
-                                </div>
-                            </form>
-
-                            <!-- API Key Section -->
-                            <div class="glass-card rounded-2xl p-6 border border-slate-800 space-y-3">
-                                <h3 class="font-bold text-slate-200 text-sm border-b border-slate-800 pb-3 flex items-center gap-2">
-                                    <i class="fa-solid fa-code text-purple-400"></i> Mã Kết Nối API (Reseller Key)
-                                </h3>
-                                <div class="flex items-center gap-2">
-                                    <input type="text" readonly id="user-api-key" value="lcket_api_key_88929104812" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-amber-300 font-mono">
-                                    <button onclick="copyToClipboard(document.getElementById('user-api-key').value)" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold text-xs rounded-xl border border-slate-700">Copy</button>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 4: ORDER HISTORY -->
+                <!-- TAB 4: ORDERS HISTORY -->
                 <div id="tab-orders" class="tab-content hidden space-y-5">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h1 class="text-xl font-extrabold text-slate-100 light:text-slate-800">Lịch Sử Đơn Hàng</h1>
                             <p class="text-xs text-slate-400">Theo dõi tiến độ và chi tiết tất cả các đơn hàng dịch vụ</p>
                         </div>
-
-                        <!-- Filters & Search -->
-                        <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                            <input type="text" id="order-search-input" onkeyup="filterOrdersTable()" placeholder="Tìm theo Mã đơn, Link..." class="px-3 py-2 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-xs focus:outline-none focus:border-cyan-500 w-full sm:w-48">
-                            <select id="order-status-filter" onchange="filterOrdersTable()" class="px-3 py-2 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-xs focus:outline-none focus:border-cyan-500 text-slate-300 light:text-slate-700 font-medium">
-                                <option value="ALL">Tất cả trạng thái</option>
-                                <option value="Đang xử lý">Đang xử lý</option>
-                                <option value="Hoàn thành">Hoàn thành</option>
-                                <option value="Tạm dừng">Tạm dừng</option>
-                                <option value="Đã hủy">Đã hủy</option>
-                            </select>
-                        </div>
                     </div>
-
-                    <!-- Main Table Card -->
                     <div class="glass-card rounded-2xl border border-slate-800 light:border-slate-200 overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full text-xs text-left text-slate-300 light:text-slate-700">
-                                <thead class="text-[11px] uppercase bg-slate-900 light:bg-slate-200 text-slate-400 font-bold border-b border-slate-800 light:border-slate-300">
+                                <thead class="text-[11px] uppercase bg-slate-900 light:bg-slate-200 text-slate-400 font-bold border-b border-slate-800">
                                     <tr>
                                         <th class="p-3.5">Mã đơn</th>
                                         <th class="p-3.5">Nền tảng</th>
@@ -793,236 +683,80 @@
                                         <th class="p-3.5">Tổng tiền</th>
                                         <th class="p-3.5">Trạng thái</th>
                                         <th class="p-3.5">Ngày tạo</th>
-                                        <th class="p-3.5 text-center">Thao tác</th>
                                     </tr>
                                 </thead>
-                                <tbody id="history-orders-tbody" class="divide-y divide-slate-800/60 light:divide-slate-200 font-medium">
-                                    <!-- Dynamic content generated by JS -->
-                                </tbody>
+                                <tbody id="history-orders-tbody" class="divide-y divide-slate-800/60 font-medium"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 5: DEPOSIT / RECHARGE TAB -->
+                <!-- TAB 5: DEPOSIT -->
                 <div id="tab-deposit" class="tab-content hidden space-y-6">
                     <div>
                         <h1 class="text-xl font-extrabold text-slate-100 light:text-slate-800">Nạp Tiền Tự Động 24/7</h1>
                         <p class="text-xs text-slate-400">Tiền sẽ được cộng vào tài khoản tự động từ 1 - 3 phút</p>
                     </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Left Payment Form -->
-                        <div class="lg:col-span-2 space-y-5">
-                            <!-- Payment Methods Tab -->
-                            <div class="grid grid-cols-3 gap-3">
-                                <button onclick="selectDepositMethod('bank')" id="dep-btn-bank" class="dep-method-btn flex flex-col items-center justify-center p-4 rounded-xl border border-cyan-500 bg-cyan-500/10 text-cyan-400 transition font-bold">
-                                    <i class="fa-solid fa-building-columns text-2xl mb-1"></i>
-                                    <span class="text-xs">Chuyển Khoản VCB</span>
-                                </button>
-                                <button onclick="selectDepositMethod('momo')" id="dep-btn-momo" class="dep-method-btn flex flex-col items-center justify-center p-4 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition font-bold">
-                                    <i class="fa-solid fa-wallet text-2xl mb-1 text-pink-500"></i>
-                                    <span class="text-xs">Ví MoMo</span>
-                                </button>
-                                <button onclick="selectDepositMethod('card')" id="dep-btn-card" class="dep-method-btn flex flex-col items-center justify-center p-4 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition font-bold">
-                                    <i class="fa-solid fa-credit-card text-2xl mb-1 text-amber-400"></i>
-                                    <span class="text-xs">Thẻ Cào Điện Thoại</span>
-                                </button>
-                            </div>
-
-                            <!-- Bank Transfer Content Area -->
-                            <div id="deposit-method-bank" class="glass-card p-6 rounded-2xl border border-slate-800 light:border-slate-200 space-y-4">
-                                <h3 class="font-bold text-slate-200 light:text-slate-800 text-sm border-b border-slate-800 light:border-slate-200 pb-3">Tạo Mã QR Chuyển Khoản Ngân Hàng</h3>
-                                
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-400 mb-1">Số tiền muốn nạp (VNĐ)</label>
-                                    <input type="number" id="deposit-amount-input" value="50000" min="10000" step="10000" oninput="generateBankQR()" class="w-full px-4 py-3 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-slate-100 light:text-slate-800 font-bold text-lg focus:outline-none focus:border-cyan-500">
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                    <div class="space-y-3 text-xs">
-                                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-                                            <span class="text-slate-400 block">Ngân hàng:</span>
-                                            <span class="font-extrabold text-slate-200 text-sm">MB BANK (MB-Bank)</span>
-                                        </div>
-                                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 flex justify-between items-center">
-                                            <div>
-                                                <span class="text-slate-400 block">Số tài khoản:</span>
-                                                <span class="font-extrabold text-cyan-400 text-sm" id="stk-number">89123456789125</span>
-                                            </div>
-                                            <button onclick="copyToClipboard('89123456789125')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded text-[11px] font-bold">Copy</button>
-                                        </div>
-                                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 flex justify-between items-center">
-                                            <div>
-                                                <span class="text-slate-400 block">Chủ tài khoản:</span>
-                                                <span class="font-extrabold text-slate-200">PHAN GIA TU</span>
-                                            </div>
-                                        </div>
-                                        <div class="p-3 bg-amber-500/10 rounded-xl border border-amber-500/30 flex justify-between items-center">
-                                            <div>
-                                                <span class="text-amber-400 block font-bold">Nội dung chuyển khoản (Bắt buộc):</span>
-                                                <span class="font-extrabold text-amber-300 text-base" id="deposit-syntax">NAP LOCKET 9842</span>
-                                            </div>
-                                            <button onclick="copyToClipboard(document.getElementById('deposit-syntax').innerText)" class="px-2.5 py-1 bg-amber-500 text-slate-950 font-extrabold rounded text-[11px]">Copy</button>
-                                        </div>
-                                    </div>
-
-                                    <!-- VietQR Display Box -->
-                                    <div class="flex flex-col items-center justify-center p-4 bg-white rounded-xl shadow-inner text-slate-900">
-                                        <div id="qrcode-box" class="p-2 bg-white rounded"></div>
-                                        <span class="text-[11px] font-bold text-slate-600 mt-2 text-center">Quét mã VietQR bằng ứng dụng Ngân hàng bất kỳ</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Phone Card Scratch Method -->
-                            <div id="deposit-method-card" class="glass-card p-6 rounded-2xl border border-slate-800 light:border-slate-200 space-y-4 hidden">
-                                <h3 class="font-bold text-slate-200 light:text-slate-800 text-sm border-b border-slate-800 light:border-slate-200 pb-3">Nạp Thẻ Cào Giá Rẻ (Phí chiết khấu 10%)</h3>
-                                <div class="space-y-3">
-                                    <div>
-                                        <label class="block text-xs text-slate-400 mb-1">Loại thẻ</label>
-                                        <select class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs">
-                                            <option>Viettel</option>
-                                            <option>Vinaphone</option>
-                                            <option>Mobifone</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs text-slate-400 mb-1">Mã thẻ (PIN)</label>
-                                        <input type="text" placeholder="Nhập mã thẻ..." class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs text-slate-400 mb-1">Số Seri</label>
-                                        <input type="text" placeholder="Nhập số seri..." class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs">
-                                    </div>
-                                    <button onclick="showToast('Thẻ cào đã gửi! Đang kiểm tra mã...', 'info')" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl shadow">NẠP THẺ CÀO</button>
-                                </div>
-                            </div>
+                    <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-4 max-w-xl">
+                        <h3 class="font-bold text-slate-200 text-sm">Tạo Mã QR Chuyển Khoản Ngân Hàng</h3>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Số tiền muốn nạp (VNĐ)</label>
+                            <input type="number" id="deposit-amount-input" value="50000" min="10000" step="10000" oninput="generateBankQR()" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 font-bold text-lg">
                         </div>
-
-                        <!-- Right Guidelines Card -->
-                        <div class="glass-card p-5 rounded-2xl border border-slate-800 light:border-slate-200 h-fit space-y-3">
-                            <h3 class="font-bold text-slate-200 light:text-slate-800 text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-lightbulb text-amber-400"></i> Hướng Dẫn Nạp Tiền
-                            </h3>
-                            <ul class="text-xs text-slate-400 space-y-2 leading-relaxed">
-                                <li class="flex items-start gap-2">
-                                    <span class="w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-400 text-[10px] flex items-center justify-center font-bold mt-0.5">1</span>
-                                    <span>Vui lòng chuyển tiền đúng **Nội dung chuyển khoản** bên cạnh để được duyệt tự động.</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-400 text-[10px] flex items-center justify-center font-bold mt-0.5">2</span>
-                                    <span>Nếu sau 10 phút chưa nhận được tiền, vui lòng liên hệ Ticket Hỗ trợ kèm ảnh hóa đơn.</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-400 text-[10px] flex items-center justify-center font-bold mt-0.5">3</span>
-                                    <span>Nạp tối thiểu: **10,000 VNĐ**. Chuyển dưới mức tối thiểu không được hỗ trợ xử lý.</span>
-                                </li>
-                            </ul>
+                        <div class="p-3 bg-amber-500/10 rounded-xl border border-amber-500/30 flex justify-between items-center text-xs">
+                            <div>
+                                <span class="text-amber-400 block font-bold">Nội dung chuyển khoản (Bắt buộc):</span>
+                                <span class="font-extrabold text-amber-300 text-base" id="deposit-syntax">NAP LOCKET</span>
+                            </div>
+                            <button onclick="copyToClipboard(document.getElementById('deposit-syntax').innerText)" class="px-2.5 py-1 bg-amber-500 text-slate-950 font-extrabold rounded">Copy</button>
+                        </div>
+                        <div class="flex flex-col items-center justify-center p-4 bg-white rounded-xl text-slate-900">
+                            <div id="qrcode-box" class="p-2 bg-white rounded"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 6: PRICE LIST & API DOCS -->
+                <!-- TAB 6: PRICE LIST -->
                 <div id="tab-pricelist" class="tab-content hidden space-y-6">
                     <div>
                         <h1 class="text-xl font-extrabold text-slate-100 light:text-slate-800">Bảng Giá Dịch Vụ & Kết Nối API</h1>
-                        <p class="text-xs text-slate-400">Cập nhật bảng giá realtime cho tất cả các máy chủ</p>
                     </div>
-
-                    <div class="glass-card rounded-2xl p-5 border border-slate-800 light:border-slate-200 overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-xs text-left text-slate-300 light:text-slate-700">
-                                <thead class="text-[11px] uppercase bg-slate-900 light:bg-slate-200 text-slate-400 font-bold">
-                                    <tr>
-                                        <th class="p-3">ID Server</th>
-                                        <th class="p-3">Nền Tảng</th>
-                                        <th class="p-3">Tên Dịch Vụ / Máy Chủ</th>
-                                        <th class="p-3">Giá / 1 đơn</th>
-                                        <th class="p-3">Tối Thiểu</th>
-                                        <th class="p-3">Tối Đa</th>
-                                        <th class="p-3">Bảo Hành</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="pricelist-tbody" class="divide-y divide-slate-800 light:divide-slate-200 font-medium">
-                                    <!-- Dynamic Pricelist Rendered via JS -->
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="glass-card rounded-2xl p-5 border border-slate-800 overflow-hidden">
+                        <table class="w-full text-xs text-left text-slate-300">
+                            <thead class="text-[11px] uppercase bg-slate-900 text-slate-400 font-bold">
+                                <tr>
+                                    <th class="p-3">ID Server</th>
+                                    <th class="p-3">Nền Tảng</th>
+                                    <th class="p-3">Tên Dịch Vụ</th>
+                                    <th class="p-3">Giá / 1 đơn</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pricelist-tbody" class="divide-y divide-slate-800 font-medium"></tbody>
+                        </table>
                     </div>
                 </div>
 
-                <!-- TAB 7: SUPPORT & TICKETS -->
+                <!-- TAB 7: SUPPORT -->
                 <div id="tab-support" class="tab-content hidden space-y-6">
                     <div>
-                        <h1 class="text-xl font-extrabold text-slate-100 light:text-slate-800">Trung Tâm Hỗ Trợ & Khiếu Nại</h1>
-                        <p class="text-xs text-slate-400">Gửi Ticket hỗ trợ kĩ thuật 24/7 cho ban quản trị</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="glass-card p-6 rounded-2xl border border-slate-800 light:border-slate-200 space-y-4 md:col-span-2">
-                            <h3 class="font-bold text-slate-200 text-sm border-b border-slate-800 pb-3">Tạo Yêu Cầu Hỗ Trợ Mới</h3>
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">Chủ đề hỗ trợ</label>
-                                <select class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs">
-                                    <option>Lỗi đơn hàng chưa chạy</option>
-                                    <option>Nạp tiền chưa vào tài khoản</option>
-                                    <option>Yêu cầu hoàn tiền đơn lỗi</option>
-                                    <option>Tư vấn dịch vụ reseller API</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">Mã đơn hàng liên quan (Nếu có)</label>
-                                <input type="text" placeholder="Ví dụ: LCK-89421" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs">
-                            </div>
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">Nội dung thắc mắc / Chi tiết lỗi</label>
-                                <textarea rows="4" placeholder="Mô tả chi tiết vấn đề bạn đang gặp phải..." class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs custom-scrollbar"></textarea>
-                            </div>
-                            <button onclick="showToast('Ticket hỗ trợ đã được gửi thành công!', 'success')" class="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs rounded-xl shadow">GỬI TICKET HỖ TRỢ</button>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div class="glass-card p-5 rounded-2xl border border-slate-800">
-                                <h4 class="font-bold text-slate-200 text-xs mb-3">Kênh Hỗ Trợ Trực Tiếp</h4>
-                                <div class="space-y-3 text-xs">
-                                    <a href="#" class="flex items-center gap-3 p-3 bg-slate-900 rounded-xl border border-slate-800 hover:border-cyan-500/50 transition">
-                                        <i class="fa-brands fa-telegram text-cyan-400 text-xl"></i>
-                                        <div>
-                                            <span class="font-bold block">Telegram Support</span>
-                                            <span class="text-slate-400 text-[11px]">@locket_smm_admin</span>
-                                        </div>
-                                    </a>
-                                    <a href="#" class="flex items-center gap-3 p-3 bg-slate-900 rounded-xl border border-slate-800 hover:border-blue-500/50 transition">
-                                        <i class="fa-solid fa-comment-dots text-blue-400 text-xl"></i>
-                                        <div>
-                                            <span class="font-bold block">Zalo Hotline/CSKH</span>
-                                            <span class="text-slate-400 text-[11px]">0987.654.321</span>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+                        <h1 class="text-xl font-extrabold text-slate-100">Trung Tâm Hỗ Trợ</h1>
                     </div>
                 </div>
 
-                <!-- TAB 8: ADMIN USER MANAGEMENT (ADMIN ONLY) -->
+                <!-- TAB 8: ADMIN USERS MANAGEMENT (FIREBASE REALTIME SYNC) -->
                 <div id="tab-admin-users" class="tab-content hidden space-y-5">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h1 class="text-xl font-extrabold text-rose-400 flex items-center gap-2">
-                                <i class="fa-solid fa-user-shield"></i> Quản Lý Thành Viên & Cộng Tiền (Admin Panel)
+                                <i class="fa-solid fa-user-shield"></i> Quản Lý Thành Viên & Cộng Tiền (Firebase Realtime)
                             </h1>
-                            <p class="text-xs text-slate-400">Quản lý danh sách người dùng, cộng/trừ số dư thủ công cho khách hàng</p>
+                            <p class="text-xs text-slate-400">Quản lý danh sách khách hàng đăng ký từ mọi thiết bị, cộng/trừ số dư trực tuyến</p>
                         </div>
-
-                        <!-- User Search Input -->
                         <div class="w-full sm:w-64">
                             <input type="text" id="admin-user-search-input" onkeyup="renderAdminUsersTable()" placeholder="Tìm username, email, tên..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs focus:outline-none focus:border-rose-500 text-slate-200">
                         </div>
                     </div>
 
-                    <!-- Main Admin Users Table -->
                     <div class="glass-card rounded-2xl border border-rose-500/20 overflow-hidden shadow-xl">
                         <div class="overflow-x-auto">
                             <table class="w-full text-xs text-left text-slate-300">
@@ -1037,188 +771,71 @@
                                         <th class="p-3.5 text-center">Thao tác cộng/trừ tiền</th>
                                     </tr>
                                 </thead>
-                                <tbody id="admin-users-tbody" class="divide-y divide-slate-800/80 font-medium">
-                                    <!-- Dynamic Content by JS -->
-                                </tbody>
+                                <tbody id="admin-users-tbody" class="divide-y divide-slate-800/80 font-medium"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-
             </main>
         </div>
     </div>
 
-    <!-- JAVASCRIPT APP LOGIC -->
+    <!-- ==================== JAVASCRIPT & FIREBASE LOGIC ==================== -->
     <script>
-        // Database Services State
+        // 1. CẤU HÌNH FIREBASE CỦA BẠN (Thay thông tin từ Firebase Console vào đây)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Khởi tạo Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         const SMM_SERVICES_DATA = {
             locket: {
                 name: 'Locket',
                 badgeClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
                 categories: [
-                    {
-                        id: 'locket_gold_1year',
-                        name: '👑 Locket Gold 1 Năm',
-                        targetLabel: 'Username / Email Locket',
-                        servers: [
-                            { id: 'l1', name: 'Server Kích Hoạt Nhanh 1 Năm', price: 100000, min: 1, max: 10, speed: '5 - 30 phút', warranty: 'Bảo hành 1 năm' }
-                        ]
-                    },
-                    {
-                        id: 'locket_gold_forever',
-                        name: '💎 Locket Gold Vĩnh Viễn',
-                        targetLabel: 'Username / Email Locket',
-                        servers: [
-                            { id: 'l2', name: 'Server Kích Hoạt Vĩnh Viễn VIP', price: 150000, min: 1, max: 10, speed: '5 - 30 phút', warranty: 'Bảo hành vĩnh viễn' }
-                        ]
-                    }
+                    { id: 'locket_gold_1year', name: '👑 Locket Gold 1 Năm', targetLabel: 'Username / Email Locket', servers: [{ id: 'l1', name: 'Server Kích Hoạt Nhanh 1 Năm', price: 100000, min: 1, max: 10, speed: '5 - 30 phút', warranty: 'Bảo hành 1 năm' }] }
                 ]
             },
             facebook: {
                 name: 'Facebook',
                 badgeClass: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
                 categories: [
-                    {
-                        id: 'fb_unban_180',
-                        name: '🔓 Mở Đình Chỉ 180 Ngày (Facebook)',
-                        targetLabel: 'Link hoặc UID Tài Khoản Facebook',
-                        servers: [
-                            { id: 'fb1', name: '🔓 Mở Đình Chỉ 180 Ngày (Tỷ lệ về cao - Xử lý 24-48h)', price: 500000, min: 1, max: 10, speed: '1 ngày-30 ngày', warranty: 'Bảo hành hoàn tiền nếu thất bại' }
-                        ]
-                    },
-                    {
-                        id: 'fb_unban_perm',
-                        name: '🚫 Mở Vô Hiệu Hóa Vĩnh Viễn (Facebook)',
-                        targetLabel: 'Link hoặc UID Tài Khoản Facebook',
-                        servers: [
-                            { id: 'fb2', name: '🚫 Mở Vô Hiệu Hóa Vĩnh Viễn (Facebook)', price: 3000000, min: 1, max: 10, speed: '24h - 72h', warranty: 'Bảo hành hoàn tiền' }
-                        ]
-                    },
-                    {
-                        id: 'fb_verify_identity',
-                        name: '🪪 Mở Xác Thực Danh Tính (Facebook)',
-                        targetLabel: 'Link hoặc UID Tài Khoản Facebook',
-                        servers: [
-                            { id: 'fb3', name: 'Server Up Phôi Giấy Tờ Chuẩn', price: 200000, min: 1, max: 10, speed: '12h - 24h', warranty: 'Bảo hành 30 ngày' }
-                        ]
-                    },
-                    {
-                        id: 'fb_dame',
-                        name: '💥 Dame Facebook (Báo Cáo Tài Khoản Lừa Đảo/Giả Mạo)',
-                        targetLabel: 'Link Profile Facebook Cần Dame',
-                        servers: [
-                            { id: 'fb4', name: '💥 Dame Facebook (Giá Cả Theo Acc 400k-600k)', price: 400000, min: 1, max: 5, speed: '6h - 24h', warranty: 'Xử lý hoàn thành mới tính phí' }
-                        ]
-                    }
+                    { id: 'fb_unban_180', name: '🔓 Mở Đình Chỉ 180 Ngày', targetLabel: 'Link hoặc UID Facebook', servers: [{ id: 'fb1', name: 'Mở Đình Chỉ 180 Ngày', price: 500000, min: 1, max: 10, speed: '24-48h', warranty: 'Hoàn tiền nếu thất bại' }] }
                 ]
             },
             tiktok: {
                 name: 'TikTok',
                 badgeClass: 'bg-pink-500/10 text-pink-400 border-pink-500/30',
                 categories: [
-                    {
-                        id: 'tt_dame_acc',
-                        name: '💥 Dame Tài Khoản TikTok',
-                        targetLabel: 'Link Profile TikTok (@username)',
-                        servers: [
-                            { id: 'tt1', name: 'Server Dame Tài Khoản TikTok VIP', price: 1000000, min: 1, max: 5, speed: '12h - 24h', warranty: 'Bảo hành thành công mới thu tiền' }
-                        ]
-                    },
-                    {
-                        id: 'tt_dame_live',
-                        name: '📺 Dame Live TikTok',
-                        targetLabel: 'Link Phòng Livestream TikTok',
-                        servers: [
-                            { id: 'tt2', name: 'Dame Sập Live Tức Thì', price: 250000, min: 1, max: 5, speed: '5 - 15 phút', warranty: 'Xử lý ngay lập tức' }
-                        ]
-                    },
-                    {
-                        id: 'tt_unlock_age',
-                        name: '🔞 Mở Giới Hạn Độ Tuổi TikTok',
-                        targetLabel: 'Link Profile TikTok (@username)',
-                        servers: [
-                            { id: 'tt3', name: 'Server Mở Giới Hạn Tuổi 18+', price: 180000, min: 1, max: 10, speed: '1h - 12h', warranty: 'Bảo hành vĩnh viễn' }
-                        ]
-                    }
+                    { id: 'tt_dame_acc', name: '💥 Dame Tài Khoản TikTok', targetLabel: 'Link Profile TikTok', servers: [{ id: 'tt1', name: 'Server Dame TikTok VIP', price: 1000000, min: 1, max: 5, speed: '12h - 24h', warranty: 'Thành công mới thu tiền' }] }
                 ]
             },
             instagram: {
                 name: 'Instagram',
                 badgeClass: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
                 categories: [
-                    {
-                        id: 'ig_unban_180',
-                        name: '🔓 Mở Đình Chỉ 180 Ngày (Instagram)',
-                        targetLabel: 'Link Profile Instagram / Username',
-                        servers: [
-                            { id: 'ig1', name: 'Server Mở Khóa IG 180 Ngày', price: 500000, min: 1, max: 10, speed: '24h - 48h', warranty: 'Bảo hành hoàn tiền nếu không về' }
-                        ]
-                    },
-                    {
-                        id: 'ig_unban_perm',
-                        name: '🚫 Mở Vô Hiệu Hóa Vĩnh Viễn (Instagram)',
-                        targetLabel: 'Link Profile Instagram / Username',
-                        servers: [
-                            { id: 'ig2', name: 'Server Khôi Phục Account IG Vĩnh Viễn', price: 3000000, min: 1, max: 10, speed: '24h - 72h', warranty: 'Bảo hành 30 ngày' }
-                        ]
-                    },
-                    {
-                        id: 'ig_verify_identity',
-                        name: '🪪 Mở Xác Thực Danh Tính (Instagram)',
-                        targetLabel: 'Link Profile Instagram / Username',
-                        servers: [
-                            { id: 'ig3', name: 'Server Xác Minh Danh Tính IG', price: 220000, min: 1, max: 10, speed: '12h - 24h', warranty: 'Bảo hành 30 ngày' }
-                        ]
-                    },
-                    {
-                        id: 'ig_dame',
-                        name: '💥 Dame Instagram',
-                        targetLabel: 'Link Profile Instagram Cần Dame',
-                        servers: [
-                            { id: 'ig4', name: 'Server Dame Tài Khoản Instagram', price: 400000, min: 1, max: 5, speed: '6h - 24h', warranty: 'Tỷ lệ thành công 95%' }
-                        ]
-                    }
+                    { id: 'ig_unban_180', name: '🔓 Mở Đình Chỉ 180 Ngày IG', targetLabel: 'Link Profile Instagram', servers: [{ id: 'ig1', name: 'Server Mở Khóa IG', price: 500000, min: 1, max: 10, speed: '24h - 48h', warranty: 'Bảo hành hoàn tiền' }] }
                 ]
             }
         };
 
-        // Storage Keys
-        const STORAGE_USERS_KEY = 'locket_smm_users_db_v1';
         const STORAGE_CURRENT_USER_KEY = 'locket_smm_logged_user_v1';
         const STORAGE_ORDERS_KEY = 'locket_smm_orders_db_v1';
 
-        // Initial Seed Users (Including Admin: adminkit / 10112008)
-        const DEFAULT_USERS = [
-            {
-                username: 'adminkit',
-                password: '10112008',
-                fullname: 'Phan Gia Tú (Admin)',
-                email: 'admin@kitphan.mmo',
-                balance: 10000000,
-                totalDeposited: 10000000,
-                role: 'Administrator',
-                avatar: 'https://placehold.co/100x100/ec4899/ffffff?text=Admin'
-            },
-            {
-                username: 'khachhang1',
-                password: '123456',
-                fullname: 'Khách Hàng Thử Nghiệm',
-                email: 'khach1@gmail.com',
-                balance: 0,
-                totalDeposited: 0,
-                role: 'Thành viên mới',
-                avatar: 'https://placehold.co/100x100/06b6d4/ffffff?text=K'
-            }
-        ];
-
-        // Active Application State
         let currentUser = null;
         let orderHistoryList = [];
         let currentPlatform = 'facebook';
         let currentSelectedServer = null;
 
-        // Initialization
         document.addEventListener('DOMContentLoaded', () => {
             initUsersDatabase();
             setupSidebarToggle();
@@ -1227,35 +844,44 @@
             renderPriceListTable();
         });
 
-        // Initialize LocalStorage Database for Users & Orders
+        // Khởi tạo tài khoản Admin mặc định lên Firebase nếu chưa có
         function initUsersDatabase() {
-            if (!localStorage.getItem(STORAGE_USERS_KEY)) {
-                localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(DEFAULT_USERS));
-            } else {
-                // Ensure Admin Account Exists
-                const users = JSON.parse(localStorage.getItem(STORAGE_USERS_KEY));
-                const hasAdmin = users.some(u => u.username === 'adminkit');
-                if (!hasAdmin) {
-                    users.unshift(DEFAULT_USERS[0]);
-                    localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
+            db.ref('users/adminkit').once('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    const defaultAdmin = {
+                        username: 'adminkit',
+                        password: '10112008',
+                        fullname: 'Phan Gia Tú (Admin)',
+                        email: 'admin@kitphan.mmo',
+                        balance: 10000000,
+                        totalDeposited: 10000000,
+                        role: 'Administrator',
+                        avatar: 'https://placehold.co/100x100/ec4899/ffffff?text=Admin'
+                    };
+                    db.ref('users/adminkit').set(defaultAdmin);
                 }
-            }
+            });
 
             if (!localStorage.getItem(STORAGE_ORDERS_KEY)) {
                 const initialOrders = [
-                    { id: 'LCK-98401', user: 'adminkit', platform: 'facebook', service: 'Mở Đình Chỉ 180 Ngày (Server 1)', link: 'https://facebook.com/user.demo', qty: 1, total: 300000, status: 'Hoàn thành', date: '2026-10-25 14:20' },
-                    { id: 'LCK-98402', user: 'adminkit', platform: 'locket', service: 'Locket Gold 1 Năm', link: 'user_locket_demo', qty: 1, total: 150000, status: 'Đang xử lý', date: '2026-10-26 09:15' }
+                    { id: 'LCK-98401', user: 'adminkit', platform: 'facebook', service: 'Mở Đình Chỉ 180 Ngày', link: 'https://facebook.com/user.demo', qty: 1, total: 300000, status: 'Hoàn thành', date: '2026-10-25 14:20' }
                 ];
                 localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(initialOrders));
             }
         }
 
-        // Auth Logic & Check Active Session
         function checkAuthSession() {
             const savedSession = localStorage.getItem(STORAGE_CURRENT_USER_KEY);
             if (savedSession) {
                 const userObj = JSON.parse(savedSession);
-                loginUserSession(userObj);
+                // Xác thực lại thông tin mới nhất từ Firebase
+                db.ref('users/' + userObj.username).once('value', (snapshot) => {
+                    if (snapshot.exists()) {
+                        loginUserSession(snapshot.val());
+                    } else {
+                        showAuthScreen();
+                    }
+                });
             } else {
                 showAuthScreen();
             }
@@ -1275,7 +901,6 @@
             document.getElementById('form-login').classList.add('hidden');
             document.getElementById('form-register').classList.add('hidden');
             document.getElementById('form-forgot').classList.add('hidden');
-
             const subtitle = document.getElementById('auth-subtitle');
 
             if (mode === 'login') {
@@ -1283,31 +908,34 @@
                 subtitle.innerText = 'Đăng nhập để sử dụng hệ thống dịch vụ mạng xã hội';
             } else if (mode === 'register') {
                 document.getElementById('form-register').classList.remove('hidden');
-                subtitle.innerText = 'Đăng ký tài khoản mới chỉ trong vài giây';
+                subtitle.innerText = 'Đăng ký tài khoản mới trực tuyến';
             } else if (mode === 'forgot') {
                 document.getElementById('form-forgot').classList.remove('hidden');
-                subtitle.innerText = 'Khôi phục truy cập vào tài khoản của bạn';
+                subtitle.innerText = 'Khôi phục mật khẩu';
             }
         }
 
-        // Handle User Login
+        // ĐĂNG NHẬP (Kiểm tra dữ liệu trên Firebase)
         function handleLogin(e) {
             e.preventDefault();
-            const usernameInput = document.getElementById('login-username').value.trim();
+            const usernameInput = document.getElementById('login-username').value.trim().toLowerCase();
             const passwordInput = document.getElementById('login-password').value;
 
-            const users = JSON.parse(localStorage.getItem(STORAGE_USERS_KEY) || '[]');
-            const foundUser = users.find(u => (u.username.toLowerCase() === usernameInput.toLowerCase() || u.email.toLowerCase() === usernameInput.toLowerCase()) && u.password === passwordInput);
+            db.ref('users').once('value', (snapshot) => {
+                const usersObj = snapshot.val() || {};
+                const users = Object.values(usersObj);
+                const foundUser = users.find(u => (u.username.toLowerCase() === usernameInput || u.email.toLowerCase() === usernameInput) && u.password === passwordInput);
 
-            if (foundUser) {
-                loginUserSession(foundUser);
-                showToast(`Chào mừng trở lại, ${foundUser.fullname}!`, 'success');
-            } else {
-                showToast('Tài khoản hoặc mật khẩu không đúng!', 'error');
-            }
+                if (foundUser) {
+                    loginUserSession(foundUser);
+                    showToast(`Chào mừng trở lại, ${foundUser.fullname}!`, 'success');
+                } else {
+                    showToast('Tài khoản hoặc mật khẩu không đúng!', 'error');
+                }
+            });
         }
 
-        // Handle User Registration (Default 0đ Balance)
+        // ĐĂNG KÝ TÀI KHOẢN MỚI (Lưu trực tiếp lên Firebase Realtime Database)
         function handleRegister(e) {
             e.preventDefault();
             const fullname = document.getElementById('reg-fullname').value.trim();
@@ -1321,50 +949,46 @@
                 return;
             }
 
-            const users = JSON.parse(localStorage.getItem(STORAGE_USERS_KEY) || '[]');
-            if (users.some(u => u.username === username)) {
-                showToast('Tên đăng nhập đã tồn tại trên hệ thống!', 'error');
-                return;
-            }
+            db.ref('users/' + username).once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    showToast('Tên đăng nhập đã tồn tại trên hệ thống!', 'error');
+                    return;
+                }
 
-            if (users.some(u => u.email === email)) {
-                showToast('Địa chỉ Email đã được đăng ký!', 'error');
-                return;
-            }
+                const newUser = {
+                    username: username,
+                    password: password,
+                    fullname: fullname,
+                    email: email,
+                    balance: 0,
+                    totalDeposited: 0,
+                    role: 'Thành viên mới',
+                    avatar: `https://placehold.co/100x100/06b6d4/ffffff?text=${username.charAt(0).toUpperCase()}`
+                };
 
-            const newUser = {
-                username: username,
-                password: password,
-                fullname: fullname,
-                email: email,
-                balance: 0,
-                totalDeposited: 0,
-                role: 'Thành viên mới',
-                avatar: `https://placehold.co/100x100/06b6d4/ffffff?text=${username.charAt(0).toUpperCase()}`
-            };
-
-            users.push(newUser);
-            localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
-
-            loginUserSession(newUser);
-            showToast('Đăng ký tài khoản thành công!', 'success');
+                db.ref('users/' + username).set(newUser, (error) => {
+                    if (error) {
+                        showToast('Lỗi đăng ký: ' + error.message, 'error');
+                    } else {
+                        loginUserSession(newUser);
+                        showToast('Đăng ký tài khoản thành công!', 'success');
+                    }
+                });
+            });
         }
 
-        // Handle Forgot Password
         function handleForgot(e) {
             e.preventDefault();
             const email = document.getElementById('forgot-email').value.trim();
-            showToast(`Yêu cầu khôi phục đã gửi tới ${email}. Vui lòng kiểm tra hòm thư!`, 'info');
+            showToast(`Yêu cầu khôi phục đã gửi tới ${email}.`, 'info');
             switchAuthMode('login');
         }
 
-        // Login User Session Setup
         function loginUserSession(userObj) {
             currentUser = userObj;
             localStorage.setItem(STORAGE_CURRENT_USER_KEY, JSON.stringify(currentUser));
             hideAuthScreen();
             
-            // Toggle Admin Navigation Visibility
             const adminSection = document.getElementById('admin-nav-section');
             if (currentUser.username === 'adminkit' || currentUser.role === 'Administrator') {
                 adminSection.classList.remove('hidden');
@@ -1378,36 +1002,29 @@
             generateBankQR();
         }
 
-        // Logout Execution
         function handleLogout() {
             localStorage.removeItem(STORAGE_CURRENT_USER_KEY);
             currentUser = null;
             showAuthScreen();
-            showToast('Đã đăng xuất khỏi tài khoản!', 'info');
+            showToast('Đã đăng xuất!', 'info');
         }
 
-        // Synchronize Active User Info Across UI Components
         function syncUserDataToUI() {
             if (!currentUser) return;
-
-            // Sidebar Sync
             document.getElementById('sidebar-fullname').innerText = currentUser.fullname;
             document.getElementById('sidebar-username').innerText = `@${currentUser.username}`;
             document.getElementById('sidebar-role').innerText = currentUser.role || 'Thành viên';
             document.getElementById('user-balance').innerText = `${currentUser.balance.toLocaleString('vi-VN')} đ`;
             document.getElementById('user-avatar').src = currentUser.avatar;
 
-            // Topbar Sync
             document.getElementById('topbar-fullname').innerText = currentUser.fullname;
             document.getElementById('topbar-avatar').src = currentUser.avatar;
 
-            // Welcome Banner & Stats Sync
             document.getElementById('welcome-fullname').innerText = currentUser.fullname;
             document.getElementById('stat-balance').innerText = `${currentUser.balance.toLocaleString('vi-VN')} đ`;
             document.getElementById('stat-total-deposited').innerText = `${(currentUser.totalDeposited || 0).toLocaleString('vi-VN')} đ`;
             document.getElementById('stat-role-badge').innerText = currentUser.role || 'Thành viên';
 
-            // Profile Tab Inputs Sync
             document.getElementById('profile-card-fullname').innerText = currentUser.fullname;
             document.getElementById('profile-card-username').innerText = `@${currentUser.username}`;
             document.getElementById('profile-card-role').innerText = currentUser.role || 'Thành viên';
@@ -1417,31 +1034,28 @@
             document.getElementById('edit-fullname').value = currentUser.fullname;
             document.getElementById('edit-email').value = currentUser.email;
 
-            // Update Deposit Syntax to include Username
             document.getElementById('deposit-syntax').innerText = `NAP ${currentUser.username.toUpperCase()}`;
         }
 
-        // Save Current Active User to DB
         function saveCurrentUserToDatabase() {
             localStorage.setItem(STORAGE_CURRENT_USER_KEY, JSON.stringify(currentUser));
-            const users = JSON.parse(localStorage.getItem(STORAGE_USERS_KEY) || '[]');
-            const idx = users.findIndex(u => u.username === currentUser.username);
-            if (idx !== -1) {
-                users[idx] = currentUser;
-                localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
+            if (currentUser && currentUser.username) {
+                db.ref('users/' + currentUser.username).update({
+                    balance: currentUser.balance,
+                    totalDeposited: currentUser.totalDeposited,
+                    fullname: currentUser.fullname,
+                    email: currentUser.email
+                });
             }
         }
 
-        // Load Active User Orders
         function loadUserOrders() {
             const allOrders = JSON.parse(localStorage.getItem(STORAGE_ORDERS_KEY) || '[]');
             orderHistoryList = allOrders.filter(o => o.user === currentUser.username);
-            
             renderDashboardOrdersTable();
             renderHistoryOrdersTable();
         }
 
-        // Sidebar Navigation Setup & Admin Security Check
         function setupSidebarToggle() {
             const sidebar = document.getElementById('sidebar');
             document.getElementById('open-sidebar-btn').addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
@@ -1453,9 +1067,8 @@
                     const targetTab = link.getAttribute('data-tab');
                     const platformParam = link.getAttribute('data-platform');
 
-                    // Security check for Admin Panel
                     if (targetTab === 'admin-users' && currentUser.username !== 'adminkit' && currentUser.role !== 'Administrator') {
-                        showToast('Quyền truy cập bị từ chối! Chỉ Admin mới được vào mục này.', 'error');
+                        showToast('Quyền truy cập bị từ chối!', 'error');
                         return;
                     }
 
@@ -1469,7 +1082,6 @@
         }
 
         function switchTab(tabId, platform = null) {
-            // Check Admin Authorization for Tab
             if (tabId === 'admin-users' && currentUser.username !== 'adminkit' && currentUser.role !== 'Administrator') {
                 showToast('Chỉ Admin mới có quyền mở quản lý thành viên!', 'error');
                 return;
@@ -1486,134 +1098,128 @@
             if (platform) selectPlatform(platform);
         }
 
-        // Render Admin User Management Table
+        // TẢI DANH SÁCH THÀNH VIÊN REALTIME TỪ FIREBASE CHO ADMIN
         function renderAdminUsersTable() {
             const tbody = document.getElementById('admin-users-tbody');
             const searchVal = (document.getElementById('admin-user-search-input')?.value || '').toLowerCase();
-            const users = JSON.parse(localStorage.getItem(STORAGE_USERS_KEY) || '[]');
 
-            const filtered = users.filter(u => 
-                u.username.toLowerCase().includes(searchVal) || 
-                u.fullname.toLowerCase().includes(searchVal) || 
-                u.email.toLowerCase().includes(searchVal)
-            );
+            db.ref('users').on('value', (snapshot) => {
+                const usersObj = snapshot.val() || {};
+                const users = Object.values(usersObj);
 
-            tbody.innerHTML = filtered.map(u => `
-                <tr class="hover:bg-slate-800/40 transition">
-                    <td class="p-3.5 flex items-center gap-2">
-                        <img src="${u.avatar}" class="w-7 h-7 rounded-full border border-cyan-500 object-cover">
-                        <span class="font-bold text-slate-200">${u.fullname}</span>
-                    </td>
-                    <td class="p-3.5 font-bold text-cyan-400">@${u.username}</td>
-                    <td class="p-3.5 text-slate-400">${u.email}</td>
-                    <td class="p-3.5 font-extrabold text-emerald-400">${u.balance.toLocaleString('vi-VN')} đ</td>
-                    <td class="p-3.5 text-slate-300 font-semibold">${(u.totalDeposited || 0).toLocaleString('vi-VN')} đ</td>
-                    <td class="p-3.5">
-                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${u.username === 'adminkit' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30'}">
-                            ${u.role || 'Thành viên'}
-                        </span>
-                    </td>
-                    <td class="p-3.5 text-center">
-                        <button onclick="openAdminBalanceModal('${u.username}')" class="px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black rounded-lg text-xs shadow-lg transition flex items-center gap-1.5 mx-auto">
-                            <i class="fa-solid fa-plus-circle"></i> Cộng / Trừ tiền
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+                const filtered = users.filter(u => 
+                    u.username.toLowerCase().includes(searchVal) || 
+                    u.fullname.toLowerCase().includes(searchVal) || 
+                    (u.email && u.email.toLowerCase().includes(searchVal))
+                );
 
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Không tìm thấy thành viên nào phù hợp.</td></tr>`;
-            }
+                tbody.innerHTML = filtered.map(u => `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="p-3.5 flex items-center gap-2">
+                            <img src="${u.avatar || 'https://placehold.co/100x100/06b6d4/ffffff?text=U'}" class="w-7 h-7 rounded-full border border-cyan-500 object-cover">
+                            <span class="font-bold text-slate-200">${u.fullname}</span>
+                        </td>
+                        <td class="p-3.5 font-bold text-cyan-400">@${u.username}</td>
+                        <td class="p-3.5 text-slate-400">${u.email || 'N/A'}</td>
+                        <td class="p-3.5 font-extrabold text-emerald-400">${(u.balance || 0).toLocaleString('vi-VN')} đ</td>
+                        <td class="p-3.5 text-slate-300 font-semibold">${(u.totalDeposited || 0).toLocaleString('vi-VN')} đ</td>
+                        <td class="p-3.5">
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${u.username === 'adminkit' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30'}">
+                                ${u.role || 'Thành viên'}
+                            </span>
+                        </td>
+                        <td class="p-3.5 text-center">
+                            <button onclick="openAdminBalanceModal('${u.username}')" class="px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black rounded-lg text-xs shadow-lg transition">
+                                <i class="fa-solid fa-plus-circle"></i> Cộng / Trừ tiền
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                if (filtered.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Không tìm thấy thành viên nào.</td></tr>`;
+                }
+            });
         }
 
-        // Open Modal to Adjust User Balance
         function openAdminBalanceModal(username) {
-            const users = JSON.parse(localStorage.getItem(STORAGE_USERS_KEY) || '[]');
-            const user = users.find(u => u.username === username);
-
-            if (!user) {
-                showToast('Không tìm thấy tài khoản này!', 'error');
-                return;
-            }
-
-            document.getElementById('modal-target-username').value = user.username;
-            document.getElementById('modal-display-username').innerText = `@${user.username} (${user.fullname})`;
-            document.getElementById('modal-display-balance').innerText = `${user.balance.toLocaleString('vi-VN')} đ`;
-            document.getElementById('modal-amount-input').value = '';
-            document.getElementById('modal-note-input').value = '';
-
-            document.getElementById('admin-balance-modal').classList.remove('hidden');
+            db.ref('users/' + username).once('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    showToast('Không tìm thấy tài khoản!', 'error');
+                    return;
+                }
+                const user = snapshot.val();
+                document.getElementById('modal-target-username').value = user.username;
+                document.getElementById('modal-display-username').innerText = `@${user.username} (${user.fullname})`;
+                document.getElementById('modal-display-balance').innerText = `${(user.balance || 0).toLocaleString('vi-VN')} đ`;
+                document.getElementById('modal-amount-input').value = '';
+                document.getElementById('modal-note-input').value = '';
+                document.getElementById('admin-balance-modal').classList.remove('hidden');
+            });
         }
 
         function closeAdminBalanceModal() {
             document.getElementById('admin-balance-modal').classList.add('hidden');
         }
 
-        // Handle Admin Adjust Balance Form Submit
+        // ADMIN CẬP NHẬT SỐ DƯ TRỰC TIẾP LÊN FIREBASE
         function handleAdminAdjustBalanceSubmit(e) {
             e.preventDefault();
             const targetUsername = document.getElementById('modal-target-username').value;
             const actionType = document.getElementById('modal-action-type').value;
             const amount = parseInt(document.getElementById('modal-amount-input').value) || 0;
-            const note = document.getElementById('modal-note-input').value.trim();
 
             if (amount <= 0) {
-                showToast('Số tiền nhập vào phải lớn hơn 0!', 'error');
+                showToast('Số tiền phải lớn hơn 0!', 'error');
                 return;
             }
 
-            const users = JSON.parse(localStorage.getItem(STORAGE_USERS_KEY) || '[]');
-            const idx = users.findIndex(u => u.username === targetUsername);
+            db.ref('users/' + targetUsername).once('value', (snapshot) => {
+                if (!snapshot.exists()) return;
+                const user = snapshot.val();
+                let currentBalance = user.balance || 0;
+                let currentTotal = user.totalDeposited || 0;
 
-            if (idx === -1) {
-                showToast('Lỗi: Người dùng không tồn tại!', 'error');
-                return;
-            }
-
-            if (actionType === 'ADD') {
-                users[idx].balance += amount;
-                users[idx].totalDeposited = (users[idx].totalDeposited || 0) + amount;
-                showToast(`Đã cộng thành công ${amount.toLocaleString('vi-VN')}đ cho tài khoản @${targetUsername}`, 'success');
-            } else {
-                if (users[idx].balance < amount) {
-                    showToast(`Số dư tài khoản chỉ còn ${users[idx].balance.toLocaleString('vi-VN')}đ, không đủ để trừ!`, 'error');
-                    return;
+                if (actionType === 'ADD') {
+                    currentBalance += amount;
+                    currentTotal += amount;
+                    showToast(`Đã cộng ${amount.toLocaleString('vi-VN')}đ cho @${targetUsername}`, 'success');
+                } else {
+                    if (currentBalance < amount) {
+                        showToast('Số dư không đủ để trừ!', 'error');
+                        return;
+                    }
+                    currentBalance -= amount;
+                    showToast(`Đã trừ ${amount.toLocaleString('vi-VN')}đ của @${targetUsername}`, 'info');
                 }
-                users[idx].balance -= amount;
-                showToast(`Đã trừ ${amount.toLocaleString('vi-VN')}đ khỏi tài khoản @${targetUsername}`, 'info');
-            }
 
-            // Save to DB
-            localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
-
-            // If the adjusted user is currently logged in, sync session
-            if (currentUser.username === targetUsername) {
-                currentUser.balance = users[idx].balance;
-                currentUser.totalDeposited = users[idx].totalDeposited;
-                localStorage.setItem(STORAGE_CURRENT_USER_KEY, JSON.stringify(currentUser));
-                syncUserDataToUI();
-            }
-
-            closeAdminBalanceModal();
-            renderAdminUsersTable();
+                db.ref('users/' + targetUsername).update({
+                    balance: currentBalance,
+                    totalDeposited: currentTotal
+                }, () => {
+                    if (currentUser && currentUser.username === targetUsername) {
+                        currentUser.balance = currentBalance;
+                        currentUser.totalDeposited = currentTotal;
+                        localStorage.setItem(STORAGE_CURRENT_USER_KEY, JSON.stringify(currentUser));
+                        syncUserDataToUI();
+                    }
+                    closeAdminBalanceModal();
+                });
+            });
         }
 
-        // Select SMM Platform
         function selectPlatform(platformKey) {
             currentPlatform = platformKey;
             const platformData = SMM_SERVICES_DATA[platformKey];
-
             document.querySelectorAll('.platform-tab').forEach(btn => {
                 btn.classList.remove('bg-cyan-500', 'text-slate-950', 'border-cyan-400', 'shadow-lg');
                 btn.classList.add('bg-slate-800', 'text-slate-400', 'border-slate-700');
             });
-
             const activeBtn = document.getElementById(`platform-btn-${platformKey}`);
             if (activeBtn) {
                 activeBtn.classList.remove('bg-slate-800', 'text-slate-400', 'border-slate-700');
                 activeBtn.classList.add('bg-cyan-500', 'text-slate-950', 'border-cyan-400', 'shadow-lg');
             }
-
             document.getElementById('order-form-title').innerText = `Tạo Đơn Dịch Vụ ${platformData.name}`;
             const badge = document.getElementById('platform-badge');
             badge.innerText = platformData.name;
@@ -1621,7 +1227,6 @@
 
             const catSelect = document.getElementById('service-category-select');
             catSelect.innerHTML = platformData.categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
-
             updateServiceServers();
         }
 
@@ -1629,22 +1234,17 @@
             const catId = document.getElementById('service-category-select').value;
             const platformData = SMM_SERVICES_DATA[currentPlatform];
             const category = platformData.categories.find(c => c.id === catId);
-
             if (!category) return;
 
-            document.getElementById('label-target-link').innerText = category.targetLabel || 'Link Bài Viết / ID Tài Khoản';
-            const commentBox = document.getElementById('comment-container');
-            if (category.isComment) commentBox.classList.remove('hidden');
-            else commentBox.classList.add('hidden');
-
+            document.getElementById('label-target-link').innerText = category.targetLabel || 'Link / ID';
             const serverContainer = document.getElementById('server-options-container');
             serverContainer.innerHTML = category.servers.map((srv, index) => `
-                <label onclick="onServerSelect('${srv.id}')" class="server-option-label block p-3.5 rounded-xl border border-slate-700/80 bg-slate-900/60 hover:bg-slate-800 cursor-pointer transition relative">
+                <label onclick="onServerSelect('${srv.id}')" class="block p-3.5 rounded-xl border border-slate-700/80 bg-slate-900/60 hover:bg-slate-800 cursor-pointer transition">
                     <div class="flex items-start justify-between">
                         <div class="flex items-center gap-3">
-                            <input type="radio" name="server_choice" value="${srv.id}" ${index === 0 ? 'checked' : ''} class="w-4 h-4 text-cyan-500 focus:ring-cyan-500">
+                            <input type="radio" name="server_choice" value="${srv.id}" ${index === 0 ? 'checked' : ''} class="w-4 h-4 text-cyan-500">
                             <div>
-                                <span class="font-bold text-xs text-slate-200 light:text-slate-800 block">${srv.name}</span>
+                                <span class="font-bold text-xs text-slate-200 block">${srv.name}</span>
                                 <span class="text-[11px] text-emerald-400 font-semibold">${srv.speed} • ${srv.warranty}</span>
                             </div>
                         </div>
@@ -1652,35 +1252,21 @@
                     </div>
                 </label>
             `).join('');
-
             if (category.servers.length > 0) onServerSelect(category.servers[0].id);
         }
 
         function onServerSelect(serverId) {
             const platformData = SMM_SERVICES_DATA[currentPlatform];
             let foundServer = null;
-
             for (const cat of platformData.categories) {
                 const match = cat.servers.find(s => s.id === serverId);
                 if (match) { foundServer = match; break; }
             }
-
             if (!foundServer) return;
             currentSelectedServer = foundServer;
-
             document.getElementById('info-server-price').innerText = `${foundServer.price.toLocaleString('vi-VN')} VNĐ`;
             document.getElementById('info-server-speed').innerText = foundServer.speed;
             document.getElementById('info-server-warranty').innerText = foundServer.warranty;
-            document.getElementById('server-min-max-info').innerText = `Tối thiểu: ${foundServer.min.toLocaleString('vi-VN')} - Tối đa: ${foundServer.max.toLocaleString('vi-VN')}`;
-
-            calculateTotalPrice();
-        }
-
-        function calculateCommentQuantity() {
-            const commentText = document.getElementById('comment-text-input').value;
-            const lines = commentText.split('\n').filter(line => line.trim().length > 0);
-            const qtyInput = document.getElementById('order-quantity-input');
-            qtyInput.value = lines.length || 1;
             calculateTotalPrice();
         }
 
@@ -1691,63 +1277,38 @@
             document.getElementById('total-price-display').innerText = `${Math.round(total).toLocaleString('vi-VN')} đ`;
         }
 
-        // Submit Order Logic with Balance Verification
         function submitNewOrder() {
             const targetLink = document.getElementById('target-link-input').value.trim();
             const qty = parseInt(document.getElementById('order-quantity-input').value);
-
             if (!targetLink) {
-                showToast('Vui lòng nhập Link hoặc ID tài khoản!', 'error');
+                showToast('Vui lòng nhập Link hoặc ID!', 'error');
                 return;
             }
-
-            if (!qty || qty < currentSelectedServer.min) {
-                showToast(`Số lượng tối thiểu cho server này là ${currentSelectedServer.min}`, 'error');
-                return;
-            }
-
             const total = Math.round(qty * currentSelectedServer.price);
-
             if (currentUser.balance < total) {
-                showToast('Số dư tài khoản không đủ. Vui lòng nạp thêm tiền!', 'error');
-                switchTab('deposit');
+                showToast('Số dư không đủ!', 'error');
                 return;
             }
+            currentUser.balance -= total;
+            saveCurrentUserToDatabase();
+            syncUserDataToUI();
 
-            const btn = document.getElementById('submit-order-btn');
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>ĐANG XỬ LÝ...</span>`;
-
-            setTimeout(() => {
-                // Deduct Balance
-                currentUser.balance -= total;
-                saveCurrentUserToDatabase();
-                syncUserDataToUI();
-
-                const newOrder = {
-                    id: `LCK-${Math.floor(10000 + Math.random() * 90000)}`,
-                    user: currentUser.username,
-                    platform: currentPlatform,
-                    service: currentSelectedServer.name,
-                    link: targetLink,
-                    qty: qty,
-                    total: total,
-                    status: 'Đang xử lý',
-                    date: new Date().toISOString().replace('T', ' ').substring(0, 16)
-                };
-
-                const allOrders = JSON.parse(localStorage.getItem(STORAGE_ORDERS_KEY) || '[]');
-                allOrders.unshift(newOrder);
-                localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(allOrders));
-
-                loadUserOrders();
-
-                btn.disabled = false;
-                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>TẠO ĐƠN HÀNG NGAY</span>`;
-                
-                showToast(`Tạo đơn thành công #${newOrder.id}! Trừ ${total.toLocaleString('vi-VN')}đ`, 'success');
-                document.getElementById('target-link-input').value = '';
-            }, 1000);
+            const newOrder = {
+                id: `LCK-${Math.floor(10000 + Math.random() * 90000)}`,
+                user: currentUser.username,
+                platform: currentPlatform,
+                service: currentSelectedServer.name,
+                link: targetLink,
+                qty: qty,
+                total: total,
+                status: 'Đang xử lý',
+                date: new Date().toISOString().replace('T', ' ').substring(0, 16)
+            };
+            const allOrders = JSON.parse(localStorage.getItem(STORAGE_ORDERS_KEY) || '[]');
+            allOrders.unshift(newOrder);
+            localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(allOrders));
+            loadUserOrders();
+            showToast(`Tạo đơn thành công #${newOrder.id}!`, 'success');
         }
 
         function renderDashboardOrdersTable() {
@@ -1757,15 +1318,11 @@
                     <td class="p-3 font-bold text-cyan-400">${o.id}</td>
                     <td class="p-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded uppercase ${SMM_SERVICES_DATA[o.platform].badgeClass}">${o.platform}</span></td>
                     <td class="p-3 truncate max-w-[180px]">${o.service}</td>
-                    <td class="p-3 font-semibold">${o.qty.toLocaleString('vi-VN')}</td>
+                    <td class="p-3 font-semibold">${o.qty}</td>
                     <td class="p-3 font-bold text-emerald-400">${o.total.toLocaleString('vi-VN')} đ</td>
-                    <td class="p-3">${getStatusBadge(o.status)}</td>
+                    <td class="p-3">${o.status}</td>
                 </tr>
             `).join('');
-
-            if (orderHistoryList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Chưa có đơn hàng nào.</td></tr>`;
-            }
         }
 
         function renderHistoryOrdersTable() {
@@ -1774,35 +1331,15 @@
                 <tr class="hover:bg-slate-800/40 transition">
                     <td class="p-3.5 font-bold text-cyan-400">${o.id}</td>
                     <td class="p-3.5"><span class="px-2 py-0.5 text-[10px] font-bold rounded uppercase ${SMM_SERVICES_DATA[o.platform].badgeClass}">${o.platform}</span></td>
-                    <td class="p-3.5 font-semibold text-slate-200 light:text-slate-800">${o.service}</td>
-                    <td class="p-3.5 text-slate-400 truncate max-w-[160px]"><a href="${o.link}" target="_blank" class="hover:underline text-cyan-400">${o.link}</a></td>
-                    <td class="p-3.5 font-bold">${o.qty.toLocaleString('vi-VN')}</td>
+                    <td class="p-3.5 font-semibold text-slate-200">${o.service}</td>
+                    <td class="p-3.5 text-slate-400 truncate max-w-[160px]">${o.link}</td>
+                    <td class="p-3.5 font-bold">${o.qty}</td>
                     <td class="p-3.5 font-bold text-emerald-400">${o.total.toLocaleString('vi-VN')} đ</td>
-                    <td class="p-3.5">${getStatusBadge(o.status)}</td>
+                    <td class="p-3.5">${o.status}</td>
                     <td class="p-3.5 text-slate-400 text-[11px]">${o.date}</td>
-                    <td class="p-3.5 text-center">
-                        <button onclick="showToast('Đã kiểm tra tiến độ đơn ${o.id}', 'info')" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
-                            <i class="fa-solid fa-arrows-rotate"></i>
-                        </button>
-                    </td>
                 </tr>
             `).join('');
-
-            document.getElementById('stat-total-orders').innerText = orderHistoryList.length.toLocaleString('vi-VN');
-            document.getElementById('stat-processing').innerText = `${orderHistoryList.filter(o => o.status === 'Đang xử lý').length} Đơn`;
-        }
-
-        function filterOrdersTable() {
-            const query = document.getElementById('order-search-input').value.toLowerCase();
-            const statusFilter = document.getElementById('order-status-filter').value;
-            const rows = document.querySelectorAll('#history-orders-tbody tr');
-
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                const matchesSearch = text.includes(query);
-                const matchesStatus = statusFilter === 'ALL' || text.includes(statusFilter.toLowerCase());
-                row.style.display = matchesSearch && matchesStatus ? '' : 'none';
-            });
+            document.getElementById('stat-total-orders').innerText = orderHistoryList.length;
         }
 
         function renderPriceListTable() {
@@ -1816,11 +1353,8 @@
                             <tr class="hover:bg-slate-800/40 transition">
                                 <td class="p-3 font-mono font-bold text-slate-400">${srv.id.toUpperCase()}</td>
                                 <td class="p-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded uppercase ${platform.badgeClass}">${platform.name}</span></td>
-                                <td class="p-3 font-semibold text-slate-200 light:text-slate-800">${cat.name} - ${srv.name}</td>
+                                <td class="p-3 font-semibold text-slate-200">${cat.name} - ${srv.name}</td>
                                 <td class="p-3 font-bold text-cyan-400">${srv.price.toLocaleString('vi-VN')} đ</td>
-                                <td class="p-3">${srv.min.toLocaleString('vi-VN')}</td>
-                                <td class="p-3">${srv.max.toLocaleString('vi-VN')}</td>
-                                <td class="p-3 text-amber-400 font-semibold">${srv.warranty}</td>
                             </tr>
                         `;
                     });
@@ -1829,77 +1363,27 @@
             tbody.innerHTML = html;
         }
 
-        function getStatusBadge(status) {
-            if (status === 'Hoàn thành') {
-                return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><i class="fa-solid fa-check mr-1"></i>Hoàn thành</span>`;
-            } else if (status === 'Đang xử lý') {
-                return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Đang xử lý</span>`;
-            } else {
-                return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-slate-500/10 text-slate-400 border border-slate-500/20">${status}</span>`;
-            }
-        }
-
-        function selectDepositMethod(method) {
-            document.querySelectorAll('.dep-method-btn').forEach(btn => {
-                btn.classList.remove('border-cyan-500', 'bg-cyan-500/10', 'text-cyan-400');
-                btn.classList.add('border-slate-800', 'bg-slate-900', 'text-slate-400');
-            });
-
-            const activeBtn = document.getElementById(`dep-btn-${method}`);
-            if (activeBtn) {
-                activeBtn.classList.remove('border-slate-800', 'bg-slate-900', 'text-slate-400');
-                activeBtn.classList.add('border-cyan-500', 'bg-cyan-500/10', 'text-cyan-400');
-            }
-
-            if (method === 'bank') {
-                document.getElementById('deposit-method-bank').classList.remove('hidden');
-                document.getElementById('deposit-method-card').classList.add('hidden');
-            } else if (method === 'card') {
-                document.getElementById('deposit-method-bank').classList.add('hidden');
-                document.getElementById('deposit-method-card').classList.remove('hidden');
-            } else {
-                showToast('Phương thức Ví MoMo hiện đang bảo trì, vui lòng dùng MB-Bank!', 'warning');
-            }
-        }
-
         function generateBankQR() {
             const qrBox = document.getElementById('qrcode-box');
             qrBox.innerHTML = '';
             const amount = document.getElementById('deposit-amount-input').value || 50000;
             const syntax = currentUser ? `NAP ${currentUser.username.toUpperCase()}` : 'NAP LOCKET';
             const qrUrl = `https://img.vietqr.io/image/MB-89123456789125-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(syntax)}&accountName=PHAN%20GIA%20TU`;
-            
             const img = document.createElement('img');
             img.src = qrUrl;
             img.className = 'w-44 h-44 object-contain rounded-lg';
-            img.alt = 'VietQR Code';
             qrBox.appendChild(img);
         }
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            
             let bgClass = 'bg-slate-900 border-cyan-500 text-cyan-400';
-            let icon = 'fa-info-circle';
-
-            if (type === 'success') {
-                bgClass = 'bg-slate-900 border-emerald-500 text-emerald-400';
-                icon = 'fa-circle-check';
-            } else if (type === 'error') {
-                bgClass = 'bg-slate-900 border-rose-500 text-rose-400';
-                icon = 'fa-circle-exclamation';
-            } else if (type === 'warning') {
-                bgClass = 'bg-slate-900 border-amber-500 text-amber-400';
-                icon = 'fa-triangle-exclamation';
-            }
-
+            if (type === 'success') bgClass = 'bg-slate-900 border-emerald-500 text-emerald-400';
+            if (type === 'error') bgClass = 'bg-slate-900 border-rose-500 text-rose-400';
+            
             toast.className = `pointer-events-auto flex items-center gap-3 p-4 rounded-xl border shadow-2xl backdrop-blur transform transition-all duration-300 translate-y-2 opacity-0 ${bgClass}`;
-            toast.innerHTML = `
-                <i class="fa-solid ${icon} text-lg"></i>
-                <span class="text-xs font-semibold text-slate-100">${message}</span>
-            `;
-
+            toast.innerHTML = `<i class="fa-solid fa-info-circle text-lg"></i><span class="text-xs font-semibold text-slate-100">${message}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 50);
             setTimeout(() => {
@@ -1919,8 +1403,7 @@
         }
 
         function setupThemeToggle() {
-            const themeBtn = document.getElementById('theme-toggle');
-            themeBtn.addEventListener('click', () => {
+            document.getElementById('theme-toggle').addEventListener('click', () => {
                 document.documentElement.classList.toggle('dark');
                 document.documentElement.classList.toggle('light');
             });
