@@ -321,11 +321,15 @@
                     </a>
 
                     <!-- ADMIN EXCLUSIVE LINK MENU -->
-                    <div id="admin-nav-section" class="hidden">
+                    <div id="admin-nav-section" class="hidden space-y-1">
                         <div class="pt-2 pb-1 px-3 text-[11px] font-bold text-rose-400 uppercase tracking-wider">Khu Vực Quản Trị</div>
                         <a href="#admin-users" data-tab="admin-users" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-rose-400 hover:bg-rose-500/10 transition-all border border-rose-500/20">
                             <i class="fa-solid fa-user-shield text-rose-400 w-5"></i>
                             <span>Quản Lý Thành Viên</span>
+                        </a>
+                        <a href="#admin-orders" data-tab="admin-orders" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-amber-400 hover:bg-amber-500/10 transition-all border border-amber-500/20">
+                            <i class="fa-solid fa-boxes-packing text-amber-400 w-5"></i>
+                            <span>Quản Lý Đơn Hàng</span>
                         </a>
                     </div>
                 </nav>
@@ -505,9 +509,10 @@
                                 <thead class="text-xs uppercase bg-slate-800/80 light:bg-slate-200 text-slate-400 font-semibold">
                                     <tr>
                                         <th class="p-3">Mã đơn</th>
+                                        <th class="p-3">Khách hàng</th>
                                         <th class="p-3">Nền tảng</th>
                                         <th class="p-3">Dịch vụ</th>
-                                        <th class="p-3">Số lượng</th>
+                                        <th class="p-3">Thông tin / Link</th>
                                         <th class="p-3">Tổng tiền</th>
                                         <th class="p-3">Trạng thái</th>
                                     </tr>
@@ -783,7 +788,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 8: ADMIN USER MANAGEMENT (REALTIME FROM FIREBASE) -->
+                <!-- TAB 8: ADMIN USER MANAGEMENT -->
                 <div id="tab-admin-users" class="tab-content hidden space-y-5">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
@@ -817,15 +822,45 @@
                     </div>
                 </div>
 
+                <!-- TAB 9: ADMIN ALL ORDERS MANAGEMENT -->
+                <div id="tab-admin-orders" class="tab-content hidden space-y-5">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h1 class="text-xl font-extrabold text-amber-400 flex items-center gap-2">
+                                <i class="fa-solid fa-boxes-packing"></i> Quản Lý Tất Cả Đơn Hàng (Admin)
+                            </h1>
+                            <p class="text-xs text-slate-400">Duyệt đơn khách đặt và nhấn nút Hoàn thành khi xử lý xong</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-2xl border border-amber-500/20 overflow-hidden shadow-xl">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left text-slate-300">
+                                <thead class="text-[11px] uppercase bg-slate-900 text-slate-400 font-bold border-b border-slate-800">
+                                    <tr>
+                                        <th class="p-3.5">Mã đơn</th>
+                                        <th class="p-3.5">Khách đặt</th>
+                                        <th class="p-3.5">Nền tảng</th>
+                                        <th class="p-3.5">Dịch vụ</th>
+                                        <th class="p-3.5">Thông tin / Link</th>
+                                        <th class="p-3.5">Tổng tiền</th>
+                                        <th class="p-3.5">Ngày đặt</th>
+                                        <th class="p-3.5">Trạng thái</th>
+                                        <th class="p-3.5 text-center">Thao tác Admin</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-orders-tbody" class="divide-y divide-slate-800/80 font-medium"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
             </main>
         </div>
     </div>
 
     <!-- JAVASCRIPT & REALTIME DATABASE LOGIC -->
     <script>
-        // =========================================================================
-        // CẤU HÌNH FIREBASE REALTIME DATABASE (ĐÃ TÍCH HỢP SẴN CHO BẠN)
-        // =========================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyA5yA1Wc_KrRPVNgSySKF_FnY901ApfB_E",
             authDomain: "kitphanmmo.firebaseapp.com",
@@ -837,11 +872,9 @@
             measurementId: "G-3K3FL2PSP5"
         };
 
-        // Khởi tạo Firebase App & Realtime Database
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // System Services Data
         const SMM_SERVICES_DATA = {
             locket: {
                 name: 'Locket',
@@ -909,10 +942,10 @@
             }
         };
 
-        // App State
         let currentUser = null;
         let globalUsersList = [];
         let globalOrdersList = [];
+        let previousOrderCount = null;
         let currentPlatform = 'facebook';
         let currentSelectedServer = null;
 
@@ -925,7 +958,6 @@
             renderPriceListTable();
         });
 
-        // Khởi tạo tài khoản Admin mặc định trên Firebase nếu chưa tồn tại
         function initAdminAccountFirebase() {
             db.ref('users/adminkit').once('value', snapshot => {
                 if (!snapshot.exists()) {
@@ -943,7 +975,6 @@
             });
         }
 
-        // LẮNG NGHE ĐỒNG BỘ THỜI GIAN THỰC (REALTIME) TỪ FIREBASE
         function setupRealtimeListeners() {
             db.ref('users').on('value', snapshot => {
                 const data = snapshot.val() || {};
@@ -960,9 +991,39 @@
 
             db.ref('orders').on('value', snapshot => {
                 const data = snapshot.val() || {};
-                globalOrdersList = Object.values(data).reverse();
+                const orders = Object.values(data).reverse();
+
+                // Kiểm tra xem có đơn hàng mới được tạo không để thông báo cho Admin
+                if (previousOrderCount !== null && orders.length > previousOrderCount) {
+                    if (currentUser && (currentUser.username === 'adminkit' || currentUser.role === 'Administrator')) {
+                        const newOrder = orders[0];
+                        playNotificationSound();
+                        showToast(`🔔 CÓ ĐƠN MỚI! #${newOrder.id} - Khách: @${newOrder.user}`, 'success');
+                    }
+                }
+                previousOrderCount = orders.length;
+
+                globalOrdersList = orders;
                 renderOrdersTables();
             });
+        }
+
+        // Âm thanh chuông báo có đơn mới dành cho Admin
+        function playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+            } catch (e) {}
         }
 
         function checkAuthSession() {
@@ -1250,48 +1311,106 @@
             });
         }
 
+        // ADMIN ĐÁNH DẤU HOÀN THÀNH ĐƠN HÀNG
+        function markOrderComplete(orderId) {
+            db.ref('orders/' + orderId).update({ status: 'Hoàn thành' }, error => {
+                if (!error) {
+                    showToast(`Đã đánh dấu hoàn thành đơn #${orderId}!`, 'success');
+                }
+            });
+        }
+
         function renderOrdersTables() {
             if (!currentUser) return;
 
-            const userOrders = globalOrdersList.filter(o => o.user === currentUser.username);
+            const isAdmin = currentUser.username === 'adminkit' || currentUser.role === 'Administrator';
+            
+            // Admin thấy tất cả đơn hàng, Khách chỉ thấy đơn của mình
+            const visibleOrders = isAdmin ? globalOrdersList : globalOrdersList.filter(o => o.user === currentUser.username);
 
+            // 1. Render Dashboard Table
             const dashTbody = document.getElementById('dashboard-orders-tbody');
             if (dashTbody) {
-                dashTbody.innerHTML = userOrders.slice(0, 5).map(o => `
+                dashTbody.innerHTML = visibleOrders.slice(0, 6).map(o => `
                     <tr class="hover:bg-slate-800/40 transition">
                         <td class="p-3 font-bold text-cyan-400">${o.id}</td>
+                        <td class="p-3 font-bold text-amber-400">@${o.user}</td>
                         <td class="p-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded uppercase ${SMM_SERVICES_DATA[o.platform]?.badgeClass || ''}">${o.platform}</span></td>
                         <td class="p-3 truncate max-w-[180px]">${o.service}</td>
-                        <td class="p-3 font-semibold">${o.qty}</td>
+                        <td class="p-3 text-slate-300 font-mono text-xs select-all">${o.link}</td>
                         <td class="p-3 font-bold text-emerald-400">${o.total.toLocaleString('vi-VN')} đ</td>
                         <td class="p-3">${getStatusBadge(o.status)}</td>
                     </tr>
                 `).join('');
+
+                if (visibleOrders.length === 0) {
+                    dashTbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Chưa có đơn hàng nào.</td></tr>`;
+                }
             }
 
+            // 2. Render History Table (Khách hàng)
             const histTbody = document.getElementById('history-orders-tbody');
             if (histTbody) {
+                const userOrders = globalOrdersList.filter(o => o.user === currentUser.username);
                 histTbody.innerHTML = userOrders.map(o => `
                     <tr class="hover:bg-slate-800/40 transition">
                         <td class="p-3.5 font-bold text-cyan-400">${o.id}</td>
                         <td class="p-3.5"><span class="px-2 py-0.5 text-[10px] font-bold rounded uppercase ${SMM_SERVICES_DATA[o.platform]?.badgeClass || ''}">${o.platform}</span></td>
                         <td class="p-3.5 font-semibold text-slate-200">${o.service}</td>
-                        <td class="p-3.5 text-slate-400 truncate max-w-[160px]"><a href="${o.link}" target="_blank" class="hover:underline text-cyan-400">${o.link}</a></td>
+                        <td class="p-3.5 text-slate-300 font-mono select-all">${o.link}</td>
                         <td class="p-3.5 font-bold">${o.qty}</td>
                         <td class="p-3.5 font-bold text-emerald-400">${o.total.toLocaleString('vi-VN')} đ</td>
                         <td class="p-3.5">${getStatusBadge(o.status)}</td>
                         <td class="p-3.5 text-slate-400 text-[11px]">${o.date}</td>
                     </tr>
                 `).join('');
+
+                if (userOrders.length === 0) {
+                    histTbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500">Bạn chưa tạo đơn hàng nào.</td></tr>`;
+                }
             }
 
-            document.getElementById('stat-total-orders').innerText = userOrders.length;
-            document.getElementById('stat-processing').innerText = `${userOrders.filter(o => o.status === 'Đang xử lý').length} Đơn`;
+            // 3. Render Admin Orders Management Table
+            const adminTbody = document.getElementById('admin-orders-tbody');
+            if (adminTbody) {
+                adminTbody.innerHTML = globalOrdersList.map(o => `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="p-3.5 font-bold text-cyan-400">${o.id}</td>
+                        <td class="p-3.5 font-bold text-amber-400">@${o.user}</td>
+                        <td class="p-3.5"><span class="px-2 py-0.5 text-[10px] font-bold rounded uppercase ${SMM_SERVICES_DATA[o.platform]?.badgeClass || ''}">${o.platform}</span></td>
+                        <td class="p-3.5 font-semibold text-slate-200">${o.service}</td>
+                        <td class="p-3.5 text-cyan-300 font-mono text-xs select-all bg-slate-900/80 p-2 rounded border border-slate-800">${o.link}</td>
+                        <td class="p-3.5 font-extrabold text-emerald-400">${o.total.toLocaleString('vi-VN')} đ</td>
+                        <td class="p-3.5 text-slate-400 text-[11px]">${o.date}</td>
+                        <td class="p-3.5">${getStatusBadge(o.status)}</td>
+                        <td class="p-3.5 text-center">
+                            ${o.status === 'Đang xử lý' ? `
+                                <button onclick="markOrderComplete('${o.id}')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs shadow transition flex items-center gap-1 mx-auto">
+                                    <i class="fa-solid fa-check"></i> Đánh dấu Hoàn thành
+                                </button>
+                            ` : `
+                                <span class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-circle-check"></i> Đã hoàn thành</span>
+                            `}
+                        </td>
+                    </tr>
+                `).join('');
+
+                if (globalOrdersList.length === 0) {
+                    adminTbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-500">Chưa có đơn hàng nào từ khách hàng.</td></tr>`;
+                }
+            }
+
+            // Thống kê số liệu trên Dashboard
+            const myOrdersCount = isAdmin ? globalOrdersList.length : globalOrdersList.filter(o => o.user === currentUser.username).length;
+            const processingCount = isAdmin ? globalOrdersList.filter(o => o.status === 'Đang xử lý').length : globalOrdersList.filter(o => o.user === currentUser.username && o.status === 'Đang xử lý').length;
+
+            document.getElementById('stat-total-orders').innerText = myOrdersCount;
+            document.getElementById('stat-processing').innerText = `${processingCount} Đơn`;
         }
 
         function getStatusBadge(status) {
-            if (status === 'Hoàn thành') return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><i class="fa-solid fa-check mr-1"></i>Hoàn thành</span>`;
-            return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Đang xử lý</span>`;
+            if (status === 'Hoàn thành') return `<span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><i class="fa-solid fa-check mr-1"></i>Hoàn thành</span>`;
+            return `<span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-amber-500/10 text-amber-400 border border-amber-500/20"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Đang xử lý</span>`;
         }
 
         function setupSidebarToggle() {
@@ -1305,7 +1424,7 @@
                     const targetTab = link.getAttribute('data-tab');
                     const platformParam = link.getAttribute('data-platform');
 
-                    if (targetTab === 'admin-users' && currentUser.username !== 'adminkit' && currentUser.role !== 'Administrator') {
+                    if ((targetTab === 'admin-users' || targetTab === 'admin-orders') && currentUser.username !== 'adminkit' && currentUser.role !== 'Administrator') {
                         showToast('Chỉ Admin mới có quyền truy cập!', 'error');
                         return;
                     }
@@ -1320,7 +1439,7 @@
         }
 
         function switchTab(tabId, platform = null) {
-            if (tabId === 'admin-users' && currentUser.username !== 'adminkit' && currentUser.role !== 'Administrator') {
+            if ((tabId === 'admin-users' || tabId === 'admin-orders') && currentUser.username !== 'adminkit' && currentUser.role !== 'Administrator') {
                 showToast('Chỉ Admin mới có quyền truy cập!', 'error');
                 return;
             }
