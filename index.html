@@ -624,7 +624,7 @@
 
                                 <div>
                                     <div class="flex justify-between items-center mb-2">
-                                        <label class="text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700">4. Số Lượng Cần Xử Lý</label>
+                                        <label class="text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700">4. Số Lượng Cần Xử Lý(CHỈ NHẬP SỐ LƯỢNG 1)</label>
                                         <span class="text-xs text-cyan-400 font-semibold" id="server-min-max-info">Tối thiểu: 1 - Tối đa: 100</span>
                                     </div>
                                     <input type="number" id="order-quantity-input" value="1" min="1" step="1" oninput="calculateTotalPrice()" class="w-full px-4 py-3 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-slate-200 light:text-slate-800 text-sm focus:outline-none focus:border-cyan-500 font-bold transition">
@@ -1043,7 +1043,7 @@
                         name: '👑 Locket Gold 1 Năm',
                         targetLabel: 'Username Locket / Email',
                         servers: [
-                            { id: 'l1', name: 'Server Kích Hoạt Nhanh 1 Năm', price: 100000, min: 1, max: 10, speed: '5 - 30 phút', warranty: 'Bảo hành 1 năm' }
+                            { id: 'l1', name: 'Server LocketGold 1 Năm', price: 100000, min: 1, max: 10, speed: '5 - 30 phút', warranty: 'Bảo hành 1 năm' }
                         ]
                     },
                     {
@@ -1051,7 +1051,7 @@
                         name: '💎 Locket Gold Vĩnh Viễn',
                         targetLabel: 'Username Locket / Email',
                         servers: [
-                            { id: 'l2', name: 'Server Kích Hoạt Vĩnh Viễn VIP', price: 150000, min: 1, max: 10, speed: '5 - 30 phút', warranty: 'Bảo hành vĩnh viễn' }
+                            { id: 'l2', name: 'Server LocketGold Vĩnh Viễn', price: 150000, min: 1, max: 10, speed: '5 - 30 phút', warranty: 'Bảo hành vĩnh viễn' }
                         ]
                     }
                 ]
@@ -1106,6 +1106,7 @@
         let globalDepositsList = [];
         let globalTicketsList = [];
         let previousOrderCount = null;
+        let previousBalance = null;
         let currentPlatform = 'facebook';
         let currentSelectedServer = null;
 
@@ -1116,6 +1117,7 @@
             setupThemeToggle();
             checkAuthSession();
             renderPriceListTable();
+            generateBankQR();
         });
 
         function initAdminAccountFirebase() {
@@ -1141,7 +1143,17 @@
                 globalUsersList = Object.values(data);
 
                 if (currentUser && data[currentUser.username]) {
-                    currentUser = data[currentUser.username];
+                    const latestUserData = data[currentUser.username];
+                    
+                    // Phát hiện nếu số dư tăng lên (Nạp tiền thành công từ SePay hoặc Admin)
+                    if (previousBalance !== null && latestUserData.balance > previousBalance) {
+                        const addedAmount = latestUserData.balance - previousBalance;
+                        playNotificationSound();
+                        showToast(`🎉 NẠP TIỀN THÀNH CÔNG! Tài khoản vừa được cộng thêm ${addedAmount.toLocaleString('vi-VN')} đ.`, 'success', 8000);
+                    }
+
+                    currentUser = latestUserData;
+                    previousBalance = currentUser.balance;
                     localStorage.setItem('locket_smm_session', JSON.stringify(currentUser));
                     syncUserDataToUI();
                 }
@@ -1182,7 +1194,7 @@
         function showAdminOrderNotificationModal(order) {
             const toastMessage = `
                 <div class="space-y-1">
-                    <div class="font-extrabold text-sm text-amber-300">🔔 ĐƠN HÀNG MỚI BẮT CẦN XỬ LÝ!</div>
+                    <div class="font-extrabold text-sm text-amber-300">🔔 ĐƠN HÀNG MỚI CẦN XỬ LÝ!</div>
                     <div><b>Mã đơn:</b> <span class="text-cyan-400">${order.id}</span></div>
                     <div><b>Khách hàng:</b> <span class="text-amber-400">@${order.user}</span></div>
                     <div><b>Dịch vụ:</b> ${order.service}</div>
@@ -1215,6 +1227,7 @@
             const savedSession = localStorage.getItem('locket_smm_session');
             if (savedSession) {
                 currentUser = JSON.parse(savedSession);
+                previousBalance = currentUser.balance || 0;
                 loginUserSession(currentUser);
             } else {
                 showAuthScreen();
@@ -1249,6 +1262,7 @@
             db.ref('users/' + usernameInput).once('value', snapshot => {
                 const user = snapshot.val();
                 if (user && user.password === passwordInput) {
+                    previousBalance = user.balance || 0;
                     loginUserSession(user);
                     showToast(`Chào mừng trở lại, ${user.fullname}!`, 'success');
                 } else {
@@ -1291,6 +1305,7 @@
                     if (error) {
                         showToast('Lỗi đăng ký tài khoản. Vui lòng thử lại!', 'error');
                     } else {
+                        previousBalance = 0;
                         loginUserSession(newUser);
                         showToast('Đăng ký tài khoản thành công!', 'success');
                     }
@@ -1325,6 +1340,7 @@
         function handleLogout() {
             localStorage.removeItem('locket_smm_session');
             currentUser = null;
+            previousBalance = null;
             showAuthScreen();
             showToast('Đã đăng xuất khỏi tài khoản!', 'info');
         }
@@ -1356,9 +1372,10 @@
             document.getElementById('edit-email').value = currentUser.email;
 
             document.getElementById('deposit-syntax').innerText = `NAP ${currentUser.username.toUpperCase()}`;
+            generateBankQR();
         }
 
-        // HÀM MÔ PHỎNG NẠP TỰ ĐỘNG (HIỂN THỊ THÔNG BÁO THÀNH CÔNG VÀ CỘNG TIỀN VÀO VÍ)
+        // HÀM MÔ PHỎNG NẠP TIỀN TỰ ĐỘNG (DÙNG ĐỂ TEST TRÊN WEB)
         function simulateAutoDeposit() {
             if (!currentUser) return;
             const amount = parseInt(document.getElementById('test-deposit-amount').value) || 0;
@@ -1392,11 +1409,9 @@
                 }, error => {
                     if (!error) {
                         db.ref('deposits/' + depositId).set(newDeposit);
-                        
-                        // HIỂN THỊ THÔNG BÁO THANH TOÁN THÀNH CÔNG RÕ RÀNG
-                        showToast(`🎉 THANH TOÁN THÀNH CÔNG! Đã cộng ${amount.toLocaleString('vi-VN')} đ vào tài khoản của bạn.`, 'success', 6000);
+                        showToast(`🎉 MÔ PHỎNG THÀNH CÔNG! Đã cộng thêm ${amount.toLocaleString('vi-VN')} đ vào tài khoản.`, 'success', 6000);
                     } else {
-                        showToast('Lỗi nạp tiền tự động. Vui lòng thử lại!', 'error');
+                        showToast('Lỗi mô phỏng nạp tiền. Vui lòng thử lại!', 'error');
                     }
                 });
             });
@@ -1867,25 +1882,27 @@
             tbody.innerHTML = html;
         }
 
-        // TÍCH HỢP API VIETQR MỚI CỦA BẠN VÀO HÀM TẠO MÃ QR
+        // HÀM TẠO MÃ QR TỰ ĐỘNG CẬP NHẬT KHI THAY ĐỔI SỐ TIỀN HOẶC TÀI KHOẢN
         function generateBankQR() {
             const qrBox = document.getElementById('qrcode-box');
+            if (!qrBox) return;
             qrBox.innerHTML = '';
-            const amount = document.getElementById('deposit-amount-input').value || 50000;
+            const amountInput = document.getElementById('deposit-amount-input');
+            const amount = amountInput ? (amountInput.value || 50000) : 50000;
             const syntax = currentUser ? `NAP ${currentUser.username.toUpperCase()}` : 'NAP LOCKET';
             
-            // Đường dẫn API VietQR chuẩn mới do bạn cung cấp
             const baseUrl = "https://vietqr.app/img?bank=MBBank&acc=89123456789125&template=compact&showinfo=true&holder=PHAN%20GIA%20TU";
             const qrUrl = `${baseUrl}&amount=${amount}&addInfo=${encodeURIComponent(syntax)}`;
             
             const img = document.createElement('img');
             img.src = qrUrl;
-            img.className = 'w-44 h-44 object-contain rounded-lg';
+            img.className = 'w-44 h-44 object-contain rounded-lg mx-auto';
             qrBox.appendChild(img);
         }
 
         function showToast(message, type = 'info', duration = 3500) {
             const container = document.getElementById('toast-container');
+            if (!container) return;
             const toast = document.createElement('div');
             let bgClass = 'bg-slate-900 border-cyan-500 text-cyan-400';
             let icon = 'fa-info-circle';
@@ -1911,10 +1928,12 @@
 
         function setupThemeToggle() {
             const themeBtn = document.getElementById('theme-toggle');
-            themeBtn.addEventListener('click', () => {
-                document.documentElement.classList.toggle('dark');
-                document.documentElement.classList.toggle('light');
-            });
+            if (themeBtn) {
+                themeBtn.addEventListener('click', () => {
+                    document.documentElement.classList.toggle('dark');
+                    document.documentElement.classList.toggle('light');
+                });
+            }
         }
     </script>
 </body>
