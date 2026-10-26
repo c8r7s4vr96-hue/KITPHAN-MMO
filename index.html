@@ -69,6 +69,56 @@
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
 
+    <!-- ==================== ADMIN ADD/DEDUCT BALANCE MODAL ==================== -->
+    <div id="admin-balance-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="glass-card rounded-2xl p-6 border border-slate-700 max-w-md w-full shadow-2xl space-y-4 relative">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-extrabold text-base text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-coins text-amber-400"></i> Điều Chỉnh Số Dư Thành Viên
+                </h3>
+                <button onclick="closeAdminBalanceModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form onsubmit="handleAdminAdjustBalanceSubmit(event)" class="space-y-4">
+                <input type="hidden" id="modal-target-username">
+                <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-1">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Tài khoản:</span>
+                        <span class="font-bold text-cyan-400" id="modal-display-username">@user</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Số dư hiện tại:</span>
+                        <span class="font-bold text-emerald-400" id="modal-display-balance">0 đ</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Loại thao tác</label>
+                    <select id="modal-action-type" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-semibold text-slate-200">
+                        <option value="ADD">➕ Cộng tiền vào số dư (Cộng dồn Nạp)</option>
+                        <option value="SUB">➖ Trừ tiền khỏi số dư</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Số tiền (VNĐ)</label>
+                    <input type="number" id="modal-amount-input" required min="1000" step="1000" placeholder="Ví dụ: 50000" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm font-bold text-emerald-400 focus:outline-none focus:border-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Ghi chú (Tùy chọn)</label>
+                    <input type="text" id="modal-note-input" placeholder="Ví dụ: Cộng tiền lỗi nạp MoMo/Bank..." class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-300">
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeAdminBalanceModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300">Hủy</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-xs font-extrabold text-slate-950 shadow">XÁC NHẬN CẬP NHẬT</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- ==================== AUTHENTICATION SCREEN (LOGIN / REGISTER / FORGOT) ==================== -->
     <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4 overflow-y-auto">
         <div class="relative w-full max-w-md">
@@ -112,7 +162,7 @@
                         ĐĂNG NHẬP NGAY
                     </button>
                     <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-[11px] text-slate-400">
-                        💡 <span class="font-bold text-cyan-400">Tên tài khoản:</span> Username: <code class="text-amber-300">admin@gmail.com</code> | Mật khẩu: <code class="text-amber-300">chữ,số,các ký tự đặc biệt</code>
+                        🔑 <span class="font-bold text-cyan-400">Tài khoản Admin:</span> Username: <code class="text-amber-300">adminkit</code> | Mật khẩu: <code class="text-amber-300">10112008</code>
                     </div>
                     <p class="text-xs text-center text-slate-400 pt-2">
                         Chưa có tài khoản? <button type="button" onclick="switchAuthMode('register')" class="text-cyan-400 font-bold hover:underline">Đăng ký ngay</button>
@@ -268,6 +318,15 @@
                         <i class="fa-solid fa-headset text-rose-400 w-5"></i>
                         <span>Hỗ Trợ / Tickets</span>
                     </a>
+
+                    <!-- ADMIN EXCLUSIVE LINK MENU -->
+                    <div id="admin-nav-section" class="hidden">
+                        <div class="pt-2 pb-1 px-3 text-[11px] font-bold text-rose-400 uppercase tracking-wider">Khu Vực Quản Trị</div>
+                        <a href="#admin-users" data-tab="admin-users" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-rose-400 hover:bg-rose-500/10 transition-all border border-rose-500/20">
+                            <i class="fa-solid fa-user-shield text-rose-400 w-5"></i>
+                            <span>Quản Lý Thành Viên</span>
+                        </a>
+                    </div>
                 </nav>
             </div>
 
@@ -535,7 +594,7 @@
                             <!-- Form Field 5: Quantity Input -->
                             <div>
                                 <div class="flex justify-between items-center mb-2">
-                                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700">4. Số Lượng Cần Xử Lý(chỉ được nhập SL 1)</label>
+                                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700">4. Số Lượng Cần Xử Lý (chỉ được nhập SL 1)</label>
                                     <span class="text-xs text-cyan-400 font-semibold" id="server-min-max-info">Tối thiểu: 1 - Tối đa: 100</span>
                                 </div>
                                 <input type="number" id="order-quantity-input" value="1" min="1" step="1" oninput="calculateTotalPrice()" class="w-full px-4 py-3 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-slate-200 light:text-slate-800 text-sm focus:outline-none focus:border-cyan-500 font-bold transition">
@@ -947,6 +1006,45 @@
                     </div>
                 </div>
 
+                <!-- TAB 8: ADMIN USER MANAGEMENT (ADMIN ONLY) -->
+                <div id="tab-admin-users" class="tab-content hidden space-y-5">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h1 class="text-xl font-extrabold text-rose-400 flex items-center gap-2">
+                                <i class="fa-solid fa-user-shield"></i> Quản Lý Thành Viên & Cộng Tiền (Admin Panel)
+                            </h1>
+                            <p class="text-xs text-slate-400">Quản lý danh sách người dùng, cộng/trừ số dư thủ công cho khách hàng</p>
+                        </div>
+
+                        <!-- User Search Input -->
+                        <div class="w-full sm:w-64">
+                            <input type="text" id="admin-user-search-input" onkeyup="renderAdminUsersTable()" placeholder="Tìm username, email, tên..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs focus:outline-none focus:border-rose-500 text-slate-200">
+                        </div>
+                    </div>
+
+                    <!-- Main Admin Users Table -->
+                    <div class="glass-card rounded-2xl border border-rose-500/20 overflow-hidden shadow-xl">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left text-slate-300">
+                                <thead class="text-[11px] uppercase bg-slate-900 text-slate-400 font-bold border-b border-slate-800">
+                                    <tr>
+                                        <th class="p-3.5">Thành viên</th>
+                                        <th class="p-3.5">Username</th>
+                                        <th class="p-3.5">Email</th>
+                                        <th class="p-3.5">Số dư khả dụng</th>
+                                        <th class="p-3.5">Tổng đã nạp</th>
+                                        <th class="p-3.5">Cấp độ</th>
+                                        <th class="p-3.5 text-center">Thao tác cộng/trừ tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-tbody" class="divide-y divide-slate-800/80 font-medium">
+                                    <!-- Dynamic Content by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
             </main>
         </div>
     </div>
@@ -1090,17 +1188,27 @@
         const STORAGE_CURRENT_USER_KEY = 'locket_smm_logged_user_v1';
         const STORAGE_ORDERS_KEY = 'locket_smm_orders_db_v1';
 
-        // Initial Seed Users
+        // Initial Seed Users (Including Admin: adminkit / 10112008)
         const DEFAULT_USERS = [
             {
-                username: 'admin',
+                username: 'adminkit',
+                password: '10112008',
+                fullname: 'Phan Gia Tú (Admin)',
+                email: 'admin@kitphan.mmo',
+                balance: 10000000,
+                totalDeposited: 10000000,
+                role: 'Administrator',
+                avatar: 'https://placehold.co/100x100/ec4899/ffffff?text=Admin'
+            },
+            {
+                username: 'khachhang1',
                 password: '123456',
-                fullname: 'Phan Gia Tú',
-                email: 'admin@gmail.com',
-                balance: 1250000,
-                totalDeposited: 15850000,
-                role: 'VIP Member 2',
-                avatar: 'https://placehold.co/100x100/6366f1/ffffff?text=Admin'
+                fullname: 'Khách Hàng Thử Nghiệm',
+                email: 'khach1@gmail.com',
+                balance: 0,
+                totalDeposited: 0,
+                role: 'Thành viên mới',
+                avatar: 'https://placehold.co/100x100/06b6d4/ffffff?text=K'
             }
         ];
 
@@ -1123,11 +1231,20 @@
         function initUsersDatabase() {
             if (!localStorage.getItem(STORAGE_USERS_KEY)) {
                 localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(DEFAULT_USERS));
+            } else {
+                // Ensure Admin Account Exists
+                const users = JSON.parse(localStorage.getItem(STORAGE_USERS_KEY));
+                const hasAdmin = users.some(u => u.username === 'adminkit');
+                if (!hasAdmin) {
+                    users.unshift(DEFAULT_USERS[0]);
+                    localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
+                }
             }
+
             if (!localStorage.getItem(STORAGE_ORDERS_KEY)) {
                 const initialOrders = [
-                    { id: 'LCK-98401', user: 'admin', platform: 'facebook', service: 'Mở Đình Chỉ 180 Ngày (Server 1)', link: 'https://facebook.com/user.demo', qty: 1, total: 300000, status: 'Hoàn thành', date: '2026-10-25 14:20' },
-                    { id: 'LCK-98402', user: 'admin', platform: 'locket', service: 'Locket Gold 1 Năm', link: 'user_locket_demo', qty: 1, total: 150000, status: 'Đang xử lý', date: '2026-10-26 09:15' }
+                    { id: 'LCK-98401', user: 'adminkit', platform: 'facebook', service: 'Mở Đình Chỉ 180 Ngày (Server 1)', link: 'https://facebook.com/user.demo', qty: 1, total: 300000, status: 'Hoàn thành', date: '2026-10-25 14:20' },
+                    { id: 'LCK-98402', user: 'adminkit', platform: 'locket', service: 'Locket Gold 1 Năm', link: 'user_locket_demo', qty: 1, total: 150000, status: 'Đang xử lý', date: '2026-10-26 09:15' }
                 ];
                 localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(initialOrders));
             }
@@ -1190,7 +1307,7 @@
             }
         }
 
-        // Handle User Registration
+        // Handle User Registration (Default 0đ Balance)
         function handleRegister(e) {
             e.preventDefault();
             const fullname = document.getElementById('reg-fullname').value.trim();
@@ -1220,8 +1337,8 @@
                 password: password,
                 fullname: fullname,
                 email: email,
-                balance: 0000, // Bonus registration balance
-                totalDeposited: 0000,
+                balance: 0,
+                totalDeposited: 0,
                 role: 'Thành viên mới',
                 avatar: `https://placehold.co/100x100/06b6d4/ffffff?text=${username.charAt(0).toUpperCase()}`
             };
@@ -1230,7 +1347,7 @@
             localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
 
             loginUserSession(newUser);
-            showToast('Đăng ký tài khoản thành công! Tặng ngay 100.000đ số dư.', 'success');
+            showToast('Đăng ký tài khoản thành công!', 'success');
         }
 
         // Handle Forgot Password
@@ -1246,6 +1363,15 @@
             currentUser = userObj;
             localStorage.setItem(STORAGE_CURRENT_USER_KEY, JSON.stringify(currentUser));
             hideAuthScreen();
+            
+            // Toggle Admin Navigation Visibility
+            const adminSection = document.getElementById('admin-nav-section');
+            if (currentUser.username === 'adminkit' || currentUser.role === 'Administrator') {
+                adminSection.classList.remove('hidden');
+            } else {
+                adminSection.classList.add('hidden');
+            }
+
             syncUserDataToUI();
             loadUserOrders();
             selectPlatform('facebook');
@@ -1295,39 +1421,7 @@
             document.getElementById('deposit-syntax').innerText = `NAP ${currentUser.username.toUpperCase()}`;
         }
 
-        // Update User Profile Info
-        function updateProfileInfo(e) {
-            e.preventDefault();
-            const newName = document.getElementById('edit-fullname').value.trim();
-            const newEmail = document.getElementById('edit-email').value.trim();
-
-            currentUser.fullname = newName;
-            currentUser.email = newEmail;
-
-            saveCurrentUserToDatabase();
-            syncUserDataToUI();
-            showToast('Đã cập nhật thông tin hồ sơ!', 'success');
-        }
-
-        // Update User Password
-        function updatePassword(e) {
-            e.preventDefault();
-            const newPass = document.getElementById('new-pass').value;
-            const confirmPass = document.getElementById('confirm-new-pass').value;
-
-            if (newPass !== confirmPass) {
-                showToast('Mật khẩu xác nhận không khớp!', 'error');
-                return;
-            }
-
-            currentUser.password = newPass;
-            saveCurrentUserToDatabase();
-            document.getElementById('new-pass').value = '';
-            document.getElementById('confirm-new-pass').value = '';
-            showToast('Đã đổi mật khẩu thành công!', 'success');
-        }
-
-        // Helper: Save current user back to DB list
+        // Save Current Active User to DB
         function saveCurrentUserToDatabase() {
             localStorage.setItem(STORAGE_CURRENT_USER_KEY, JSON.stringify(currentUser));
             const users = JSON.parse(localStorage.getItem(STORAGE_USERS_KEY) || '[]');
@@ -1338,7 +1432,7 @@
             }
         }
 
-        // Load Active User Orders History
+        // Load Active User Orders
         function loadUserOrders() {
             const allOrders = JSON.parse(localStorage.getItem(STORAGE_ORDERS_KEY) || '[]');
             orderHistoryList = allOrders.filter(o => o.user === currentUser.username);
@@ -1347,7 +1441,7 @@
             renderHistoryOrdersTable();
         }
 
-        // Sidebar Navigation Setup
+        // Sidebar Navigation Setup & Admin Security Check
         function setupSidebarToggle() {
             const sidebar = document.getElementById('sidebar');
             document.getElementById('open-sidebar-btn').addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
@@ -1359,6 +1453,12 @@
                     const targetTab = link.getAttribute('data-tab');
                     const platformParam = link.getAttribute('data-platform');
 
+                    // Security check for Admin Panel
+                    if (targetTab === 'admin-users' && currentUser.username !== 'adminkit' && currentUser.role !== 'Administrator') {
+                        showToast('Quyền truy cập bị từ chối! Chỉ Admin mới được vào mục này.', 'error');
+                        return;
+                    }
+
                     document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active', 'bg-gradient-to-r', 'from-cyan-500/20', 'to-indigo-500/20', 'border-l-4', 'border-cyan-400', 'text-white'));
                     link.classList.add('active', 'bg-gradient-to-r', 'from-cyan-500/20', 'to-indigo-500/20', 'border-l-4', 'border-cyan-400', 'text-white');
 
@@ -1369,10 +1469,133 @@
         }
 
         function switchTab(tabId, platform = null) {
+            // Check Admin Authorization for Tab
+            if (tabId === 'admin-users' && currentUser.username !== 'adminkit' && currentUser.role !== 'Administrator') {
+                showToast('Chỉ Admin mới có quyền mở quản lý thành viên!', 'error');
+                return;
+            }
+
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             const targetEl = document.getElementById(`tab-${tabId}`);
             if (targetEl) targetEl.classList.remove('hidden');
+
+            if (tabId === 'admin-users') {
+                renderAdminUsersTable();
+            }
+
             if (platform) selectPlatform(platform);
+        }
+
+        // Render Admin User Management Table
+        function renderAdminUsersTable() {
+            const tbody = document.getElementById('admin-users-tbody');
+            const searchVal = (document.getElementById('admin-user-search-input')?.value || '').toLowerCase();
+            const users = JSON.parse(localStorage.getItem(STORAGE_USERS_KEY) || '[]');
+
+            const filtered = users.filter(u => 
+                u.username.toLowerCase().includes(searchVal) || 
+                u.fullname.toLowerCase().includes(searchVal) || 
+                u.email.toLowerCase().includes(searchVal)
+            );
+
+            tbody.innerHTML = filtered.map(u => `
+                <tr class="hover:bg-slate-800/40 transition">
+                    <td class="p-3.5 flex items-center gap-2">
+                        <img src="${u.avatar}" class="w-7 h-7 rounded-full border border-cyan-500 object-cover">
+                        <span class="font-bold text-slate-200">${u.fullname}</span>
+                    </td>
+                    <td class="p-3.5 font-bold text-cyan-400">@${u.username}</td>
+                    <td class="p-3.5 text-slate-400">${u.email}</td>
+                    <td class="p-3.5 font-extrabold text-emerald-400">${u.balance.toLocaleString('vi-VN')} đ</td>
+                    <td class="p-3.5 text-slate-300 font-semibold">${(u.totalDeposited || 0).toLocaleString('vi-VN')} đ</td>
+                    <td class="p-3.5">
+                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${u.username === 'adminkit' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30'}">
+                            ${u.role || 'Thành viên'}
+                        </span>
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="openAdminBalanceModal('${u.username}')" class="px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black rounded-lg text-xs shadow-lg transition flex items-center gap-1.5 mx-auto">
+                            <i class="fa-solid fa-plus-circle"></i> Cộng / Trừ tiền
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Không tìm thấy thành viên nào phù hợp.</td></tr>`;
+            }
+        }
+
+        // Open Modal to Adjust User Balance
+        function openAdminBalanceModal(username) {
+            const users = JSON.parse(localStorage.getItem(STORAGE_USERS_KEY) || '[]');
+            const user = users.find(u => u.username === username);
+
+            if (!user) {
+                showToast('Không tìm thấy tài khoản này!', 'error');
+                return;
+            }
+
+            document.getElementById('modal-target-username').value = user.username;
+            document.getElementById('modal-display-username').innerText = `@${user.username} (${user.fullname})`;
+            document.getElementById('modal-display-balance').innerText = `${user.balance.toLocaleString('vi-VN')} đ`;
+            document.getElementById('modal-amount-input').value = '';
+            document.getElementById('modal-note-input').value = '';
+
+            document.getElementById('admin-balance-modal').classList.remove('hidden');
+        }
+
+        function closeAdminBalanceModal() {
+            document.getElementById('admin-balance-modal').classList.add('hidden');
+        }
+
+        // Handle Admin Adjust Balance Form Submit
+        function handleAdminAdjustBalanceSubmit(e) {
+            e.preventDefault();
+            const targetUsername = document.getElementById('modal-target-username').value;
+            const actionType = document.getElementById('modal-action-type').value;
+            const amount = parseInt(document.getElementById('modal-amount-input').value) || 0;
+            const note = document.getElementById('modal-note-input').value.trim();
+
+            if (amount <= 0) {
+                showToast('Số tiền nhập vào phải lớn hơn 0!', 'error');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem(STORAGE_USERS_KEY) || '[]');
+            const idx = users.findIndex(u => u.username === targetUsername);
+
+            if (idx === -1) {
+                showToast('Lỗi: Người dùng không tồn tại!', 'error');
+                return;
+            }
+
+            if (actionType === 'ADD') {
+                users[idx].balance += amount;
+                users[idx].totalDeposited = (users[idx].totalDeposited || 0) + amount;
+                showToast(`Đã cộng thành công ${amount.toLocaleString('vi-VN')}đ cho tài khoản @${targetUsername}`, 'success');
+            } else {
+                if (users[idx].balance < amount) {
+                    showToast(`Số dư tài khoản chỉ còn ${users[idx].balance.toLocaleString('vi-VN')}đ, không đủ để trừ!`, 'error');
+                    return;
+                }
+                users[idx].balance -= amount;
+                showToast(`Đã trừ ${amount.toLocaleString('vi-VN')}đ khỏi tài khoản @${targetUsername}`, 'info');
+            }
+
+            // Save to DB
+            localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
+
+            // If the adjusted user is currently logged in, sync session
+            if (currentUser.username === targetUsername) {
+                currentUser.balance = users[idx].balance;
+                currentUser.totalDeposited = users[idx].totalDeposited;
+                localStorage.setItem(STORAGE_CURRENT_USER_KEY, JSON.stringify(currentUser));
+                syncUserDataToUI();
+            }
+
+            closeAdminBalanceModal();
+            renderAdminUsersTable();
         }
 
         // Select SMM Platform
