@@ -71,7 +71,7 @@
 <body class="bg-slate-950 text-slate-100 light:bg-slate-100 light:text-slate-800 antialiased min-h-screen flex flex-col transition-colors duration-200">
 
     <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-md w-full pointer-events-none"></div>
 
     <!-- ==================== ADMIN ADD/DEDUCT BALANCE MODAL ==================== -->
     <div id="admin-balance-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
@@ -496,13 +496,13 @@
                         </div>
                     </div>
 
-                    <!-- Recent Orders -->
+                    <!-- PUBLIC REALTIME ORDERS (HIỂN THỊ CHO TẤT CẢ MỌI NGƯỜI) -->
                     <div class="glass-card rounded-xl p-5 border border-slate-800 light:border-slate-200">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg font-bold text-slate-200 light:text-slate-800 flex items-center gap-2">
-                                <i class="fa-solid fa-clock-rotate-left text-cyan-400"></i> Đơn Hàng Gần Đây
+                                <i class="fa-solid fa-bolt-lightning text-amber-400 animate-pulse"></i> Đơn Hàng Đang Chạy (Realtime Toàn Hệ Thống)
                             </h2>
-                            <button onclick="switchTab('orders')" class="text-xs text-cyan-400 hover:underline font-semibold">Xem tất cả &rarr;</button>
+                            <button onclick="switchTab('orders')" class="text-xs text-cyan-400 hover:underline font-semibold">Đơn hàng cá nhân &rarr;</button>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm text-left text-slate-300 light:text-slate-700">
@@ -512,7 +512,7 @@
                                         <th class="p-3">Khách hàng</th>
                                         <th class="p-3">Nền tảng</th>
                                         <th class="p-3">Dịch vụ</th>
-                                        <th class="p-3">Thông tin / Link</th>
+                                        <th class="p-3">Username / Link</th>
                                         <th class="p-3">Tổng tiền</th>
                                         <th class="p-3">Trạng thái</th>
                                     </tr>
@@ -561,8 +561,8 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700 mb-2" id="label-target-link">3. Link Bài Viết / ID Tài Khoản</label>
-                                <input type="text" id="target-link-input" placeholder="Nhập đường dẫn link hoặc ID đối tượng..." class="w-full px-4 py-3 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-slate-200 light:text-slate-800 text-sm focus:outline-none focus:border-cyan-500 font-medium transition">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700 mb-2" id="label-target-link">3. Username Locket / Link Bài Viết</label>
+                                <input type="text" id="target-link-input" placeholder="Nhập Username Locket hoặc Link tài khoản..." class="w-full px-4 py-3 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-slate-200 light:text-slate-800 text-sm focus:outline-none focus:border-cyan-500 font-medium transition">
                             </div>
 
                             <div id="comment-container" class="hidden">
@@ -625,7 +625,7 @@
                                     <i class="fa-solid fa-triangle-exclamation"></i> LƯU Ý QUAN TRỌNG
                                 </h4>
                                 <ul class="list-disc list-inside space-y-1 text-slate-300 light:text-slate-700 leading-relaxed">
-                                    <li>Cung cấp chính xác link hoặc ID tài khoản.</li>
+                                    <li>Cung cấp chính xác Username Locket hoặc Link tài khoản.</li>
                                     <li>Thời gian xử lý phụ thuộc vào từng máy chủ.</li>
                                 </ul>
                             </div>
@@ -688,8 +688,8 @@
                 <div id="tab-orders" class="tab-content hidden space-y-5">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <h1 class="text-xl font-extrabold text-slate-100 light:text-slate-800">Lịch Sử Đơn Hàng</h1>
-                            <p class="text-xs text-slate-400">Theo dõi tiến độ đơn hàng thời gian thực</p>
+                            <h1 class="text-xl font-extrabold text-slate-100 light:text-slate-800">Lịch Sử Đơn Hàng Cá Nhân</h1>
+                            <p class="text-xs text-slate-400">Theo dõi tiến độ đơn hàng thời gian thực của bạn</p>
                         </div>
                     </div>
 
@@ -701,7 +701,7 @@
                                         <th class="p-3.5">Mã đơn</th>
                                         <th class="p-3.5">Nền tảng</th>
                                         <th class="p-3.5">Dịch vụ & Server</th>
-                                        <th class="p-3.5">Đường dẫn / Link</th>
+                                        <th class="p-3.5">Username Locket / Link</th>
                                         <th class="p-3.5">Số lượng</th>
                                         <th class="p-3.5">Tổng tiền</th>
                                         <th class="p-3.5">Trạng thái</th>
@@ -842,7 +842,7 @@
                                         <th class="p-3.5">Khách đặt</th>
                                         <th class="p-3.5">Nền tảng</th>
                                         <th class="p-3.5">Dịch vụ</th>
-                                        <th class="p-3.5">Thông tin / Link</th>
+                                        <th class="p-3.5">Username Locket / Link</th>
                                         <th class="p-3.5">Tổng tiền</th>
                                         <th class="p-3.5">Ngày đặt</th>
                                         <th class="p-3.5">Trạng thái</th>
@@ -883,7 +883,7 @@
                     {
                         id: 'locket_gold_1year',
                         name: '👑 Locket Gold 1 Năm',
-                        targetLabel: 'Username / Email Locket',
+                        targetLabel: 'Username Locket / Email',
                         servers: [
                             { id: 'l1', name: 'Server Kích Hoạt Nhanh 1 Năm', price: 100000, min: 1, max: 10, speed: '5 - 30 phút', warranty: 'Bảo hành 1 năm' }
                         ]
@@ -891,7 +891,7 @@
                     {
                         id: 'locket_gold_forever',
                         name: '💎 Locket Gold Vĩnh Viễn',
-                        targetLabel: 'Username / Email Locket',
+                        targetLabel: 'Username Locket / Email',
                         servers: [
                             { id: 'l2', name: 'Server Kích Hoạt Vĩnh Viễn VIP', price: 150000, min: 1, max: 10, speed: '5 - 30 phút', warranty: 'Bảo hành vĩnh viễn' }
                         ]
@@ -993,12 +993,12 @@
                 const data = snapshot.val() || {};
                 const orders = Object.values(data).reverse();
 
-                // Kiểm tra xem có đơn hàng mới được tạo không để thông báo cho Admin
+                // KIỂM TRA ĐƠN MỚI TẠO ĐỂ THÔNG BÁO CHO ADMIN HIỂN THỊ ĐẦY ĐỦ USERNAME LOCKET/LINK
                 if (previousOrderCount !== null && orders.length > previousOrderCount) {
                     if (currentUser && (currentUser.username === 'adminkit' || currentUser.role === 'Administrator')) {
                         const newOrder = orders[0];
                         playNotificationSound();
-                        showToast(`🔔 CÓ ĐƠN MỚI! #${newOrder.id} - Khách: @${newOrder.user}`, 'success');
+                        showAdminOrderNotificationModal(newOrder);
                     }
                 }
                 previousOrderCount = orders.length;
@@ -1008,7 +1008,22 @@
             });
         }
 
-        // Âm thanh chuông báo có đơn mới dành cho Admin
+        // BẢNG THÔNG BÁO CHI TIẾT ĐƠN MỚI DÀNH CHO ADMIN
+        function showAdminOrderNotificationModal(order) {
+            const toastMessage = `
+                <div class="space-y-1">
+                    <div class="font-extrabold text-sm text-amber-300">🔔 ĐƠN HÀNG MỚI BẮT CẦN XỬ LÝ!</div>
+                    <div><b>Mã đơn:</b> <span class="text-cyan-400">${order.id}</span></div>
+                    <div><b>Khách hàng:</b> <span class="text-amber-400">@${order.user}</span></div>
+                    <div><b>Dịch vụ:</b> ${order.service}</div>
+                    <div class="bg-slate-950/80 p-2 rounded border border-amber-500/30 font-mono text-cyan-300 text-xs break-all mt-1">
+                        <b>Target/Username:</b> ${order.link}
+                    </div>
+                </div>
+            `;
+            showToast(toastMessage, 'success', 8000);
+        }
+
         function playNotificationSound() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1272,7 +1287,7 @@
             const qty = parseInt(document.getElementById('order-quantity-input').value);
 
             if (!targetLink) {
-                showToast('Vui lòng nhập Link hoặc ID!', 'error');
+                showToast('Vui lòng nhập Username Locket hoặc Link tài khoản!', 'error');
                 return;
             }
 
@@ -1311,7 +1326,6 @@
             });
         }
 
-        // ADMIN ĐÁNH DẤU HOÀN THÀNH ĐƠN HÀNG
         function markOrderComplete(orderId) {
             db.ref('orders/' + orderId).update({ status: 'Hoàn thành' }, error => {
                 if (!error) {
@@ -1323,41 +1337,36 @@
         function renderOrdersTables() {
             if (!currentUser) return;
 
-            const isAdmin = currentUser.username === 'adminkit' || currentUser.role === 'Administrator';
-            
-            // Admin thấy tất cả đơn hàng, Khách chỉ thấy đơn của mình
-            const visibleOrders = isAdmin ? globalOrdersList : globalOrdersList.filter(o => o.user === currentUser.username);
-
-            // 1. Render Dashboard Table
+            // 1. DASHBOARD REALTIME PUBLIC ORDERS (CÔNG KHAI CHO TẤT CẢ MỌI NGƯỜI THẤY)
             const dashTbody = document.getElementById('dashboard-orders-tbody');
             if (dashTbody) {
-                dashTbody.innerHTML = visibleOrders.slice(0, 6).map(o => `
+                dashTbody.innerHTML = globalOrdersList.slice(0, 8).map(o => `
                     <tr class="hover:bg-slate-800/40 transition">
                         <td class="p-3 font-bold text-cyan-400">${o.id}</td>
                         <td class="p-3 font-bold text-amber-400">@${o.user}</td>
                         <td class="p-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded uppercase ${SMM_SERVICES_DATA[o.platform]?.badgeClass || ''}">${o.platform}</span></td>
                         <td class="p-3 truncate max-w-[180px]">${o.service}</td>
-                        <td class="p-3 text-slate-300 font-mono text-xs select-all">${o.link}</td>
+                        <td class="p-3 text-cyan-300 font-mono text-xs select-all bg-slate-900/60 p-1.5 rounded border border-slate-800/60">${o.link}</td>
                         <td class="p-3 font-bold text-emerald-400">${o.total.toLocaleString('vi-VN')} đ</td>
                         <td class="p-3">${getStatusBadge(o.status)}</td>
                     </tr>
                 `).join('');
 
-                if (visibleOrders.length === 0) {
-                    dashTbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Chưa có đơn hàng nào.</td></tr>`;
+                if (globalOrdersList.length === 0) {
+                    dashTbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Chưa có đơn hàng nào trên hệ thống.</td></tr>`;
                 }
             }
 
-            // 2. Render History Table (Khách hàng)
+            // 2. LỊCH SỬ ĐƠN HÀNG CÁ NHÂN (KHÁCH XEM ĐƠN CỦA CHÍNH MÌNH)
             const histTbody = document.getElementById('history-orders-tbody');
             if (histTbody) {
-                const userOrders = globalOrdersList.filter(o => o.user === currentUser.username);
-                histTbody.innerHTML = userOrders.map(o => `
+                const myOrders = globalOrdersList.filter(o => o.user === currentUser.username);
+                histTbody.innerHTML = myOrders.map(o => `
                     <tr class="hover:bg-slate-800/40 transition">
                         <td class="p-3.5 font-bold text-cyan-400">${o.id}</td>
                         <td class="p-3.5"><span class="px-2 py-0.5 text-[10px] font-bold rounded uppercase ${SMM_SERVICES_DATA[o.platform]?.badgeClass || ''}">${o.platform}</span></td>
                         <td class="p-3.5 font-semibold text-slate-200">${o.service}</td>
-                        <td class="p-3.5 text-slate-300 font-mono select-all">${o.link}</td>
+                        <td class="p-3.5 text-cyan-300 font-mono text-xs select-all bg-slate-900/60 p-1.5 rounded border border-slate-800/60">${o.link}</td>
                         <td class="p-3.5 font-bold">${o.qty}</td>
                         <td class="p-3.5 font-bold text-emerald-400">${o.total.toLocaleString('vi-VN')} đ</td>
                         <td class="p-3.5">${getStatusBadge(o.status)}</td>
@@ -1365,12 +1374,12 @@
                     </tr>
                 `).join('');
 
-                if (userOrders.length === 0) {
+                if (myOrders.length === 0) {
                     histTbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500">Bạn chưa tạo đơn hàng nào.</td></tr>`;
                 }
             }
 
-            // 3. Render Admin Orders Management Table
+            // 3. ADMIN BẢNG QUẢN LÝ TẤT CẢ ĐƠN HÀNG
             const adminTbody = document.getElementById('admin-orders-tbody');
             if (adminTbody) {
                 adminTbody.innerHTML = globalOrdersList.map(o => `
@@ -1386,7 +1395,7 @@
                         <td class="p-3.5 text-center">
                             ${o.status === 'Đang xử lý' ? `
                                 <button onclick="markOrderComplete('${o.id}')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs shadow transition flex items-center gap-1 mx-auto">
-                                    <i class="fa-solid fa-check"></i> Đánh dấu Hoàn thành
+                                    <i class="fa-solid fa-check"></i> Hoàn thành
                                 </button>
                             ` : `
                                 <span class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-circle-check"></i> Đã hoàn thành</span>
@@ -1400,9 +1409,9 @@
                 }
             }
 
-            // Thống kê số liệu trên Dashboard
-            const myOrdersCount = isAdmin ? globalOrdersList.length : globalOrdersList.filter(o => o.user === currentUser.username).length;
-            const processingCount = isAdmin ? globalOrdersList.filter(o => o.status === 'Đang xử lý').length : globalOrdersList.filter(o => o.user === currentUser.username && o.status === 'Đang xử lý').length;
+            // Cập nhật thẻ thông số
+            const myOrdersCount = globalOrdersList.filter(o => o.user === currentUser.username).length;
+            const processingCount = globalOrdersList.filter(o => o.status === 'Đang xử lý').length;
 
             document.getElementById('stat-total-orders').innerText = myOrdersCount;
             document.getElementById('stat-processing').innerText = `${processingCount} Đơn`;
@@ -1485,7 +1494,7 @@
 
             if (!category) return;
 
-            document.getElementById('label-target-link').innerText = category.targetLabel || 'Link Bài Viết / ID Tài Khoản';
+            document.getElementById('label-target-link').innerText = category.targetLabel || 'Username Locket / Link Bài Viết';
             const serverContainer = document.getElementById('server-options-container');
             serverContainer.innerHTML = category.servers.map((srv, index) => `
                 <label onclick="onServerSelect('${srv.id}')" class="server-option-label block p-3.5 rounded-xl border border-slate-700/80 bg-slate-900/60 hover:bg-slate-800 cursor-pointer transition relative">
@@ -1568,7 +1577,7 @@
             qrBox.appendChild(img);
         }
 
-        function showToast(message, type = 'info') {
+        function showToast(message, type = 'info', duration = 3500) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             let bgClass = 'bg-slate-900 border-cyan-500 text-cyan-400';
@@ -1577,15 +1586,15 @@
             if (type === 'success') { bgClass = 'bg-slate-900 border-emerald-500 text-emerald-400'; icon = 'fa-circle-check'; }
             else if (type === 'error') { bgClass = 'bg-slate-900 border-rose-500 text-rose-400'; icon = 'fa-circle-exclamation'; }
 
-            toast.className = `pointer-events-auto flex items-center gap-3 p-4 rounded-xl border shadow-2xl backdrop-blur transform transition-all duration-300 translate-y-2 opacity-0 ${bgClass}`;
-            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="text-xs font-semibold text-slate-100">${message}</span>`;
+            toast.className = `pointer-events-auto flex items-start gap-3 p-4 rounded-xl border shadow-2xl backdrop-blur transform transition-all duration-300 translate-y-2 opacity-0 ${bgClass}`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg mt-0.5"></i><div class="text-xs font-semibold text-slate-100 flex-1">${message}</div>`;
 
             container.appendChild(toast);
             setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 50);
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'translate-y-2');
                 setTimeout(() => toast.remove(), 300);
-            }, 3500);
+            }, duration);
         }
 
         function copyToClipboard(text) {
