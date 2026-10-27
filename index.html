@@ -813,6 +813,12 @@
                                         <div id="qrcode-box" class="p-2 bg-white rounded"></div>
                                     </div>
                                 </div>
+                                <!-- DÒNG LƯU Ý MỚI THÊM VÀO -->
+                                <div class="p-3 bg-rose-500/10 rounded-xl border border-rose-500/30 text-center">
+                                    <p class="text-xs font-bold text-rose-400 leading-relaxed">
+                                        ⚠️ Vui lòng nhập đúng nội dung chuyển khoản để hệ thống tự động cộng tiền vào tài khoản của bạn. Nếu không, vui lòng liên hệ Admin để được hỗ trợ.
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
@@ -1145,7 +1151,6 @@
                 if (currentUser && data[currentUser.username]) {
                     const latestUserData = data[currentUser.username];
                     
-                    // Phát hiện nếu số dư tăng lên (Nạp tiền thành công từ SePay hoặc Admin)
                     if (previousBalance !== null && latestUserData.balance > previousBalance) {
                         const addedAmount = latestUserData.balance - previousBalance;
                         playNotificationSound();
@@ -1375,7 +1380,6 @@
             generateBankQR();
         }
 
-        // HÀM MÔ PHỎNG NẠP TIỀN TỰ ĐỘNG (DÙNG ĐỂ TEST TRÊN WEB)
         function simulateAutoDeposit() {
             if (!currentUser) return;
             const amount = parseInt(document.getElementById('test-deposit-amount').value) || 0;
@@ -1882,7 +1886,6 @@
             tbody.innerHTML = html;
         }
 
-        // HÀM TẠO MÃ QR TỰ ĐỘNG CẬP NHẬT KHI THAY ĐỔI SỐ TIỀN HOẶC TÀI KHOẢN
         function generateBankQR() {
             const qrBox = document.getElementById('qrcode-box');
             if (!qrBox) return;
