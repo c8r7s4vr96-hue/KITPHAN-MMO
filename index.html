@@ -25,6 +25,22 @@
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif']
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(-8px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        zoomIn: { '0%': { opacity: '0', transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '20%, 60%': { transform: 'translateX(-6px)' },
+                            '40%, 80%': { transform: 'translateX(6px)' }
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'zoom-in': 'zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'shake': 'shake 0.4s ease-in-out'
                     }
                 }
             }
@@ -40,6 +56,14 @@
     <!-- FIREBASE SDKs (v9 Compat Mode) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+    <!-- EMAILJS SDK INTEGRATION -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          emailjs.init("rZGL8dSRTZ1IME-PD");
+       })();
+    </script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -58,21 +82,40 @@
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .light .glass-card {
             background: rgba(255, 255, 255, 0.85);
             border: 1px solid rgba(0, 0, 0, 0.08);
         }
+
+        .tab-content {
+            animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Canvas hạt rơi tràn toàn màn hình */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 light:bg-slate-100 light:text-slate-800 antialiased min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- Canvas cho hiệu ứng hạt rơi -->
+    <canvas id="particle-canvas"></canvas>
 
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-md w-full pointer-events-none"></div>
 
     <!-- ==================== MODAL THÔNG BÁO MUA HÀNG THÀNH CÔNG ==================== -->
     <div id="order-success-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="glass-card rounded-2xl p-6 border border-emerald-500/30 max-w-md w-full shadow-2xl space-y-5 text-center relative animate-fade-in">
+        <div class="glass-card rounded-2xl p-6 border border-emerald-500/30 max-w-md w-full shadow-2xl space-y-5 text-center relative animate-zoom-in">
             <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-3xl border border-emerald-500/40">
                 <i class="fa-solid fa-circle-check"></i>
             </div>
@@ -102,10 +145,10 @@
             </div>
 
             <div class="flex items-center gap-3 pt-2">
-                <a href="https://zalo.me/0397867242" target="_blank" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-extrabold text-xs shadow-lg flex items-center justify-center gap-2 transition">
+                <a href="https://zalo.me/0397867242" target="_blank" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-extrabold text-xs shadow-lg flex items-center justify-center gap-2 transition active:scale-95">
                     <i class="fa-solid fa-headset text-sm"></i> Liên Hệ Admin Zalo
                 </a>
-                <button onclick="closeSuccessModal()" class="py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition">
+                <button onclick="closeSuccessModal()" class="py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition active:scale-95">
                     Đóng
                 </button>
             </div>
@@ -114,7 +157,7 @@
 
     <!-- ==================== ADMIN ADD/DEDUCT BALANCE MODAL ==================== -->
     <div id="admin-balance-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="glass-card rounded-2xl p-6 border border-slate-700 max-w-md w-full shadow-2xl space-y-4 relative">
+        <div class="glass-card rounded-2xl p-6 border border-slate-700 max-w-md w-full shadow-2xl space-y-4 relative animate-zoom-in">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="font-extrabold text-base text-slate-100 flex items-center gap-2">
                     <i class="fa-solid fa-coins text-amber-400"></i> Điều Chỉnh Số Dư Thành Viên
@@ -156,7 +199,7 @@
 
                 <div class="pt-2 flex items-center justify-end gap-2">
                     <button type="button" onclick="closeAdminBalanceModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300">Hủy</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-xs font-extrabold text-slate-950 shadow">XÁC NHẬN CẬP NHẬT</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-xs font-extrabold text-slate-950 shadow active:scale-95 transition">XÁC NHẬN CẬP NHẬT</button>
                 </div>
             </form>
         </div>
@@ -164,13 +207,13 @@
 
     <!-- ==================== AUTHENTICATION SCREEN ==================== -->
     <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4 overflow-y-auto">
-        <div class="relative w-full max-w-md">
+        <div class="relative w-full max-w-md animate-fade-in">
             <div class="absolute -top-10 -left-10 w-40 h-40 bg-cyan-500/30 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-500/30 rounded-full blur-3xl pointer-events-none"></div>
 
             <div class="glass-card rounded-2xl p-8 border border-slate-800 shadow-2xl relative z-10">
                 <div class="text-center mb-6">
-                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-500 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-cyan-500/20">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-500 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-cyan-500/20 transform hover:rotate-6 transition">
                         <i class="fa-solid fa-bolt text-white text-2xl"></i>
                     </div>
                     <h2 class="text-2xl font-black gradient-text">KIT PHAN MMO</h2>
@@ -179,27 +222,54 @@
 
                 <!-- FORM 1: LOGIN -->
                 <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                    
+                    <!-- THÔNG BÁO LỖI SAI TÀI KHOẢN HOẶC MẬT KHẨU -->
+                    <div id="login-error-alert" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/40 text-rose-400 text-xs flex items-center gap-3 animate-fade-in">
+                        <i class="fa-solid fa-triangle-exclamation text-base flex-shrink-0"></i>
+                        <span id="login-error-text" class="font-semibold leading-relaxed">Tên đăng nhập hoặc mật khẩu không chính xác!</span>
+                    </div>
+
                     <div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Tên đăng nhập / Email</label>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Tên đăng nhập hoặc Gmail</label>
                         <div class="relative">
                             <i class="fa-solid fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-                            <input type="text" id="login-username" required placeholder="Nhập username..." class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-cyan-500 text-slate-100">
+                            <input type="text" id="login-username" required placeholder="Nhập username hoặc gmail..." class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-cyan-500 text-slate-100 transition">
                         </div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Mật khẩu</label>
                         <div class="relative">
                             <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-                            <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-cyan-500 text-slate-100">
+                            <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-9 pr-10 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-cyan-500 text-slate-100 transition">
+                            <button type="button" onclick="togglePasswordVisibility('login-password', 'eye-login-icon')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 focus:outline-none">
+                                <i class="fa-solid fa-eye" id="eye-login-icon"></i>
+                            </button>
                         </div>
                     </div>
+
+                    <!-- CAPTCHA -->
+                    <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="font-bold text-cyan-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-robot"></i> Xác thực người máy:
+                            </span>
+                            <button type="button" onclick="generateCaptcha()" class="text-slate-400 hover:text-white text-[11px]">
+                                <i class="fa-solid fa-rotate-right mr-1"></i>Đổi câu hỏi
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1.5 bg-slate-800 text-amber-300 font-mono font-bold rounded-lg text-sm border border-slate-700" id="captcha-question">...</span>
+                            <input type="number" id="captcha-answer" required placeholder="Kết quả?" class="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs font-bold text-emerald-400 focus:outline-none focus:border-cyan-500">
+                        </div>
+                    </div>
+
                     <div class="flex items-center justify-between text-xs">
                         <label class="flex items-center gap-2 cursor-pointer text-slate-400">
                             <input type="checkbox" class="rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-0"> Ghi nhớ đăng nhập
                         </label>
                         <button type="button" onclick="switchAuthMode('forgot')" class="text-cyan-400 hover:underline font-semibold">Quên mật khẩu?</button>
                     </div>
-                    <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-extrabold text-sm shadow-lg shadow-cyan-500/20 active:scale-95 transition">
+                    <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-extrabold text-sm shadow-lg shadow-cyan-500/20 active:scale-95 transition transform">
                         ĐĂNG NHẬP NGAY
                     </button>
                     <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-[11px] text-slate-400">
@@ -226,13 +296,23 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Mật khẩu</label>
-                        <input type="password" id="reg-password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-cyan-500 text-slate-100">
+                        <div class="relative">
+                            <input type="password" id="reg-password" required placeholder="••••••••" class="w-full pl-4 pr-10 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-cyan-500 text-slate-100">
+                            <button type="button" onclick="togglePasswordVisibility('reg-password', 'eye-reg-icon')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 focus:outline-none">
+                                <i class="fa-solid fa-eye" id="eye-reg-icon"></i>
+                            </button>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Xác nhận mật khẩu</label>
-                        <input type="password" id="reg-confirm-password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-cyan-500 text-slate-100">
+                        <div class="relative">
+                            <input type="password" id="reg-confirm-password" required placeholder="••••••••" class="w-full pl-4 pr-10 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-cyan-500 text-slate-100">
+                            <button type="button" onclick="togglePasswordVisibility('reg-confirm-password', 'eye-reg-confirm-icon')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 focus:outline-none">
+                                <i class="fa-solid fa-eye" id="eye-reg-confirm-icon"></i>
+                            </button>
+                        </div>
                     </div>
-                    <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-extrabold text-sm shadow-lg shadow-cyan-500/20 active:scale-95 transition">
+                    <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-extrabold text-sm shadow-lg shadow-cyan-500/20 active:scale-95 transition transform">
                         TẠO TÀI KHOẢN MỚI
                     </button>
                     <p class="text-xs text-center text-slate-400 pt-2">
@@ -240,17 +320,35 @@
                     </p>
                 </form>
 
-                <!-- FORM 3: FORGOT PASSWORD -->
+                <!-- FORM 3: FORGOT PASSWORD (EMAILJS INTEGRATION) -->
                 <form id="form-forgot" onsubmit="handleForgot(event)" class="space-y-4 hidden">
-                    <p class="text-xs text-slate-300 leading-relaxed">Nhập email đăng ký của bạn. Hệ thống sẽ gửi hướng dẫn khôi phục mật khẩu.</p>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Email đã đăng ký</label>
-                        <input type="email" id="forgot-email" required placeholder="your-email@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-cyan-500 text-slate-100">
+                    <p class="text-xs text-slate-300 leading-relaxed">Nhập email đăng ký của bạn. Hệ thống sẽ gửi mã OTP xác nhận về Gmail.</p>
+                    
+                    <div id="forgot-step-1" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Email đã đăng ký</label>
+                            <input type="email" id="forgot-email" placeholder="your-email@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-cyan-500 text-slate-100">
+                        </div>
+                        <button type="button" onclick="sendOtpToEmail()" class="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-sm shadow transition active:scale-95">
+                            GỬI MÃ XÁC THỰC VỀ GMAIL
+                        </button>
                     </div>
-                    <button type="submit" class="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-sm shadow transition">
-                        GỬI YÊU CẦU KHÔI PHỤC
-                    </button>
-                    <p class="text-xs text-center text-slate-400">
+
+                    <div id="forgot-step-2" class="space-y-3 hidden">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Mã xác thực OTP (6 số)</label>
+                            <input type="text" id="forgot-otp-input" placeholder="Nhập 6 số ngẫu nhiên gửi về mail..." class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-cyan-400 font-bold focus:outline-none focus:border-cyan-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Mật khẩu mới</label>
+                            <input type="password" id="forgot-new-password" placeholder="Nhập mật khẩu mới..." class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-cyan-500 text-slate-100">
+                        </div>
+                        <button type="submit" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow transition active:scale-95">
+                            XÁC NHẬN ĐỔI MẬT KHẨU
+                        </button>
+                    </div>
+
+                    <p class="text-xs text-center text-slate-400 pt-2">
                         <button type="button" onclick="switchAuthMode('login')" class="text-cyan-400 font-bold hover:underline">&larr; Quay lại Đăng nhập</button>
                     </p>
                 </form>
@@ -259,7 +357,7 @@
     </div>
 
     <!-- ==================== MAIN DASHBOARD LAYOUT ==================== -->
-    <div id="main-app" class="flex h-screen overflow-hidden">
+    <div id="main-app" class="flex h-screen overflow-hidden hidden">
 
         <!-- Sidebar Navigation -->
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-900/95 light:bg-white border-r border-slate-800 light:border-slate-200 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col justify-between">
@@ -390,7 +488,7 @@
             </div>
 
             <div class="p-4 border-t border-slate-800 light:border-slate-200">
-                <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 font-medium text-sm transition-all border border-rose-500/20">
+                <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 font-medium text-sm transition-all border border-rose-500/20 active:scale-95">
                     <i class="fa-solid fa-right-from-bracket"></i>
                     <span>Đăng Xuất</span>
                 </button>
@@ -437,10 +535,10 @@
                             <h1 class="text-2xl md:text-3xl font-extrabold mb-2">Chào mừng trở lại, <span id="welcome-fullname">Người dùng</span>!</h1>
                             <p class="text-sm text-cyan-100 leading-relaxed mb-4">Hệ thống hỗ trợ xử lý mở khóa, dame tài khoản và kích hoạt Locket Gold cực nhanh, bảo hành lâu dài và bảo mật tối đa.</p>
                             <div class="flex flex-wrap gap-3">
-                                <button onclick="switchTab('order', 'locket')" class="px-4 py-2 bg-white text-slate-900 hover:bg-cyan-50 font-bold rounded-lg text-sm shadow transition flex items-center gap-2">
+                                <button onclick="switchTab('order', 'locket')" class="px-4 py-2 bg-white text-slate-900 hover:bg-cyan-50 font-bold rounded-lg text-sm shadow transition active:scale-95 flex items-center gap-2">
                                     <i class="fa-solid fa-plus-circle text-cyan-600"></i> Tạo Đơn Ngay
                                 </button>
-                                <button onclick="switchTab('deposit')" class="px-4 py-2 bg-slate-900/40 hover:bg-slate-900/60 text-white font-medium rounded-lg text-sm border border-white/20 transition backdrop-blur flex items-center gap-2">
+                                <button onclick="switchTab('deposit')" class="px-4 py-2 bg-slate-900/40 hover:bg-slate-900/60 text-white font-medium rounded-lg text-sm border border-white/20 transition active:scale-95 backdrop-blur flex items-center gap-2">
                                     <i class="fa-solid fa-wallet text-emerald-400"></i> Nạp Tiền Tài Khoản
                                 </button>
                             </div>
@@ -554,7 +652,7 @@
                         </div>
                     </div>
 
-                    <!-- PUBLIC REALTIME ORDERS (HIỂN THỊ CHO TẤT CẢ MỌI NGƯỜI) -->
+                    <!-- PUBLIC REALTIME ORDERS -->
                     <div class="glass-card rounded-xl p-5 border border-slate-800 light:border-slate-200">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg font-bold text-slate-200 light:text-slate-800 flex items-center gap-2">
@@ -600,13 +698,13 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-2 space-y-6">
-                            <!-- KHU VỰC RIÊNG DÀNH CHO LOCKET (HIỂN THỊ LINK DNS & HƯỚNG DẪN) -->
+                            <!-- KHU VỰC RIÊNG DÀNH CHO LOCKET -->
                             <div id="locket-info-section" class="glass-card rounded-2xl p-5 border border-amber-500/30 space-y-4 hidden">
                                 <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                                     <h3 class="font-bold text-amber-400 text-sm flex items-center gap-2">
                                         <i class="fa-solid fa-link text-amber-400"></i> Link DNS Locket Của Bạn
                                     </h3>
-                                    <button onclick="copyToClipboard('https://doh.2707226.xyz/kitphan1011')" class="px-3 py-1 bg-amber-500 text-slate-950 font-extrabold rounded-lg text-xs shadow hover:bg-amber-400 transition">
+                                    <button onclick="copyToClipboard('https://doh.2707226.xyz/kitphan1011')" class="px-3 py-1 bg-amber-500 text-slate-950 font-extrabold rounded-lg text-xs shadow hover:bg-amber-400 transition active:scale-95">
                                         <i class="fa-solid fa-copy mr-1"></i> Sao chép DNS
                                     </button>
                                 </div>
@@ -659,11 +757,6 @@
                                 <div>
                                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700 mb-2" id="label-target-link">3. Username Locket / Link Bài Viết</label>
                                     <input type="text" id="target-link-input" placeholder="Nhập Username Locket hoặc Link tài khoản..." class="w-full px-4 py-3 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-slate-200 light:text-slate-800 text-sm focus:outline-none focus:border-cyan-500 font-medium transition">
-                                </div>
-
-                                <div id="comment-container" class="hidden">
-                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 light:text-slate-700 mb-2">Nội dung (Mỗi dòng là 1 mục)</label>
-                                    <textarea id="comment-text-input" rows="3" oninput="calculateCommentQuantity()" placeholder="Nhập thông tin chi tiết từng dòng..." class="w-full px-4 py-3 rounded-xl bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 text-slate-200 light:text-slate-800 text-sm focus:outline-none focus:border-cyan-500 font-medium transition custom-scrollbar"></textarea>
                                 </div>
 
                                 <div>
@@ -781,7 +874,7 @@
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <button type="submit" class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs rounded-xl shadow">LƯU THAY ĐỔI</button>
+                                    <button type="submit" class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs rounded-xl shadow active:scale-95 transition">LƯU THAY ĐỔI</button>
                                 </div>
                             </form>
                         </div>
@@ -857,7 +950,6 @@
                                         <div id="qrcode-box" class="p-2 bg-white rounded"></div>
                                     </div>
                                 </div>
-                                <!-- DÒNG LƯU Ý MỚI THÊM VÀO -->
                                 <div class="p-3 bg-rose-500/10 rounded-xl border border-rose-500/30 text-center">
                                     <p class="text-xs font-bold text-rose-400 leading-relaxed">
                                         ⚠️ Vui lòng nhập đúng nội dung chuyển khoản để hệ thống tự động cộng tiền vào tài khoản của bạn. Nếu không, vui lòng liên hệ Admin để được hỗ trợ.
@@ -877,7 +969,7 @@
                                     <label class="block text-xs text-slate-400 mb-1">Số tiền test nạp (VNĐ)</label>
                                     <input type="number" id="test-deposit-amount" value="100000" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-emerald-400">
                                 </div>
-                                <button onclick="simulateAutoDeposit()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs shadow transition">
+                                <button onclick="simulateAutoDeposit()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs shadow transition active:scale-95">
                                     MÔ PHỎNG CHUYỂN KHOẢN THÀNH CÔNG
                                 </button>
                             </div>
@@ -948,7 +1040,7 @@
                                     <label class="block text-xs font-bold text-slate-400 mb-1">Nội dung chi tiết</label>
                                     <textarea id="ticket-message" rows="4" required placeholder="Mô tả chi tiết sự cố của bạn..." class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-200 custom-scrollbar focus:outline-none focus:border-cyan-500"></textarea>
                                 </div>
-                                <button type="submit" class="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs rounded-xl shadow transition">
+                                <button type="submit" class="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs rounded-xl shadow transition active:scale-95">
                                     GỬI TICKET ĐẾN ADMIN
                                 </button>
                             </form>
@@ -959,7 +1051,7 @@
                                 <i class="fa-solid fa-address-book text-sky-400"></i> Liên Hệ Nhanh Zalo
                             </h3>
                             <p class="text-xs text-slate-400">Bạn cũng có thể liên hệ trực tiếp qua Zalo Admin để được hỗ trợ tức thì:</p>
-                            <a href="https://zalo.me/0397867242" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs rounded-xl shadow transition">
+                            <a href="https://zalo.me/0397867242" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs rounded-xl shadow transition active:scale-95">
                                 <i class="fa-solid fa-headset text-sm"></i> CHAT ZALO: 0397867242
                             </a>
                         </div>
@@ -1069,10 +1161,8 @@
 
     <!-- JAVASCRIPT & REALTIME DATABASE LOGIC -->
     <script>
-        // TELEGRAM BOT CONFIGURATION
-        // TELEGRAM BOT CONFIGURATION
-       const TELEGRAM_BOT_TOKEN = "9027217152:AAEDjC5S4nQh2KlOIl4D2478oYnb4fu1Mw4"; 
-       const TELEGRAM_CHAT_ID = "7880082502";
+        const TELEGRAM_BOT_TOKEN = "9027217152:AAEDjC5S4nQh2KlOIl4D2478oYnb4fu1Mw4"; 
+        const TELEGRAM_CHAT_ID = "7880082502";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA5yA1Wc_KrRPVNgSySKF_FnY901ApfB_E",
@@ -1252,6 +1342,10 @@
         let previousBalance = null;
         let currentPlatform = 'facebook';
         let currentSelectedServer = null;
+        let captchaResult = 0;
+
+        let generatedOtpCode = null;
+        let targetResetUsername = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             initAdminAccountFirebase();
@@ -1261,9 +1355,132 @@
             checkAuthSession();
             renderPriceListTable();
             generateBankQR();
+            generateCaptcha();
+            initParticleTrail(); // Khởi tạo hiệu ứng hạt rơi
         });
 
-        // HÀM GỬI KHỦNG THÔNG BÁO QUA TELEGRAM BOT
+        /* ==================== HIỆU ỨNG HẠT RƠI (PARTICLE TRAIL EFFECT) ==================== */
+        function initParticleTrail() {
+            const canvas = document.getElementById('particle-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            let particles = [];
+            const colors = ['#06b6d4', '#38bdf8', '#818cf8', '#c084fc', '#a855f7', '#34d399', '#fbbf24'];
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            class Particle {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.size = Math.random() * 5 + 2;
+                    this.speedX = (Math.random() - 0.5) * 2;
+                    this.speedY = Math.random() * 2 + 1; // Hạt tự động rơi xuống
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                    this.alpha = 1;
+                    this.decay = Math.random() * 0.02 + 0.015;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.alpha -= this.decay;
+                    if (this.size > 0.2) this.size -= 0.05;
+                }
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, this.alpha);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            function addParticles(x, y, count = 3) {
+                for (let i = 0; i < count; i++) {
+                    particles.push(new Particle(x, y));
+                }
+            }
+
+            // Sự kiện di chuyển chuột
+            window.addEventListener('mousemove', (e) => {
+                addParticles(e.clientX, e.clientY, 2);
+            });
+
+            // Sự kiện chạm màn hình (mobile)
+            window.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 0) {
+                    addParticles(e.touches[0].clientX, e.touches[0].clientY, 3);
+                }
+            });
+            window.addEventListener('touchstart', (e) => {
+                if (e.touches.length > 0) {
+                    addParticles(e.touches[0].clientX, e.touches[0].clientY, 5);
+                }
+            });
+
+            // Sự kiện cuộn lướt trang
+            let lastScrollY = window.scrollY;
+            window.addEventListener('scroll', () => {
+                const scrollY = window.scrollY;
+                const delta = Math.abs(scrollY - lastScrollY);
+                if (delta > 5) {
+                    const randomX = Math.random() * window.innerWidth;
+                    const randomY = Math.random() * window.innerHeight;
+                    addParticles(randomX, randomY, Math.min(Math.floor(delta / 3), 8));
+                }
+                lastScrollY = scrollY;
+            });
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update();
+                    particles[i].draw();
+                    if (particles[i].alpha <= 0 || particles[i].size <= 0.2) {
+                        particles.splice(i, 1);
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function generateCaptcha() {
+            const num1 = Math.floor(Math.random() * 9) + 1;
+            const num2 = Math.floor(Math.random() * 9) + 1;
+            captchaResult = num1 + num2;
+            const captchaEl = document.getElementById('captcha-question');
+            if (captchaEl) {
+                captchaEl.innerText = `${num1} + ${num2} = ?`;
+            }
+            const captchaInput = document.getElementById('captcha-answer');
+            if (captchaInput) captchaInput.value = '';
+        }
+
         function sendTelegramNotification(messageText) {
             if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN.includes("example")) return;
             const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
@@ -1279,10 +1496,10 @@
         }
 
         function initAdminAccountFirebase() {
-            db.ref('users/adminkit').once('value', snapshot => {
+            db.ref('users/kitphanmedia').once('value', snapshot => {
                 if (!snapshot.exists()) {
-                    db.ref('users/adminkit').set({
-                        username: 'adminkit',
+                    db.ref('users/kitphanmedia').set({
+                        username: 'kitphanmedia',
                         password: '10112008',
                         fullname: 'Phan Gia Tú (Admin)',
                         email: 'admin@kitphan.mmo',
@@ -1308,7 +1525,6 @@
                         playNotificationSound();
                         showToast(`🎉 NẠP TIỀN THÀNH CÔNG! Tài khoản vừa được cộng thêm ${addedAmount.toLocaleString('vi-VN')} đ.`, 'success', 8000);
                         
-                        // GỬI TELEGRAM THÔNG BÁO BIẾN ĐỘNG SỐ DƯ
                         const teleMsg = `💰 <b>BIẾN ĐỘNG SỐ DƯ (NẠP TIỀN)</b>\n` +
                                         `👤 <b>Khách hàng:</b> @${latestUserData.username}\n` +
                                         `➕ <b>Số tiền nạp:</b> +${addedAmount.toLocaleString('vi-VN')} VNĐ\n` +
@@ -1331,7 +1547,7 @@
                 const orders = Object.values(data).reverse();
 
                 if (previousOrderCount !== null && orders.length > previousOrderCount) {
-                    if (currentUser && (currentUser.username === 'adminkit' || currentUser.role === 'Administrator')) {
+                    if (currentUser && (currentUser.username === 'kitphanmedia' || currentUser.role === 'Administrator')) {
                         const newOrder = orders[0];
                         playNotificationSound();
                         showAdminOrderNotificationModal(newOrder);
@@ -1413,6 +1629,7 @@
         function showAuthScreen() {
             document.getElementById('auth-screen').classList.remove('hidden');
             document.getElementById('main-app').classList.add('hidden');
+            generateCaptcha();
         }
 
         function hideAuthScreen() {
@@ -1425,24 +1642,96 @@
             document.getElementById('form-register').classList.add('hidden');
             document.getElementById('form-forgot').classList.add('hidden');
 
-            if (mode === 'login') document.getElementById('form-login').classList.remove('hidden');
+            hideLoginErrorAlert();
+
+            if (mode === 'login') {
+                document.getElementById('form-login').classList.remove('hidden');
+                generateCaptcha();
+            }
             else if (mode === 'register') document.getElementById('form-register').classList.remove('hidden');
-            else if (mode === 'forgot') document.getElementById('form-forgot').classList.remove('hidden');
+            else if (mode === 'forgot') {
+                document.getElementById('form-forgot').classList.remove('hidden');
+                document.getElementById('forgot-step-1').classList.remove('hidden');
+                document.getElementById('forgot-step-2').classList.add('hidden');
+            }
+        }
+
+        function showLoginErrorAlert(message, fieldToHighlight) {
+            const alertBox = document.getElementById('login-error-alert');
+            const alertText = document.getElementById('login-error-text');
+            
+            if (alertBox && alertText) {
+                alertText.innerText = message;
+                alertBox.classList.remove('hidden');
+            }
+
+            if (fieldToHighlight) {
+                const el = document.getElementById(fieldToHighlight);
+                if (el) {
+                    el.classList.add('border-rose-500', 'ring-2', 'ring-rose-500/50', 'animate-shake');
+                    el.focus();
+                    setTimeout(() => {
+                        el.classList.remove('animate-shake');
+                    }, 400);
+                }
+            }
+        }
+
+        function hideLoginErrorAlert() {
+            const alertBox = document.getElementById('login-error-alert');
+            if (alertBox) alertBox.classList.add('hidden');
+
+            const userInput = document.getElementById('login-username');
+            const passInput = document.getElementById('login-password');
+
+            if (userInput) userInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-500/50');
+            if (passInput) passInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-500/50');
         }
 
         function handleLogin(e) {
             e.preventDefault();
-            const usernameInput = document.getElementById('login-username').value.trim().toLowerCase();
-            const passwordInput = document.getElementById('login-password').value;
+            hideLoginErrorAlert();
 
-            db.ref('users/' + usernameInput).once('value', snapshot => {
-                const user = snapshot.val();
-                if (user && user.password === passwordInput) {
-                    previousBalance = user.balance || 0;
-                    loginUserSession(user);
-                    showToast(`Chào mừng trở lại, ${user.fullname}!`, 'success');
+            const loginInput = document.getElementById('login-username').value.trim().toLowerCase();
+            const passwordInput = document.getElementById('login-password').value;
+            const userAnswer = parseInt(document.getElementById('captcha-answer').value);
+
+            if (isNaN(userAnswer) || userAnswer !== captchaResult) {
+                showLoginErrorAlert('⚠️ Kết quả xác thực người máy chưa đúng! Vui lòng tính lại.', 'captcha-answer');
+                generateCaptcha();
+                return;
+            }
+
+            db.ref('users').once('value', snapshot => {
+                const users = snapshot.val() || {};
+                let foundUser = null;
+
+                for (let key in users) {
+                    const u = users[key];
+                    const uName = (u.username || '').toLowerCase();
+                    const uEmail = (u.email || '').toLowerCase();
+
+                    if (uName === loginInput || uEmail === loginInput) {
+                        foundUser = u;
+                        break;
+                    }
+                }
+
+                if (foundUser) {
+                    if (foundUser.password === passwordInput) {
+                        hideLoginErrorAlert();
+                        previousBalance = foundUser.balance || 0;
+                        loginUserSession(foundUser);
+                        showToast(`Chào mừng trở lại, ${foundUser.fullname}!`, 'success');
+                    } else {
+                        showLoginErrorAlert('❌ Mật khẩu không chính xác! Vui lòng kiểm tra lại.', 'login-password');
+                        showToast('❌ Sai mật khẩu! Vui lòng kiểm tra lại.', 'error');
+                        generateCaptcha();
+                    }
                 } else {
-                    showToast('Tài khoản hoặc mật khẩu không chính xác!', 'error');
+                    showLoginErrorAlert('❌ Tài khoản hoặc Gmail không tồn tại trên hệ thống!', 'login-username');
+                    showToast('❌ Tài khoản hoặc Gmail không tồn tại!', 'error');
+                    generateCaptcha();
                 }
             });
         }
@@ -1489,9 +1778,80 @@
             });
         }
 
+        function sendOtpToEmail() {
+            const emailInput = document.getElementById('forgot-email').value.trim().toLowerCase();
+            if (!emailInput) {
+                showToast('Vui lòng nhập địa chỉ email đăng ký!', 'error');
+                return;
+            }
+
+            db.ref('users').once('value', snapshot => {
+                const users = snapshot.val() || {};
+                let foundUser = null;
+
+                for (let key in users) {
+                    if (users[key].email && users[key].email.toLowerCase() === emailInput) {
+                        foundUser = users[key];
+                        break;
+                    }
+                }
+
+                if (!foundUser) {
+                    showToast('Không tìm thấy tài khoản nào liên kết với Email này!', 'error');
+                    return;
+                }
+
+                targetResetUsername = foundUser.username;
+                generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+                showToast('Đang gửi mã OTP đến Gmail...', 'info');
+
+                const templateParams = {
+                    to_email: emailInput,
+                    to_name: foundUser.fullname || targetResetUsername,
+                    otp_code: generatedOtpCode
+                };
+
+                emailjs.send('kitphan1011', 'template_fn6ua41', templateParams)
+                    .then(function(response) {
+                        showToast('Đã gửi mã OTP thành công! Hãy kiểm tra Hộp thư Gmail (hoặc Thư rác).', 'success', 6000);
+                        document.getElementById('forgot-step-1').classList.add('hidden');
+                        document.getElementById('forgot-step-2').classList.remove('hidden');
+                    }, function(error) {
+                        console.error('EmailJS Error:', error);
+                        showToast('Lỗi gửi email: ' + (error.text || 'Kiểm tra lại EmailJS'), 'error');
+                    });
+            });
+        }
+
         function handleForgot(e) {
             e.preventDefault();
-            showToast('Vui lòng liên hệ Admin qua Zalo 0397867242 để khôi phục mật khẩu.', 'info');
+            const enteredOtp = document.getElementById('forgot-otp-input').value.trim();
+            const newPassword = document.getElementById('forgot-new-password').value;
+
+            if (!generatedOtpCode || enteredOtp !== generatedOtpCode) {
+                showToast('Mã OTP xác thực không đúng!', 'error');
+                return;
+            }
+
+            if (!newPassword || newPassword.length < 6) {
+                showToast('Mật khẩu mới phải có ít nhất 6 ký tự!', 'error');
+                return;
+            }
+
+            db.ref('users/' + targetResetUsername).update({ password: newPassword }, error => {
+                if (!error) {
+                    showToast('Đổi mật khẩu thành công! Vui lòng đăng nhập lại.', 'success');
+                    document.getElementById('forgot-email').value = '';
+                    document.getElementById('forgot-otp-input').value = '';
+                    document.getElementById('forgot-new-password').value = '';
+                    generatedOtpCode = null;
+                    targetResetUsername = null;
+                    switchAuthMode('login');
+                } else {
+                    showToast('Có lỗi xảy ra. Vui lòng thử lại!', 'error');
+                }
+            });
         }
 
         function loginUserSession(userObj) {
@@ -1559,7 +1919,7 @@
                 return;
             }
 
-            const depositId = `DEP-${Math.floor(100000 + Math.random() * 900000)}`;
+            const depositId = `DEP-${Math.floor(100000 + Math.random() * 90000)}`;
             const syntax = `NAP ${currentUser.username.toUpperCase()}`;
             const timeStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
 
@@ -1702,7 +2062,7 @@
                         </span>
                     </td>
                     <td class="p-3.5 text-center">
-                        <button onclick="openAdminBalanceModal('${u.username}')" class="px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black rounded-lg text-xs shadow-lg transition flex items-center gap-1.5 mx-auto">
+                        <button onclick="openAdminBalanceModal('${u.username}')" class="px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black rounded-lg text-xs shadow-lg transition flex items-center gap-1.5 mx-auto active:scale-95">
                             <i class="fa-solid fa-plus-circle"></i> Cộng / Trừ tiền
                         </button>
                     </td>
@@ -1811,10 +2171,8 @@
                     showToast(`Tạo đơn hàng #${orderId} thành công!`, 'success');
                     document.getElementById('target-link-input').value = '';
 
-                    // HỘP THOẠI POPUP HIỂN THỊ THÀNH CÔNG VÀ NÚT LIÊN HỆ ZALO
                     openSuccessModal(newOrder);
 
-                    // GỬI THÔNG BÁO TỚI BOT TELEGRAM
                     const teleMsg = `🛒 <b>ĐƠN HÀNG MỚI NẠP / ĐẶT MUA</b>\n` +
                                     `🆔 <b>Mã đơn hàng:</b> <code>${orderId}</code>\n` +
                                     `👤 <b>Khách hàng:</b> @${currentUser.username}\n` +
@@ -1893,7 +2251,7 @@
                         <td class="p-3.5">${getStatusBadge(o.status)}</td>
                         <td class="p-3.5 text-center">
                             ${o.status === 'Đang xử lý' ? `
-                                <button onclick="markOrderComplete('${o.id}')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs shadow transition flex items-center gap-1 mx-auto">
+                                <button onclick="markOrderComplete('${o.id}')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs shadow transition flex items-center gap-1 mx-auto active:scale-95">
                                     <i class="fa-solid fa-check"></i> Hoàn thành
                                 </button>
                             ` : `
