@@ -1,0 +1,8 @@
+{
+  "name": "kitphan-telegram-events",
+  "private": true,
+  "version": "0.1.0",
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  }
+}
