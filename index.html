@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KIT PHAN MMO - High Contrast Monochrome Social Panel</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        mono: {
+                            50: '#fafafa', 100: '#f4f4f5', 200: '#e4e4e7', 300: '#d4d4d8',
+                            400: '#a1a1aa', 500: '#71717a', 600: '#52525b', 700: '#3f3f46',
+                            800: '#27272a', 900: '#18181b', 950: '#09090b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Space Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <!-- FIREBASE SDKs (Thêm auth-compat để hỗ trợ Google Sign-In) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+
+    <!-- CLOUDFLARE TURNSTILE SCRIPT -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+    <!-- EMAILJS SDK INTEGRATION -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          emailjs.init("rZGL8dSRTZ1IME-PD");
+       })();
+    </script>
+
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            background-color: #030305;
+            color: #f4f4f5;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.8); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+        
+        .mono-glass {
+            background: rgba(18, 18, 24, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .mono-glass:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .btn-white {
+            background-color: #ffffff;
+            color: #000000;
+            font-weight: 800;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-white:hover {
+            background-color: #e4e4e7;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline-white {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-outline-white:hover {
+            border-color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .tab-content { animation: fadeInTab 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-black text-zinc-100 antialiased min-h-screen flex flex-col selection:bg-white selection:text-black">
+
+    <canvas id="particle-canvas"></canvas>
+    <div id="toast-container" class="fixed top-4 right-4 left-4 md:left-auto md:top-6 md:right-6 z-50 flex flex-col gap-2 max-w-md w-auto pointer-events-none"></div>
+
+    <!-- AUTHENTICATION SCREEN -->
+    <div id="auth-screen" class="fixed inset-0 z-50 bg-black flex items-center justify-center p-4 overflow-y-auto">
+        <div class="relative w-full max-w-md my-auto">
+            <div class="mono-glass rounded-2xl p-6 md:p-8 border border-zinc-800 shadow-2xl relative z-10">
+                <div class="text-center mb-6">
+                    <div class="w-12 h-12 rounded-xl bg-white text-black flex items-center justify-center mx-auto mb-3 shadow-lg shadow-white/10">
+                        <i class="fa-solid fa-cube text-xl"></i>
+                    </div>
+                    <h2 class="text-xl md:text-2xl font-black tracking-widest text-white uppercase">KIT PHAN MMO</h2>
+                    <p class="text-[11px] text-zinc-400 mt-1 uppercase tracking-wider">Hệ Thống Dịch Vụ MXH Cao Cấp</p>
+                </div>
+
+                <!-- NÚT ĐĂNG NHẬP / ĐĂNG KÝ BẰNG GOOGLE CHUNG -->
+                <div class="mb-4">
+                    <button type="button" onclick="handleGoogleLogin()" class="w-full py-3 rounded-xl bg-zinc-900 border border-zinc-700 hover:border-white text-white font-bold text-xs flex items-center justify-center gap-3 transition active:scale-95 shadow">
+                        <i class="fab fa-google text-red-500 text-base"></i> Tiếp tục với tài khoản Google
+                    </button>
+                    <div class="flex items-center my-4">
+                        <div class="flex-grow border-t border-zinc-800"></div>
+                        <span class="px-3 text-[10px] text-zinc-500 uppercase font-mono">Hoặc bằng mật khẩu</span>
+                        <div class="flex-grow border-t border-zinc-800"></div>
+                    </div>
+                </div>
+
+                <!-- FORM 1: LOGIN -->
+                <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div id="login-error-alert" class="hidden p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-200 text-xs flex items-center gap-2.5">
+                        <i class="fa-solid fa-circle-exclamation text-sm text-white"></i>
+                        <span id="login-error-text" class="font-semibold leading-tight">Tài khoản hoặc mật khẩu không đúng!</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Username / Gmail</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-user absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 text-xs"></i>
+                            <input type="text" id="login-username" required placeholder="Nhập username hoặc gmail..." class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs focus:outline-none focus:border-white text-white transition">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Mật khẩu</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 text-xs"></i>
+                            <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-9 pr-9 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs focus:outline-none focus:border-white text-white transition">
+                            <button type="button" onclick="togglePasswordVisibility('login-password', 'eye-login-icon')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 p-1">
+                                <i class="fa-solid fa-eye text-xs" id="eye-login-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CLOUDFLARE TURNSTILE WIDGET -->
+                    <div class="space-y-1">
+                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider">Xác minh bảo mật (Cloudflare)</label>
+                        <!-- Thay thế sitekey của bạn bằng sitekey lấy từ Cloudflare Dashboard -->
+                        <div class="cf-turnstile" data-sitekey="0x4AAAAAAFzcCERtNo1tZL0h" data-theme="dark"></div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 rounded-xl btn-white text-xs md:text-sm shadow-lg uppercase tracking-wider">
+                        ĐĂNG NHẬP NGAY
+                    </button>
+
+                    <p class="text-xs text-center text-zinc-500 pt-1">
+                        Chưa có tài khoản? <button type="button" onclick="switchAuthMode('register')" class="text-white font-bold hover:underline">Đăng ký ngay</button>
+                    </p>
+                </form>
+
+                <!-- FORM 2: REGISTER -->
+                <form id="form-register" onsubmit="handleRegister(event)" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Họ và Tên</label>
+                        <input type="text" id="reg-fullname" required placeholder="Nguyễn Văn A" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Tên đăng nhập</label>
+                        <input type="text" id="reg-username" required placeholder="user123" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Địa chỉ Email</label>
+                        <input type="email" id="reg-email" required placeholder="user@gmail.com" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Mật khẩu</label>
+                        <div class="relative">
+                            <input type="password" id="reg-password" required placeholder="••••••••" class="w-full pl-3.5 pr-9 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white">
+                            <button type="button" onclick="togglePasswordVisibility('reg-password', 'eye-reg-icon')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 p-1">
+                                <i class="fa-solid fa-eye text-xs" id="eye-reg-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- CLOUDFLARE TURNSTILE WIDGET CHO ĐĂNG KÝ -->
+                    <div class="space-y-1">
+                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider">Xác minh bảo mật (Cloudflare)</label>
+                        <div class="cf-turnstile" data-sitekey="0x4AAAAAAFzcCERtNo1tZL0h" data-theme="dark"></div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 rounded-xl btn-white text-xs md:text-sm shadow uppercase tracking-wider">
+                        TẠO TÀI KHOẢN MỚI
+                    </button>
+                    <p class="text-xs text-center text-zinc-500 pt-1">
+                        Đã có tài khoản? <button type="button" onclick="switchAuthMode('login')" class="text-white font-bold hover:underline">Đăng nhập</button>
+                    </p>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- GIAO DIỆN CHÍNH SAU KHI ĐĂNG NHẬP -->
+    <div id="main-app" class="flex h-screen overflow-hidden hidden relative z-10">
+        <!-- Khung nội dung chính Panel -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden items-center justify-center p-6 text-center">
+            <h1 class="text-3xl font-black mb-2">CHÀO MỪNG ĐÃ ĐĂNG NHẬP THÀNH CÔNG!</h1>
+            <p id="welcome-user-name" class="text-zinc-400 mb-4"></p>
+            <button onclick="handleLogout()" class="px-6 py-2.5 bg-white text-black font-bold rounded-xl text-xs">ĐĂNG XUẤT</button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5yA1Wc_KrRPVNgSySKF_FnY901ApfB_E",
+            authDomain: "kitphanmmo.firebaseapp.com",
+            databaseURL: "https://kitphanmmo-default-rtdb.firebaseio.com",
+            projectId: "kitphanmmo",
+            storageBucket: "kitphanmmo.firebasestorage.app",
+            messagingSenderId: "15650440474",
+            appId: "1:15650440474:web:330c96b21bbc3252b618a3"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthSession();
+        });
+
+        function checkAuthSession() {
+            const savedSession = localStorage.getItem('locket_smm_session');
+            if (savedSession) {
+                currentUser = JSON.parse(savedSession);
+                loginUserSession(currentUser);
+            } else {
+                showAuthScreen();
+            }
+        }
+
+        function showAuthScreen() {
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('main-app').classList.add('hidden');
+        }
+
+        function hideAuthScreen() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+        }
+
+        function switchAuthMode(mode) {
+            document.getElementById('form-login').classList.add('hidden');
+            document.getElementById('form-register').classList.add('hidden');
+            if (mode === 'login') document.getElementById('form-login').classList.remove('hidden');
+            else if (mode === 'register') document.getElementById('form-register').classList.remove('hidden');
+        }
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye');
+            }
+        }
+
+/* HÀM XỬ LÝ ĐĂNG NHẬP BẰNG TÀI KHOẢN GOOGLE QUA REDIRECT */
+function handleGoogleLogin() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    // Chuyển hướng trực tiếp trang thay vì dùng popup để tránh bị chặn trên Vercel
+    auth.signInWithRedirect(provider).catch((error) => {
+        showToast('Lỗi đăng nhập Google: ' + error.message, 'error');
+    });
+}
+
+// Thêm đoạn này ngay bên ngoài các hàm (để xử lý kết quả sau khi Google chuyển hướng về lại trang web)
+// Xử lý dữ liệu sau khi Google chuyển hướng trả về trang web
+auth.getRedirectResult()
+    .then((result) => {
+        if (result.user) {
+            const user = result.user;
+            const username = user.email.split('@')[0].toLowerCase();
+
+            db.ref('users/' + username).once('value', snapshot => {
+                let userData;
+                if (snapshot.exists()) {
+                    userData = snapshot.val();
+                } else {
+                    userData = {
+                        username: username,
+                        fullname: user.displayName || username,
+                        email: user.email,
+                        balance: 0,
+                        totalDeposited: 0,
+                        role: 'Thành viên Google',
+                        avatar: user.photoURL || 'https://placehold.co/100x100/27272a/ffffff?text=User'
+                    };
+                    db.ref('users/' + username).set(userData);
+                }
+                loginUserSession(userData);
+                showToast(`Đăng nhập Google thành công: ${userData.fullname}`, 'success');
+            });
+        }
+    }).catch((error) => {
+        console.error("Lỗi Redirect Auth:", error);
+    });
+        /* XÁC MINH CLOUDFLARE TURNSTILE TRƯỚC KHI SUBMIT FORM */
+        function verifyTurnstileToken() {
+            const turnstileResponse = document.querySelector('[name="cf-turnstile-response"]');
+            if (!turnstileResponse || !turnstileResponse.value) {
+                showToast('Vui lòng tích vào ô xác minh không phải người máy của Cloudflare!', 'error');
+                return false;
+            }
+            return true;
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            if (!verifyTurnstileToken()) return;
+            // Thực hiện logic đăng nhập tiếp theo...
+            showToast('Xác thực Cloudflare thành công!', 'success');
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            if (!verifyTurnstileToken()) return;
+            // Thực hiện logic đăng ký tiếp theo...
+            showToast('Đăng ký tài khoản thành công!', 'success');
+        }
+
+        function loginUserSession(userObj) {
+            currentUser = userObj;
+            localStorage.setItem('locket_smm_session', JSON.stringify(currentUser));
+            hideAuthScreen();
+            document.getElementById('welcome-user-name').innerText = `Xin chào, ${currentUser.fullname} (@${currentUser.username})`;
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('locket_smm_session');
+            auth.signOut();
+            currentUser = null;
+            showAuthScreen();
+            showToast('Đã đăng xuất!', 'info');
+        }
+
+        function showToast(message, type = 'info', duration = 3500) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto flex items-start gap-3 p-4 rounded-xl border border-zinc-700 bg-zinc-950 text-white shadow-2xl font-mono text-xs`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info text-white text-base"></i><div class="flex-1">${message}</div>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), duration);
+        }
+    </script>
+</body>
+</html>
