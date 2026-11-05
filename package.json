@@ -1,8 +1,8 @@
 {
-  "name": "kitphan-telegram-events",
+  "name": "kitphanmmo-premium-v4-canboso",
+  "version": "4.0.0",
   "private": true,
-  "version": "0.1.0",
-  "dependencies": {
-    "firebase-admin": "^13.0.0"
-  }
+  "description": "KIT PHAN MMO Premium V4 digital product catalog + Vercel supplier proxy",
+  "engines": {"node": ">=20"},
+  "dependencies": {"firebase-admin": "^13.0.0"}
 }
