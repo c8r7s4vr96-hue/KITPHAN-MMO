@@ -60,6 +60,7 @@
             function renderKitphanTurnstileWidgets() {
                 if (!window.turnstile) return;
                 document.querySelectorAll('.cf-turnstile').forEach(function (container) {
+                    if (container.closest('form')?.classList.contains('hidden')) return;
                     if (container.dataset.kitphanTurnstileRendered === '1') return;
                     container.dataset.sitekey = window.KITPHAN_TURNSTILE_SITEKEY;
                     try {
@@ -1616,6 +1617,16 @@
                 document.getElementById('forgot-step-1').classList.remove('hidden');
                 document.getElementById('forgot-step-2').classList.add('hidden');
             }
+            // Cloudflare cannot reliably render a widget inside a hidden form.
+            requestAnimationFrame(() => {
+                const active = document.querySelector('#form-' + mode + ' .cf-turnstile');
+                if (active && window.turnstile && active.dataset.kitphanTurnstileRendered !== '1') {
+                    try {
+                        window.turnstile.render(active, { sitekey: window.KITPHAN_TURNSTILE_SITEKEY, theme: 'dark' });
+                        active.dataset.kitphanTurnstileRendered = '1';
+                    } catch (err) { console.error('[Turnstile]', err); }
+                }
+            });
         }
 
         function showLoginErrorAlert(message, fieldToHighlight) {
@@ -1704,7 +1715,9 @@
                 'auth/invalid-credential': 'Thông tin xác thực Google không hợp lệ. Hãy kiểm tra cấu hình OAuth trong Firebase.',
                 'auth/web-storage-unsupported': 'Trình duyệt đang chặn bộ nhớ cần thiết cho đăng nhập. Hãy bật cookie và bộ nhớ trang web.',
                 'auth/handler-already-in-progress': 'Một yêu cầu đăng nhập Google khác đang được xử lý.',
-                'auth/popup-closed-by-user': 'Quá trình đăng nhập đã bị đóng trước khi hoàn tất.'
+                'auth/popup-closed-by-user': 'Quá trình đăng nhập đã bị đóng trước khi hoàn tất.',
+                'auth/popup-blocked': 'Trình duyệt đã chặn cửa sổ đăng nhập Google. Hãy cho phép popup.',
+                'auth/cancelled-popup-request': 'Yêu cầu đăng nhập Google trước đó đã bị hủy.'
             };
             return (messages[code] || (error && error.message) || 'Không xác định được lỗi đăng nhập.') + ' [Mã: ' + code + ']';
         }
@@ -1718,6 +1731,7 @@
             }
 
             try {
+                showToast('Đang mở đăng nhập Google…', 'info', 3000);
                 const provider = new firebase.auth.GoogleAuthProvider();
                 provider.setCustomParameters({ prompt: 'select_account' });
 
@@ -1779,6 +1793,7 @@
             const button = e.currentTarget.querySelector('[type="submit"]');
             button.disabled = true;
             try {
+                showToast('Đang tạo tài khoản, vui lòng chờ…', 'info', 3500);
                 const existing = await db.ref('users').once('value');
                 if (Object.values(existing.val() || {}).some(u => u && (u.email || '').toLowerCase() === email)) {
                     return showToast('Email đã được sử dụng!', 'error');
@@ -1795,7 +1810,7 @@
                 showToast('Đăng ký tài khoản thành công!', 'success');
             } catch (error) {
                 console.error('[Register]', error);
-                showToast('Không thể tạo tài khoản: ' + (error.code || error.message || 'Lỗi kết nối'), 'error', 7000);
+                showToast('Không thể tạo tài khoản: ' + (error.code || error.message || 'Lỗi kết nối') + '. Nếu thấy PERMISSION_DENIED, cần kiểm tra Firebase Database Rules.', 'error', 9000);
             } finally { button.disabled = false; }
         }
 
@@ -2171,10 +2186,13 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ orderId })
                     }).then(async response => {
-                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        if (!response.ok) {
+                            const detail = await response.json().catch(() => ({}));
+                            throw new Error('HTTP ' + response.status + ': ' + (detail.error || 'Không rõ lỗi'));
+                        }
                     }).catch(error => {
                         console.warn('[Telegram order]', error);
-                        showToast('Đơn đã được lưu nhưng thông báo Telegram chưa gửi được. Hãy kiểm tra API.', 'error', 6500);
+                        showToast('Đơn đã lưu, nhưng Telegram chưa nhận thông báo (' + error.message + '). Admin hãy kiểm tra Vercel Logs.', 'error', 9000);
                     });
                 }
             });
