@@ -95,4 +95,4 @@ Cần xử lý trước:
 - Bản hiện tại ưu tiên giữ nguyên giao diện và các chức năng cũ: chưa thay thế được toàn bộ xác thực/số dư không an toàn trong website cũ.
 
 Tài liệu nhà cung cấp: https://canboso.com/api/swagger/
-Cập nhật triển khai Premium V4
+Deployment update: KIT PHAN MMO Premium V4 - Fixed markup 20000 VND.
