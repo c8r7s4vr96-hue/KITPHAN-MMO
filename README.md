@@ -50,3 +50,4 @@ Configure Admin Only Sandbox
 Fix V5.2.3 Sandbox configuration
 Disable Wallet Sandbox V5.2.3.
 Prepare KIT PHAN MMO Premium V5.3
+Apply MB Bank and SePay Live environment variables
