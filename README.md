@@ -96,3 +96,4 @@ Cần xử lý trước:
 
 Tài liệu nhà cung cấp: https://canboso.com/api/swagger/
 Deployment update: KIT PHAN MMO Premium V4 - Fixed markup 20000 VND.
+Configure Premium Shop Admin access
