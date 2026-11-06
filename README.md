@@ -45,3 +45,4 @@ Gói vá **chỉ khởi tạo ví khóa 0đ cho Google Admin `adminkit`**. Nó *
 - 422: Chưa tích hai xác nhận hoặc dữ liệu đầu vào không hợp lệ.
 - 503: Kiểm tra Vercel Function Logs và Firebase service credentials. Không sửa Firebase Rules để mở quyền công khai.
 Configure Admin Only Sandbox
+Fix V5.2.3 Sandbox configuration
