@@ -99,3 +99,4 @@ Deployment update: KIT PHAN MMO Premium V4 - Fixed markup 20000 VND.
 Configure Premium Shop Admin access
 Configure KITPHANMMO V5.1.
 Fix main admin authentication V5.1.
+Kiểm tra deployment mới trên Vercel đã Ready
