@@ -44,3 +44,4 @@ Gói vá **chỉ khởi tạo ví khóa 0đ cho Google Admin `adminkit`**. Nó *
 - 409: Số dư cũ khác nhãn thử nghiệm, ví đã tồn tại trạng thái khác hoặc thiếu nhãn.
 - 422: Chưa tích hai xác nhận hoặc dữ liệu đầu vào không hợp lệ.
 - 503: Kiểm tra Vercel Function Logs và Firebase service credentials. Không sửa Firebase Rules để mở quyền công khai.
+Configure Admin Only Sandbox
