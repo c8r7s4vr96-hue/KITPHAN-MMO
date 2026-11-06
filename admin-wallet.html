@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>KIT PHAN MMO · Đối soát ví an toàn</title>
+<script defer src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<style>
+:root{color-scheme:dark;--bg:#090a0f;--card:#17191f;--border:#363943;--muted:#a9acb8;--light:#f8f9ff;--accent:#d4d5ff}*{box-sizing:border-box}
+body{font:14px/1.6 system-ui,Arial,sans-serif;background:radial-gradient(circle at 70% -10%,#262737 0%,transparent 38%),var(--bg);color:var(--light);padding:22px 16px;max-width:1060px;margin:0 auto}h1{font-size:clamp(27px,4vw,38px);line-height:1.3;margin:6px 0 8px}h2{font-size:18px}p{color:var(--muted)}small{letter-spacing:2px;color:#ccc}a{color:#ccc}button{cursor:pointer;font-weight:700;border:1px solid #555a67;border-radius:11px;padding:11px 16px;color:#111;background:var(--light)}button.ghost{background:#292b34;color:#f0f0f0}button:disabled{opacity:.35;cursor:not-allowed}input,textarea{background:#0e0f14;color:#fafafa;border:1px solid #454956;border-radius:9px;padding:10px;width:100%;font:inherit}textarea{min-height:96px;resize:vertical}.panel{border:1px solid var(--border);background:rgba(23,25,31,.96);border-radius:18px;padding:22px;margin:22px 0}.row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}.fields{display:grid;grid-template-columns:1fr auto;gap:10px}.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.metric{background:#101116;border:1px solid #373943;border-radius:12px;padding:15px}.metric strong{display:block;font-size:19px;margin-top:8px;overflow-wrap:anywhere}.metric span{color:#c1c1ca;font-size:12px}.warn{color:#ffd0a2}.danger{color:#ffb9c0}label{font-size:13px;font-weight:650;display:block;margin:12px 0 7px}.checks label{font-weight:400;display:flex;align-items:start;gap:8px}.checks input{width:auto;margin-top:5px}.note{background:#24202a;border-left:3px solid #e5b076;padding:12px 15px;color:#ffdfb5;border-radius:5px}#report[hidden],#review[hidden]{display:none}#events{white-space:pre-line}#message{min-height:24px}ul{padding-left:20px}li{margin-bottom:7px}
+@media(max-width:650px){.fields{grid-template-columns:1fr}.panel{padding:16px}}
+</style></head><body>
+<div class="row"><div><small>KIT PHAN MMO · PRIVATE WALLET AUDIT</small><h1>Kiểm toán & đối soát ví</h1><p>Premium V5.2 — Giai đoạn kiểm tra. Không cộng, trừ hoặc kích hoạt số dư có thể chi tiêu.</p></div><a href="/">Về website chính</a></div>
+<div class="panel note"><strong>CHƯA CHO GIAO DỊCH TIỀN THẬT.</strong> Số dư lịch sử từng nằm trong Firebase cho phép ghi công khai. Những con số trong báo cáo chỉ là dữ liệu tham khảo; cần đối chiếu với chứng từ ngân hàng độc lập.</div>
+<section class="panel"><div class="row"><div><h2>Xác thực Admin</h2><strong id="email">Chưa đăng nhập</strong><p id="message">Đăng nhập bằng Google có UID MAIN_ADMIN_GOOGLE_UID.</p></div><div><button id="login">Đăng nhập Google</button> <button class="ghost" id="logout" hidden>Đăng xuất</button></div></div></section>
+<section class="panel"><h2>Đối chiếu tài khoản</h2><p>Nhập username Firebase cũ (không có @). API chỉ cho Admin được cấp quyền xem báo cáo.</p><div class="fields"><input id="username" placeholder="Ví dụ: adminkit" maxlength="60" autocomplete="off"><button id="load">Xem báo cáo</button></div>
+<div id="report" hidden><div class="metrics" id="metrics" style="margin-top:17px"></div><p class="warn">* Tổng nạp / đơn từ dữ liệu cũ không chứng minh tiền thực nhận hay đã trừ. Báo cáo chỉ quét tối đa 500 bản ghi gần nhất mỗi nhánh.</p><h2>Biên bản đã lưu</h2><ul id="reviews"></ul></div></section>
+<section class="panel" id="test-panel" hidden>
+<h2>Phân loại tiền thử nghiệm của Admin (không tạo tiền thật)</h2>
+<p>Số dư cũ của <strong>adminkit</strong> chỉ dùng để thử nghiệm. Chức năng này lưu nhãn <code>wallet_test/adminkit</code>, KHÔNG thay đổi <code>users.balance</code>, KHÔNG tạo ví có thể chi tiêu.</p>
+<p id="test-state" class="warn">Chưa ghi nhãn tiền thử nghiệm.</p>
+<label><input type="checkbox" id="test-confirm" style="width:auto"> Tôi xác nhận toàn bộ số dư cũ trong hồ sơ adminkit đang hiển thị là tiền ảo thử nghiệm, không phải tiền khách hàng.</label>
+<button id="label-test" class="ghost">Ghi nhãn tiền thử nghiệm (không cộng/trừ)</button>
+</section>
+<section class="panel" id="live-wallet" hidden>
+<h2>Khởi tạo ví tiền thật 0đ — V5.2.2 (ĐANG KHÓA)</h2>
+<p>Thao tác này chỉ áp dụng cho chính Admin <strong>adminkit</strong>, sau khi số dư thử nghiệm đã gắn nhãn <code>simulation_only</code>. Chỉ ghi một ví <code>wallet_accounts/{Firebase UID}</code> có 0đ và một nhật ký khởi tạo 0đ.</p>
+<p class="warn" id="real-wallet-state">Đang kiểm tra trạng thái ví...</p>
+<div class="checks"><label><input type="checkbox" id="real-zero-confirm"> Tôi đồng ý tạo ví tiền thật có số dư ban đầu 0đ, luôn ở trạng thái khóa.</label><label><input type="checkbox" id="real-no-import"> Tôi xác nhận KHÔNG chuyển 97.300.000đ thử nghiệm từ <code>users.balance</code> sang ví mới.</label></div>
+<button class="ghost" id="real-wallet-init" disabled>Khởi tạo ví thật 0đ (KHÔNG mở giao dịch)</button>
+<p class="danger">Bản này KHÔNG cộng tiền từ SePay, KHÔNG mua CanBoSo, KHÔNG cho phép chi tiêu hoặc sửa số dư.</p>
+</section>
+<section class="panel" id="review" hidden><h2>Lưu biên bản đối soát (không thay số dư)</h2><p>Bạn phải tự đối chiếu MB Bank/SePay thực tế, đơn hàng và chứng từ quyền sở hữu. Chức năng này chỉ ghi nhận việc đã kiểm tra, chưa mở ví.</p>
+<label for="verified">Số dư đã xác minh từ chứng từ độc lập (VND)</label><input id="verified" type="number" min="0" step="1" placeholder="Ví dụ: 0">
+<label for="note">Ghi chú / mã chứng từ đối soát (không nhập số tài khoản hay mật khẩu)</label><textarea id="note" maxlength="250" placeholder="Đã kiểm tra sao kê ngân hàng ngày..., đối chiếu các mã giao dịch ..."></textarea>
+<div class="checks"><label><input type="checkbox" id="bank"> Đã đối chiếu sao kê ngân hàng / SePay độc lập.</label><label><input type="checkbox" id="orders"> Đã đối chiếu đơn hàng, hoàn tiền và điều chỉnh.</label><label><input type="checkbox" id="ownership"> Đã xác minh đúng chủ tài khoản.</label></div>
+<p class="danger">Lưu ở trạng thái <code>reviewed_not_activated</code>. Không tự cộng tiền, không chuyển số dư cũ thành tiền dùng được.</p>
+<button id="save">Lưu biên bản — không cộng tiền</button></section>
+<script>
+window.addEventListener('load',()=>{
+ const firebaseConfig={apiKey:'AIzaSyA5yA1Wc_KrRPVnGsYsKF_FnY901ApfB_E',authDomain:'kitphanmmo.firebaseapp.com',projectId:'kitphanmmo'};
+ if(!window.firebase){document.getElementById('message').textContent='Không tải được Firebase SDK.';return;}
+ firebase.initializeApp(firebaseConfig);
+ const auth=firebase.auth(), $=id=>document.getElementById(id), fmt=n=>n==null?'Chưa xác minh':new Intl.NumberFormat('vi-VN').format(n)+' đ';
+ let active=null,requestId=null;
+ const msg=v=>$('message').textContent=v;
+ async function api(path,body){if(!auth.currentUser)throw Error('Hãy đăng nhập Google Admin.');const r=await fetch(path,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+await auth.currentUser.getIdToken(),...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store'});const j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw Error(j.error||'HTTP '+r.status);return j;}
+ function metric(name,value){const x=document.createElement('div');x.className='metric';const s=document.createElement('span');s.textContent=name;const b=document.createElement('strong');b.textContent=value;x.append(s,b);return x;}
+ async function refreshRealWallet(){
+  if(!active || active.username!=='adminkit')return;
+  try{const d=await api('/api/wallet?action=status');const w=d.walletAccount||{};
+    $('real-wallet-state').textContent=w.exists
+      ?(w.status==='locked'&&w.availableVnd===0&&w.heldVnd===0&&w.ledgerInitialized
+        ?'Ví thật đã khởi tạo: 0đ · LOCKED · nhật ký 0đ đã ghi. Không được chi tiêu.'
+        :'Ví tồn tại nhưng trạng thái hoặc nhật ký chưa đầy đủ; KHÔNG tự sửa. Cần kiểm tra API.')
+      :'Chưa có ví thật. Có thể khởi tạo 0đ sau khi xác nhận.';
+    $('real-wallet-init').disabled=!!w.exists || !$('real-zero-confirm').checked || !$('real-no-import').checked;
+  }catch(e){$('real-wallet-state').textContent='Không kiểm tra được ví thật: '+e.message;$('real-wallet-init').disabled=true;}
+ }
+ $('real-zero-confirm').addEventListener('change',()=>{if(active)refreshRealWallet()});
+ $('real-no-import').addEventListener('change',()=>{if(active)refreshRealWallet()});
+ $('real-wallet-init').addEventListener('click',async()=>{
+  if(!active || active.username!=='adminkit'||!$('real-zero-confirm').checked||!$('real-no-import').checked)return;
+  if(!confirm('TẠO VÍ KHÓA 0Đ cho Admin? KHÔNG chuyển tiền thử nghiệm, KHÔNG được giao dịch.'))return;
+  $('real-wallet-init').disabled=true;
+  try{const out=await api('/api/wallet?action=init_locked',{confirmZeroVnd:true,confirmNoLegacyTransfer:true,observedLegacyBalanceVnd:active.storedBalanceVnd});
+    msg(out.created?'Đã khởi tạo ví KHÓA 0đ và nhật ký khởi tạo.':'Ví khóa 0đ đã tồn tại, không tạo trùng.');
+    await refreshRealWallet();
+  }catch(e){msg('Không thể khởi tạo ví thật: '+e.message);await refreshRealWallet();}
+ });
+ async function load(){try{const name=$('username').value.trim().toLowerCase().replace(/^@/,'');if(!/^[a-z0-9_-]{3,60}$/.test(name))throw Error('Username không hợp lệ.');msg('Đang tải dữ liệu…');const d=await api('/api/wallet?action=audit&username='+encodeURIComponent(name));active=d.report;requestId=null;
+  $('test-panel').hidden=(active.username!=='adminkit');
+  $('live-wallet').hidden=(active.username!=='adminkit');$('real-zero-confirm').checked=false;$('real-no-import').checked=false;
+  if(active.username==='adminkit')await refreshRealWallet();
+  $('test-state').textContent=d.testClassification?.classification==='simulation_only'
+    ?'Đã ghi nhãn tiền thử nghiệm · Không thể chi tiêu thật'
+    :'Chưa ghi nhãn. Số dư cũ tuyệt đối không được dùng mua hàng.';
+  $('test-confirm').checked=false;$('metrics').replaceChildren(
+ metric('Số dư trong Firebase (CHƯA XÁC MINH)',fmt(active.storedBalanceVnd)),
+ metric('Tổng nạp ghi trong hồ sơ cũ',fmt(active.storedTotalDepositedVnd)),
+ metric('Nạp thành công theo bản ghi cũ (CHƯA XÁC MINH)',fmt(active.recordedDeposits.amountVnd)),
+ metric('Bản ghi nạp thiếu mã ngân hàng',String(active.recordedDeposits.withoutBankId)),
+ metric('Đơn cũ hoàn thành (không chứng minh đã trừ tiền)',String(active.legacyOrders.completedCount)),
+ metric('Đơn Premium cần xem xét',String(active.premiumOrders.needReview)),
+ metric('Webhook mô phỏng / chờ đối soát có usernameHint trùng',String(active.paymentEvents.pendingCount)),
+ metric('Ví sẵn sàng giao dịch','CHƯA'));
+ $('reviews').replaceChildren();for(const e of d.reviews){const li=document.createElement('li');li.textContent=new Date(e.reviewedAt).toLocaleString('vi-VN')+' · '+fmt(e.verifiedBalanceVnd)+' · '+e.status+' · '+e.note;$('reviews').append(li);}if(!d.reviews.length){const li=document.createElement('li');li.textContent='Chưa có biên bản.';$('reviews').append(li)}$('report').hidden=false;$('review').hidden=false;msg('Đã tải báo cáo @'+name+' · Dữ liệu cũ chưa được xác minh.');}catch(e){$('report').hidden=true;$('review').hidden=true;$('live-wallet').hidden=true;active=null;msg('Không thể tải: '+e.message)}}
+ $('label-test').addEventListener('click',async()=>{
+   if(!active || active.username!=='adminkit' || !$('test-confirm').checked){msg('Chỉ có thể phân loại hồ sơ adminkit sau khi xác nhận.');return;}
+   if(!confirm('Xác nhận ghi nhãn số dư cũ adminkit là TIỀN ẢO? Không chuyển thành tiền thật, không cộng/trừ số dư.'))return;
+   $('label-test').disabled=true;
+   try{const d=await api('/api/wallet?action=label_test',{
+     username:'adminkit',observedLegacyBalanceVnd:active.storedBalanceVnd,confirmTestFunds:true
+   });
+   msg(d.duplicate?'Đã được phân loại trước đó.':'Đã ghi nhãn tiền thử nghiệm (không thay đổi số dư).');
+   await load();
+   }catch(e){msg('Không ghi nhãn được: '+e.message)}finally{$('label-test').disabled=false}
+ });
+ $('load').addEventListener('click',load);
+ $('login').addEventListener('click',async()=>{try{const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});await auth.signInWithPopup(p)}catch(e){msg('Lỗi đăng nhập: '+(e.code||e.message))}});
+ $('logout').addEventListener('click',()=>auth.signOut());
+ $('save').addEventListener('click',async()=>{if(!active)return;const number=Number($('verified').value);if(!$('verified').value||!Number.isSafeInteger(number)||number<0||number>1e12){msg('Nhập số nguyên VND hợp lệ.');return;}if(!$('bank').checked||!$('orders').checked||!$('ownership').checked){msg('Chưa xác nhận đủ ba nội dung đối soát.');return;}if($('note').value.trim().length<15){msg('Ghi chú đối soát cần từ 15 ký tự.');return;}if(!confirm('Chỉ lưu BIÊN BẢN, KHÔNG cộng tiền. Bạn đã đối chiếu chứng từ ngân hàng đáng tin chưa?'))return;
+ if(!requestId)requestId=crypto.randomUUID();$('save').disabled=true;try{const out=await api('/api/wallet?action=review',{username:active.username,requestId,verifiedBalanceVnd:number,observedLegacyBalanceVnd:active.storedBalanceVnd,note:$('note').value.trim(),bankChecked:true,ordersChecked:true,ownershipChecked:true});msg(out.duplicate?'Biên bản này đã tồn tại, không ghi thêm.':'Đã lưu biên bản (KHÔNG cộng tiền).');requestId=null;await load();}catch(e){msg('Không lưu được: '+e.message)}finally{$('save').disabled=false}});
+ auth.onAuthStateChanged(u=>{$('email').textContent=u?.email||'Chưa đăng nhập';$('login').hidden=!!u;$('logout').hidden=!u;if(!u){active=null;$('report').hidden=true;$('review').hidden=true;$('test-panel').hidden=true;$('live-wallet').hidden=true;msg('Đăng nhập Google Admin để tiếp tục.')}else msg('Đã đăng nhập Google. Nhập username để kiểm tra quyền và báo cáo.');});
+});
+</script></body></html>
