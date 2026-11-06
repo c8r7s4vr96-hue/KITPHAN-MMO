@@ -1,0 +1,31 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>KIT PHAN MMO · Xác minh tài khoản</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<style> :root{color-scheme:dark}*{box-sizing:border-box}body{font:14px/1.6 Inter,system-ui,Arial,sans-serif;background:#07070b;color:#eee;max-width:1050px;margin:0 auto;padding:25px 18px}h1{font-size:clamp(25px,4vw,36px);margin:9px 0 5px}h2{font-size:17px}p{color:#aaa}a{color:#ccc}.panel{padding:22px;border:1px solid #34343d;border-radius:19px;background:#15151a;margin:20px 0}.row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.item{border:1px solid #34343d;border-radius:13px;padding:14px;margin-top:12px;overflow-wrap:anywhere}.btn{background:#f9f9fa;color:#0c0c10;border:0;border-radius:10px;padding:10px 15px;font-weight:800;cursor:pointer}.btn:disabled{opacity:.35;cursor:not-allowed}.btn.ghost{background:#27272f;color:#f1f1f1;border:1px solid #40404b}input[type=text]{padding:10px;border-radius:9px;color:#fff;background:#07070b;border:1px solid #45454d;min-width:220px}label{display:flex;gap:8px;align-items:start;font-size:12px;color:#c5c5c5;margin:11px 0}.warning{color:#ffadb1}#state{min-height:30px}#records:empty:after{content:'Chưa có yêu cầu chờ xử lý.';color:#aaa}</style></head><body>
+<div class="row"><div><small>KIT PHAN MMO · PRIVATE ACCOUNT MIGRATION</small><h1>Xét duyệt liên kết tài khoản cũ</h1><p>Chỉ UID Google Admin của website chính được duyệt. Không dựa vào tên đăng nhập cũ hoặc mật khẩu từ Realtime Database.</p></div><a href="/">Quay lại website</a></div>
+<section class="panel"><div class="row"><div><strong id="email">Chưa đăng nhập</strong><p id="state">Đăng nhập Firebase Google bằng đúng Admin UID cấu hình trên Vercel.</p></div><div><button id="login" class="btn">Đăng nhập Google</button> <button id="logout" class="btn ghost" hidden>Đăng xuất</button> <button id="refresh" class="btn ghost" hidden>Làm mới</button></div></div></section>
+<section class="panel"><h2>Yêu cầu chờ xác minh</h2><p class="warning">Chỉ duyệt sau khi bạn đối chiếu quyền sở hữu email, số dư và lịch sử từ bản sao lưu/giao dịch đáng tin cậy. Không thể mặc định tin số dư cũ vì Rules trước đây mở công khai.</p><div id="records"></div></section>
+<script>
+const firebaseConfig={apiKey:'AIzaSyA5yA1Wc_KrRPVnGsYsKF_FnY901ApfB_E',authDomain:'kitphanmmo.firebaseapp.com',projectId:'kitphanmmo'};
+firebase.initializeApp(firebaseConfig);const auth=firebase.auth(),$=id=>document.getElementById(id);
+function setState(text){$('state').textContent=text}
+async function request(body){if(!auth.currentUser)throw Error('Hãy đăng nhập Google');const res=await fetch('/api/account-admin',{method:body?'POST':'GET',headers:{'Content-Type':'application/json','Authorization':'Bearer '+await auth.currentUser.getIdToken()},body:body?JSON.stringify(body):undefined,cache:'no-store'});const data=await res.json().catch(()=>({}));if(!res.ok||!data.ok)throw Error(data.error||'HTTP '+res.status);return data}
+async function refresh(){if(!auth.currentUser)return;try{setState('Đang kiểm tra quyền và tải yêu cầu…');const data=await request();$('records').replaceChildren();for(const r of data.pending){
+const item=document.createElement('div');item.className='item';
+const label=document.createElement('strong');label.textContent='@'+r.username;
+const mail=document.createElement('p');mail.textContent='Email đã xác minh: '+r.email+' · UID: '+r.uid;
+const checks=document.createElement('div');
+const c1=document.createElement('input');c1.type='checkbox';const l1=document.createElement('label');l1.append(c1,document.createTextNode('Đã xác minh chủ sở hữu danh tính bằng bằng chứng đáng tin cậy.'));
+const c2=document.createElement('input');c2.type='checkbox';const l2=document.createElement('label');l2.append(c2,document.createTextNode('Đã đối soát số dư và lịch sử tài khoản cũ; chấp nhận liên kết đúng người.'));
+const name=document.createElement('input');name.type='text';name.placeholder='Gõ đúng @'+r.username+' để duyệt';name.autocomplete='off';
+const approve=document.createElement('button');approve.className='btn';approve.textContent='Duyệt liên kết';approve.disabled=true;
+const reject=document.createElement('button');reject.className='btn ghost';reject.textContent='Từ chối';
+const update=()=>approve.disabled=!(c1.checked&&c2.checked&&name.value.trim().toLowerCase()===r.username);c1.addEventListener('change',update);c2.addEventListener('change',update);name.addEventListener('input',update);
+approve.addEventListener('click',async()=>{if(!confirm('Duyệt chuyển quyền sở hữu @'+r.username+'? Bạn đã đối chiếu sao lưu chưa?'))return;approve.disabled=true;try{await request({action:'approve_migration',uid:r.uid,identityChecked:true,balanceChecked:true});await refresh()}catch(e){setState('Lỗi duyệt: '+e.message)}});
+reject.addEventListener('click',async()=>{if(!confirm('Từ chối yêu cầu @'+r.username+'?'))return;reject.disabled=true;try{await request({action:'reject_migration',uid:r.uid});await refresh()}catch(e){setState('Lỗi: '+e.message)}});
+const buttons=document.createElement('div');buttons.className='row';buttons.append(name,approve,reject);
+item.append(label,mail,l1,l2,buttons);$('records').append(item);
+}setState('Đã xác thực Admin · '+data.pending.length+' yêu cầu đang chờ.');}catch(err){setState('Không tải được: '+err.message)}}
+$('login').addEventListener('click',async()=>{try{const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});await auth.signInWithPopup(p)}catch(err){setState('Đăng nhập thất bại: '+(err.code||err.message))}});
+$('logout').addEventListener('click',()=>auth.signOut());$('refresh').addEventListener('click',refresh);
+auth.onAuthStateChanged(u=>{$('email').textContent=u?.email||'Chưa đăng nhập';$('login').hidden=!!u;$('logout').hidden=!u;$('refresh').hidden=!u;if(u)refresh();else {$('records').replaceChildren();setState('Hãy đăng nhập Google Admin.')}});
+</script></body></html>
