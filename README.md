@@ -1,3 +1,5 @@
+> **BẢN MỚI NHẤT: V5.3 SAFE PREPARATION.** Xem [`README_V5_3.md`](README_V5_3.md). Phần dưới đây là hướng dẫn lịch sử V5.2.2, KHÔNG phải chỉ dẫn triển khai bản mới.
+
 # KIT PHAN MMO — Premium V5.2.2 (Ví thật 0đ, khóa giao dịch)
 
 ## Trạng thái an toàn
