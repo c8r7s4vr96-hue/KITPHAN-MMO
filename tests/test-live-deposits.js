@@ -40,6 +40,9 @@ const env={LIVE_DEPOSITS_ALLOWED_UIDS:'*',LIVE_DEPOSITS_ENABLED:'true',SEPAY_LIV
  MB_BANK_ACCOUNT_NUMBER:'123456789012',MB_BANK_ACCOUNT_NAME:'TEST ACCOUNT',
  SEPAY_READ_API_TOKEN:'test-token',SEPAY_LIVE_WEBHOOK_SECRET:'test-secret-32-characters-long-12345'};
 Object.assign(process.env,env);
+assert.equal(live.readiness('customer_alpha',env).ready,true);
+assert.equal(live.readiness('not_whitelisted',{...env,LIVE_DEPOSITS_ALLOWED_UIDS:'customer_alpha'}).reason,'not_allowed');
+assert.equal(live.readiness('customer_alpha',{...env,MB_BANK_ACCOUNT_NAME:''}).reason,'configuration_incomplete');
 const response=()=>{let status=200,body;return {setHeader(){},status(n){status=n;return this},json(v){body=v;return this},get:()=>({status,body})};};
 Module._load=function(name,parent){
  if(name==='../lib/secure-accounts'&&parent?.filename.endsWith('/api/wallet.js'))return {

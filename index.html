@@ -2870,7 +2870,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
         let liveDepositGeneration=0;
         function renderLiveDeposit(data){
             const state=document.getElementById('live-deposit-state');
-            state.textContent=data.enabled?'Nạp tiền đang mở. Chuyển đúng số tiền và nội dung của yêu cầu.':'Nạp tiền đang tạm ngưng.';
+            state.textContent=data.enabled?'Nạp tiền đang mở. Chuyển đúng số tiền và nội dung của yêu cầu.':'Nạp tiền đang tạm ngưng. '+(data.readinessMessage||'Vui lòng liên hệ quản trị viên.');
             document.getElementById('live-deposit-create').disabled=!data.enabled||liveDepositBusy;
             document.getElementById('live-deposit-balance').textContent='Số dư đã nạp xác minh: '+Number(data.availableVnd).toLocaleString('vi-VN')+'đ';
             const instructions=document.getElementById('live-deposit-instructions');
