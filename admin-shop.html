@@ -8,7 +8,7 @@ main{max-width:1000px;margin:0 auto}.top{display:flex;align-items:center;justify
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 </head><body><main>
-<div class="top"><div><div class="logo">KIT PHAN MMO · PRIVATE OPERATIONS</div><h1>Xử lý đơn cần kiểm tra</h1><p class="hint">Chỉ quản trị viên được cấp quyền Firebase mới xem và giải quyết ngoại lệ. Không gửi tài khoản/mật khẩu giao hàng qua Telegram.</p></div><a href="/" class="hint">Quay lại website</a></div>
+<div class="top"><div><div class="logo">KIT PHAN MMO · PRIVATE OPERATIONS</div><h1>Xử lý đơn cần kiểm tra</h1><p class="hint">Chỉ quản trị viên được cấp quyền Firebase mới xem và giải quyết ngoại lệ. Không gửi tài khoản/mật khẩu giao hàng qua Telegram.</p></div><div class="flex"><a href="/admin-finance.html" class="hint">Ví thật & giá bán</a><a href="/" class="hint">Quay lại website</a></div></div>
 <section class="box"><div class="top"><div><h2>Xác thực quản trị viên</h2><p class="hint" id="who">Chưa đăng nhập</p></div><div class="flex"><button id="login">Đăng nhập Google</button><button class="ghost" id="logout" hidden>Đăng xuất</button><button class="ghost" id="refresh" disabled>Làm mới đơn</button></div></div><p id="status" class="hint" aria-live="polite"></p></section>
 <section class="box"><h2>Đơn chờ giao / cần đối soát</h2><div class="orders" id="orders"><p class="hint">Đăng nhập tài khoản quản trị để xem đơn.</p></div></section>
 <section class="box"><p class="danger"><strong>An toàn giao dịch:</strong> Trước khi hoàn tiền, kiểm tra trên CanBoSo xem đơn có bị trừ tiền hay chưa. Nếu API đã mua thành công nhưng chưa có nội dung giao hàng, hãy lấy đúng thông tin từ nhà cung cấp rồi giao thủ công. Không bấm đặt mua lại.</p></section>
@@ -40,7 +40,7 @@ async function load(){
   for(const item of data.orders){
    const card=el('article','order');const top=el('div','order-head');
    const title=el('div');title.append(el('strong','',item.name||'Sản phẩm'),el('div','meta',`#${item.id} · Khách: ${item.username}`));
-   top.append(title,el('span','chip',item.status==='needs_review'?'Cần xác minh':'Chờ giao hàng'));
+   top.append(title,el('span','chip',item.status==='needs_review'?'Cần xác minh':item.status==='awaiting_delivery'?'Chờ giao hàng':'Chờ đối soát CanBoSo (không mua lại)'));
    card.append(top,el('div','meta',`Giá: ${Number(item.price||0).toLocaleString('vi-VN')}đ · Email nhận: ${item.recipientEmail||'(không có)'} · ${new Date(item.at||Date.now()).toLocaleString('vi-VN')}`));
    const actions=el('div','actions');const note=el('p','hint','Nếu nhà cung cấp đã giao tài khoản/mã, dán chính xác nội dung vào đây rồi xác nhận giao cho khách.');
    const input=el('textarea');input.placeholder='Tài khoản / mã kích hoạt / hướng dẫn giao cho khách...';input.setAttribute('aria-label','Nội dung giao hàng');
@@ -55,7 +55,8 @@ async function load(){
    refund.addEventListener('click',async()=>{
     if(!checked.checked){status('Cần xác nhận đã đối soát giao dịch trên CanBoSo.');return}
     if(!confirm('Bạn chắc chắn nhà cung cấp không giữ khoản tiền này và muốn hoàn số dư?'))return;
-    refund.disabled=true;try{await api('shop-admin-review',{action:'refund',username:item.username,orderId:item.id,supplierConfirmedNotCharged:true});status('Đã hoàn tiền.');await load()}catch(e){status(e.message)}finally{refund.disabled=false}
+    const reason=prompt('Nhập lý do hoàn tiền và mã chứng từ CanBoSo (ít nhất 15 ký tự):');if(!reason||reason.trim().length<15){status('Cần lý do/biên bản đối soát ít nhất 15 ký tự.');return;}
+    refund.disabled=true;try{await api('shop-admin-review',{action:'refund',username:item.username,orderId:item.id,supplierConfirmedNotCharged:true,reason:reason.trim()});status('Đã hoàn tiền.');await load()}catch(e){status(e.message)}finally{refund.disabled=false}
    });
    buttons.append(send,refund);actions.append(note,input,row,buttons);card.append(actions);host.append(card);
   }

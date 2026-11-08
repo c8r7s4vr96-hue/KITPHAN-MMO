@@ -1,3 +1,9 @@
+# KITPHAN-MMO V7 — thông tin quan trọng
+
+> **ĐỌC TRƯỚC:** Đây là bản Release Candidate đã kiểm thử offline, chưa nghiệm thu tiền/đơn thật. Xem **[README_V7_RELEASE.md](README_V7_RELEASE.md)** để biết code mới, trang Admin và cách triển khai an toàn. Các nội dung dưới đây được giữ để tra cứu lịch sử V5/V6, không mô tả toàn bộ chức năng hiện hành.
+
+---
+
 > **BẢN MỚI NHẤT: V5.3 SAFE PREPARATION.** Xem [`README_V5_3.md`](README_V5_3.md). Phần dưới đây là hướng dẫn lịch sử V5.2.2, KHÔNG phải chỉ dẫn triển khai bản mới.
 
 # KIT PHAN MMO — Premium V5.2.2 (Ví thật 0đ, khóa giao dịch)
