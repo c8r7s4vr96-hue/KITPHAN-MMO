@@ -1178,7 +1178,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                     <div class="flex flex-wrap items-center justify-between gap-2"><h2 id="kp-shop-orders-title" class="text-sm text-white font-extrabold"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Đơn tài khoản đã mua</h2>
                       <button id="kp-shop-orders-refresh" type="button" class="kp-shop-secondary"><i class="fa-solid fa-rotate mr-1"></i> Lịch sử mua</button></div>
                     <p id="kp-shop-orders-tip" class="kp-shop-muted">Thông tin tài khoản hoặc mã kích hoạt chỉ hiện với người đã mua. Không chia sẻ mật khẩu hay mã kích hoạt của bạn.</p>
-                    <div id="kp-shop-orders" class="space-y-2 kp-shop-muted">Nhấn “Lịch sử mua” để tải đơn hàng.</div>
+                    <div id="kp-shop-orders" role="status" aria-live="polite" class="space-y-2 kp-shop-muted">Nhấn “Lịch sử mua” để tải đơn hàng.</div>
                   </div>
                 </section>
                 <div id="kp-shop-modal" class="kp-shop-overlay" role="dialog" aria-modal="true" aria-label="Chi tiết mua tài khoản" hidden>
@@ -1375,7 +1375,12 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                 <div id="tab-orders" class="tab-content hidden space-y-4">
                     <div>
                         <h1 class="text-xl font-black text-white uppercase tracking-wider">Lịch Sử Đơn Hàng</h1>
-                        <p class="text-xs text-zinc-500">Theo dõi tiến độ đơn hàng realtime</p>
+                        <p class="text-xs text-zinc-500">Đơn dịch vụ MXH hiển thị ở bảng bên dưới. Đơn CanBoSo nằm trong Lịch sử mua Premium, tách riêng để bảo vệ thông tin giao hàng.</p>
+                    </div>
+                    <div class="mono-glass rounded-2xl border border-zinc-800 p-4 flex flex-wrap items-center justify-between gap-3">
+                      <div><p class="text-sm font-bold text-white">Đơn mua Kho Premium / CanBoSo</p>
+                        <p class="text-xs text-zinc-400 mt-1">Xem các đơn đã giao, đang giữ tiền, chờ đối soát và đã hoàn tiền.</p></div>
+                      <button type="button" onclick="switchTab('shop')" class="px-4 py-2 btn-white rounded-xl text-xs font-bold">Mở lịch sử mua Premium</button>
                     </div>
 
                     <div class="mono-glass rounded-2xl border border-zinc-800 overflow-hidden">
@@ -3263,6 +3268,9 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
     }catch(e){
       $('kp-shop-modal-status').textContent=phrase('Chưa thể xác nhận mua hàng: ','Purchase could not be confirmed: ')+e.message+' '+phrase('Nếu tiền đã bị trừ, kiểm tra lịch sử trước khi thử lại.','If charged, check order history before retrying.');
       btn.textContent=phrase('KIỂM TRA LỊCH SỬ TRƯỚC KHI THỬ LẠI','CHECK ORDER HISTORY BEFORE RETRY');
+      // Even if the HTTP response was lost, the server may have saved a held order.
+      // Reload the canonical Premium history instead of permitting a blind retry.
+      void orders();
     }
   }
   async function orders(orderId){
@@ -3271,7 +3279,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
       const response=await fetch('/api/shop-orders'+(orderId?'?orderId='+encodeURIComponent(orderId):''),{headers:await authHeaders()});
       const data=await response.json().catch(()=>({}));
       if(!response.ok||!data.ok)throw Error(data.error||'HTTP '+response.status);
-      node.innerHTML=(data.orders||[]).map(o=>`<div class="border border-zinc-700/30 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2"><div><p class="text-xs font-bold text-white">${safe(o.name||'Sản phẩm')}</p><p class="text-[10px] text-zinc-500 mt-1">#${safe(o.id)} · ${money(o.price||0)} · ${safe(({delivered:phrase('Đã giao hàng','Delivered'),completed:phrase('Đã giao hàng','Delivered'),awaiting_delivery:phrase('Chờ giao hàng','Awaiting delivery'),needs_review:phrase('Admin đang xử lý','Under review'),refunded:phrase('Đã hoàn tiền','Refunded'),failed:phrase('Thất bại','Failed'),reserved:phrase('Đã giữ tiền','Reserved'),requesting_supplier:phrase('Đang đặt hàng','Ordering')})[o.status]||o.status||'pending')}</p></div>${['completed','delivered'].includes(o.status)?`<button type="button" data-shop-delivery="${safe(o.id)}" class="kp-shop-secondary">${phrase('Xem giao hàng','View delivery')}</button>`:''}</div>`).join('')||phrase('Chưa có đơn tài khoản nào.','No digital orders yet.');
+      node.innerHTML=(data.orders||[]).map(o=>`<div class="border border-zinc-700/30 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2"><div><p class="text-xs font-bold text-white">${safe(o.name||'Sản phẩm')}</p><p class="text-[10px] text-zinc-500 mt-1">#${safe(o.id)} · ${money(o.price||0)} · ${safe(({delivered:phrase('Đã giao hàng','Delivered'),completed:phrase('Đã giao hàng','Delivered'),awaiting_delivery:phrase('Chờ giao hàng · tiền đang giữ','Awaiting delivery · funds held'),needs_review:phrase('Chờ Admin đối soát · tiền đang giữ','Admin review · funds held'),refunded:phrase('Đã hoàn về ví','Refunded to wallet'),failed:phrase('Thất bại','Failed'),reserved:phrase('Đã giữ tiền','Reserved'),requesting_supplier:phrase('Đang đặt hàng','Ordering')})[o.status]||o.status||'pending')}</p>${['awaiting_delivery','needs_review','requesting_supplier','reserved'].includes(o.status)?`<p class="text-[10px] text-amber-300 mt-1">${phrase('Không mua lại sản phẩm này cho tới khi đơn được đối soát.','Do not reorder before reconciliation.')}</p>`:''}</div>${['completed','delivered'].includes(o.status)?`<button type="button" data-shop-delivery="${safe(o.id)}" class="kp-shop-secondary">${phrase('Xem giao hàng','View delivery')}</button>`:''}</div>`).join('')||phrase('Chưa có đơn tài khoản nào.','No digital orders yet.');
       if(orderId&&data.delivery!==null&&data.delivery!==undefined){
         $('kp-shop-modal').hidden=false;state.selected=null;
         $('kp-shop-modal-title').textContent=phrase('Thông tin giao hàng','Delivery details');
@@ -3308,7 +3316,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
   });
   const watcher=new MutationObserver(()=>{
     const active=!$('tab-shop').classList.contains('hidden');
-    if(active){if(!state.openedOnce){state.openedOnce=true;void load(true)} else if(Date.now()-state.lastLoad>45000)void load(false);}
+    if(active){if(!state.openedOnce){state.openedOnce=true;void load(true);void orders()} else if(Date.now()-state.lastLoad>45000)void load(false);}
   });watcher.observe($('tab-shop'),{attributes:true,attributeFilter:['class']});
   setInterval(()=>{if(!document.hidden&&!$('tab-shop').classList.contains('hidden'))void load(false);},60000);
   function applyShopLocale(){

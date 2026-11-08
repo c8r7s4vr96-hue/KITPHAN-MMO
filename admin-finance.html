@@ -14,7 +14,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 <section class="card full"><div class="row"><div><h2>Tra cứu ví thật theo khách</h2><p>Chỉ hiển thị ví mới <code>live_deposits_v1/accounts/&lt;Firebase UID&gt;</code>.</p></div><button id="lookup" class="secondary" disabled>Xem số dư</button></div><label for="username">Username Firebase (không có @)</label><input id="username" placeholder="Ví dụ: adminkit" maxlength="60" autocomplete="off"><small id="accountUid"></small><div class="stats" style="margin-top:17px"><div class="stat"><small>Khả dụng</small><strong id="available">—</strong></div><div class="stat"><small>Đang giữ cho đơn</small><strong id="held">—</strong></div><div class="stat"><small>Đã nạp xác minh từ SePay</small><strong id="bankTotal">—</strong></div></div></section>
 <section class="card"><h2>Điều chỉnh ví có kiểm toán</h2><p>Chỉ điều chỉnh vào ví thật khi đã xác minh lý do/chứng từ. Mỗi thao tác có mã chống trùng và bút toán không xóa.</p><label for="kind">Loại điều chỉnh</label><select id="kind"><option value="credit">Cộng tiền</option><option value="debit">Trừ tiền khả dụng</option></select><label for="amount">Số tiền VND</label><input id="amount" type="number" min="1" step="1" max="1000000000" placeholder="20000"><label for="reason">Lý do / mã chứng từ (tối thiểu 12 ký tự)</label><textarea id="reason" maxlength="300" placeholder="Ví dụ: Bù tiền từ biên bản đối soát #... (đã kiểm tra chứng từ)"></textarea><div class="actions"><button id="adjust" disabled>Ghi điều chỉnh có audit</button></div><p id="adjustMessage" role="status"></p><small>Yêu cầu <code>ADMIN_WALLET_ADJUSTMENTS_ENABLED=true</code> trên Vercel. Không tự kích hoạt khi upload bản vá.</small></section>
 <section class="card"><h2>Giá bán kho CanBoSo</h2><p id="pricingHelp">Giá mặc định = giá CanBoSo đã làm tròn theo 100đ + <strong>20.000đ</strong> / sản phẩm. Admin có thể đặt mức cộng riêng.</p><label for="product">Sản phẩm</label><select id="product"><option>Đăng nhập để lấy kho...</option></select><label for="markup">Số tiền cộng trên giá nhập (VND)</label><input id="markup" type="number" min="0" max="100000000" step="100" value="20000"><label for="priceReason">Lý do đổi giá (tối thiểu 12 ký tự)</label><textarea id="priceReason" maxlength="300" placeholder="Ví dụ: Điều chỉnh lợi nhuận gói này theo bảng giá tháng 11..."></textarea><div class="actions"><button id="savePrice" disabled>Cập nhật giá sản phẩm</button><button id="refreshPrices" class="secondary" disabled>Làm mới giá</button></div><p id="priceMessage" role="status"></p></section>
-<section class="card full"><div class="row"><div><h2>Đơn CanBoSo cần đối soát</h2><p>Chỉ xem trạng thái và mã lỗi kỹ thuật. Không tự gửi lại đơn, không tự hoàn tiền.</p></div><button id="loadReviews" class="secondary" disabled>Xem đơn cần kiểm tra</button></div><ul id="reviewOrders" class="history"><li>Đăng nhập Google Admin để xem.</li></ul></section>
+<section class="card full"><div class="row"><div><h2>Đơn CanBoSo cần đối soát</h2><p>Xem trạng thái, mã lỗi và xử lý hoàn khoản giữ khi đã có bằng chứng nhà cung cấp không nhận/không thu tiền. Không tự gửi lại đơn.</p></div><button id="loadReviews" class="secondary" disabled>Xem đơn cần kiểm tra</button></div><ul id="reviewOrders" class="history"><li>Đăng nhập Google Admin để xem.</li></ul></section>
 <section class="card full"><h2>Nhật ký 40 giao dịch gần nhất</h2><p>Hiển thị nạp tiền xác minh, cộng/trừ thủ công, giữ tiền mua hàng, hoàn tiền và quyết toán đơn. Không hiện thông tin bàn giao bí mật.</p><ul id="journal" class="history"><li>Chọn tài khoản và nhấn Xem số dư.</li></ul></section>
 </div><p class="foot">KITPHAN MMO · Backend Firebase Admin SDK · SePay Read API · Vercel. Không hiển thị khóa API trong trình duyệt.</p>
 </main>
@@ -37,7 +37,46 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
  async function loadPrices(){try{const [catalog,settings]=await Promise.all([api('/api/shop-products'),api('/api/shop-products?action=pricing_admin')]);prices=settings.overrides||{};const sel=$('product');sel.replaceChildren();for(const p of catalog.products){const o=document.createElement('option');o.value=p.id;o.textContent=p.name+' · '+money(p.price);sel.appendChild(o);}status('priceMessage','Đã đọc '+catalog.products.length+' sản phẩm. Mặc định cộng 20.000đ.');if(sel.value)syncPrice();}catch(e){status('priceMessage','Chưa tải được kho: '+e.message)}}
  async function syncPrice(){const productId=$('product').value;try{const opts=Object.values(prices).filter(v=>v.productId===productId);$('markup').value=opts[0]?.markupVnd??20000;}catch{$('markup').value=20000;}}
  async function savePrice(){const productId=$('product').value,markupVnd=Number($('markup').value),reason=$('priceReason').value.trim();if(!Number.isSafeInteger(markupVnd)||markupVnd<0||markupVnd>1e8||reason.length<12){status('priceMessage','Nhập số tiền cộng nguyên >= 0 và lý do từ 12 ký tự.');return;}if(!confirm('Lưu giá cộng cho sản phẩm '+productId+'?'))return;$('savePrice').disabled=true;try{await api('/api/shop-products?action=pricing_admin',{productId,markupVnd,reason});status('priceMessage','Đã cập nhật. Giá hiển thị mới sẽ áp dụng sau khi làm mới catalog.');await loadPrices();}catch(e){status('priceMessage','Lỗi cập nhật: '+e.message)}finally{$('savePrice').disabled=false;}}
- async function reviews(){const list=$('reviewOrders');list.replaceChildren();try{const data=await api('/api/shop-admin-review');for(const o of data.orders||[]){const li=document.createElement('li');li.textContent=`${o.id} · @${o.username} · ${money(o.price)} · ${o.status} · ${o.diagnostic?.code||'Chưa có chẩn đoán (đơn cũ)'}${o.diagnostic?.httpStatus?' · HTTP '+o.diagnostic.httpStatus:''}`;list.append(li);}if(!(data.orders||[]).length){const li=document.createElement('li');li.textContent='Chưa có đơn cần đối soát.';list.append(li);}}catch(e){const li=document.createElement('li');li.textContent='Không xem được đơn: '+e.message;list.append(li);}}
+ async function refundOrder(o,reasonField,proofField,button,feedback){
+   const reason=reasonField.value.trim();
+   if(!proofField.checked){feedback.textContent='Cần xác nhận đã kiểm tra chứng từ nhà cung cấp không thu tiền.';return;}
+   if(reason.length<15){feedback.textContent='Vui lòng ghi lý do/chứng từ ít nhất 15 ký tự.';return;}
+   if(!confirm('Hoàn khoản giữ '+money(o.price)+' cho @'+o.username+' của đơn '+o.id+'? Chỉ tiếp tục khi nhà cung cấp đã xác nhận không thu tiền/đã hoàn tiền.'))return;
+   button.disabled=true;feedback.textContent='Đang xử lý hoàn khoản giữ...';
+   try{
+     const result=await api('/api/shop-admin-review',{orderId:o.id,action:'refund',reason,supplierConfirmedNotCharged:true});
+     feedback.textContent='Đã xử lý: '+result.status+'. Kiểm tra lại ví khách và nhật ký giao dịch.';
+     await reviews();
+     if($('username').value.trim().toLowerCase()===String(o.username||'').toLowerCase())await lookup();
+   }catch(e){feedback.textContent='Không xử lý được: '+e.message+'. Kiểm tra trạng thái trước khi thao tác lại.';}
+   finally{button.disabled=false;}
+ }
+ async function reviews(){
+   const list=$('reviewOrders');list.replaceChildren();
+   try{
+     const data=await api('/api/shop-admin-review');
+     for(const o of data.orders||[]){
+       const li=document.createElement('li');
+       const heading=document.createElement('p');heading.style.color='#f5f7fd';
+       heading.textContent=`${o.id} · @${o.username} · ${money(o.price)} · ${o.status} · ${o.diagnostic?.code||'Chưa có chẩn đoán (đơn cũ)'}${o.diagnostic?.httpStatus?' · HTTP '+o.diagnostic.httpStatus:''}`;
+       li.append(heading);
+       if(o.status==='needs_review'||o.status==='awaiting_delivery'){
+         const label=document.createElement('label');label.textContent='Chứng từ / lý do hoàn khoản giữ (ít nhất 15 ký tự)';
+         const reason=document.createElement('textarea');reason.maxLength=300;reason.placeholder='Ví dụ: MITA SHOP 98 xác nhận ngày ... không có đơn; đã kiểm tra ví Buyer không bị trừ tiền.';
+         const proofLabel=document.createElement('label');proofLabel.style.display='flex';proofLabel.style.alignItems='flex-start';proofLabel.style.gap='8px';
+         const proof=document.createElement('input');proof.type='checkbox';proof.style.width='auto';proof.style.marginTop='2px';
+         const proofText=document.createElement('span');proofText.textContent='Tôi đã kiểm tra bằng chứng nhà cung cấp không nhận/không thu tiền hoặc đã hoàn tiền, và chấp nhận hoàn khoản giữ cho khách.';
+         proofLabel.append(proof,proofText);
+         const button=document.createElement('button');button.className='secondary';button.textContent='Hoàn khoản giữ đơn này';
+         const feedback=document.createElement('p');feedback.setAttribute('role','status');
+         button.onclick=()=>refundOrder(o,reason,proof,button,feedback);
+         li.append(label,reason,proofLabel,button,feedback);
+       }
+       list.append(li);
+     }
+     if(!(data.orders||[]).length){const li=document.createElement('li');li.textContent='Chưa có đơn cần đối soát.';list.append(li);}
+   }catch(e){const li=document.createElement('li');li.textContent='Không xem được đơn: '+e.message;list.append(li);}
+ }
  $('loadReviews').onclick=reviews;
  $('lookup').onclick=lookup;$('adjust').onclick=update;$('savePrice').onclick=savePrice;$('refreshPrices').onclick=loadPrices;$('product').onchange=syncPrice;
  $('login').onclick=async()=>{try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}catch(e){status('message',e.message)}};$('logout').onclick=()=>auth.signOut();
