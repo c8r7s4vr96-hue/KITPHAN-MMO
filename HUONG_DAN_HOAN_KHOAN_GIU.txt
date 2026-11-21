@@ -1,0 +1,10 @@
+KITPHAN-MMO — BẢN VÁ GIAO DIỆN HOÀN KHOẢN GIỮ
+
+1. Chỉ thay file admin-finance.html tại thư mục gốc GitHub.
+2. Commit, đợi Vercel Production Ready.
+3. Admin đăng nhập Google > Đơn CanBoSo cần đối soát > Xem đơn cần kiểm tra.
+4. Đối chiếu độc lập nhà cung cấp xác nhận không có đơn và không trừ tiền.
+5. Ghi lý do/chứng từ >=15 ký tự, tích xác nhận, nhấn Hoàn khoản giữ đơn này, xác nhận.
+6. Tra ví khách: 29.000đ đang giữ sẽ về 0đ và khả dụng từ 21.000đ lên 50.000đ nếu không có giao dịch khác.
+7. Lưu ý: không cộng tiền ở mục Điều chỉnh ví và không sửa trực tiếp Firebase.
+8. API /api/shop-admin-review POST phải là bản V7.3 đã triển khai; API kiểm tra UID Admin và giao dịch Firebase atomic.
