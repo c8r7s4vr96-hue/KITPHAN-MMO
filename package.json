@@ -1,0 +1,17 @@
+{
+  "name": "kitphanmmo-live-deposits",
+  "version": "8.2.1",
+  "private": true,
+  "description": "KITPHAN MMO complete source RC: canonical live wallet, supplier checkout, idempotent orders, audited holds and Premium history",
+  "engines": {
+    "node": "22.x"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  },
+  "scripts": {
+    "build": "node scripts/build-static.js",
+    "test": "node tests/test-v821-cold-start-wallet.js && node tests/test-vercel-hobby-12.js && node tests/test-v82-public-checkout.js && node tests/test-v8-username-live.js && node tests/test-v8-hardening.js && node tests/test-v8-order-safety.js && node tests/test-fulfillment.js && node tests/test-live-intake.js && node tests/test-sepay-connection.js && node tests/test-sepay-verification.js && node tests/test-v56-audit.js && node tests/test-v57-local-hmac.js && node tests/test-v57-preflight.js && node tests/test-v58-customer-locked.js && node tests/test-v59-drafts.js && node tests/test-v60-core.js && node tests/test-wallet-audit.js && node tests/test-wallet-sandbox-integration.js && node tests/test-wallet-sandbox.js && node tests/test-locked-wallet.js && node tests/test-migration-approval.js",
+    "test:syntax": "python tests/test-syntax.py"
+  }
+}
