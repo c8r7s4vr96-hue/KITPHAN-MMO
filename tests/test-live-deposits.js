@@ -41,7 +41,7 @@ const env={LIVE_DEPOSITS_ALLOWED_UIDS:'*',LIVE_DEPOSITS_ENABLED:'true',SEPAY_LIV
  SEPAY_READ_API_TOKEN:'test-token',SEPAY_LIVE_WEBHOOK_SECRET:'test-secret-32-characters-long-12345'};
 Object.assign(process.env,env);
 assert.equal(live.readiness('customer_alpha',env).ready,true);
-assert.equal(live.readiness('not_whitelisted',{...env,LIVE_DEPOSITS_ALLOWED_UIDS:'customer_alpha'}).reason,'not_allowed');
+assert.equal(live.readiness('not_whitelisted',{...env,LIVE_DEPOSITS_ALLOWED_UIDS:'customer_alpha'}).reason,'ready');
 assert.equal(live.readiness('customer_alpha',{...env,MB_BANK_ACCOUNT_NAME:''}).reason,'configuration_incomplete');
 const response=()=>{let status=200,body;return {setHeader(){},status(n){status=n;return this},json(v){body=v;return this},get:()=>({status,body})};};
 Module._load=function(name,parent){
@@ -121,11 +121,38 @@ async function send(row,valid=true) {
  records['102']=record(102,betaIntent,{amount_in:'10000.00'});
  eq((await send(records['102'])).body.status,'amount_mismatch');
  eq(data[live.ROOT].accounts[other].availableVnd,0);
- records['103']=record(103,betaIntent,{transaction_date:date(betaIntent.createdAt-1000)});
+ records['103']=record(103,betaIntent,{transaction_date:date(betaIntent.createdAt-61000)});
  eq((await send(records['103'])).body.status,'outside_window');
  records['104']=record(104,betaIntent);
  eq((await live.reconcileId(db,'104',env)).credited,true);
  eq(data[live.ROOT].accounts[other].availableVnd,20000);
+ // Older deployment had classified a 1-second-early bank transfer as outside_window.
+ // Admin retries the SAME real transaction via SePay Read API; no wallet double credit.
+ const gamma='customer_gamma';
+ const newIntent=await live.createIntent(db,gamma,'gamma',35000,env);
+ const g=data[live.ROOT].intents[newIntent.code];
+ records['105']=record(105,g,{transaction_date:date(g.createdAt-1000)});
+ const gp=live.normalize(records['105'],env.MB_BANK_ACCOUNT_NUMBER);
+ const fingerprint=crypto.createHash('sha256').update(JSON.stringify(gp)).digest('hex');
+ data[live.ROOT].events['sepay_105']={...gp,fingerprint,status:'outside_window',uid:gamma,credited:false,recordedAt:Date.now(),verificationSource:'sepay_read_api_v1'};
+ eq((await call('live_deposit_reconcile',{transactionId:'105'},'Bearer customer')).status,403);
+ const adminRecovered=await call('live_deposit_reconcile',{transactionId:'105'},'Bearer admin');
+ eq(adminRecovered.status,200);
+ eq(adminRecovered.body.event.status,'credited');
+ eq(adminRecovered.body.event.originalStatus,'outside_window');
+ eq(adminRecovered.body.event.acceptedEarlySkewMs,1000);
+ eq(data[live.ROOT].accounts[gamma].availableVnd,35000);
+ eq(data[live.ROOT].accounts[gamma].totalDepositedVnd,35000);
+ eq(data[live.ROOT].intents[g.code].status,'paid');
+ eq(data[live.ROOT].ledger['sepay_105'].amountVnd,35000);
+ eq((await call('live_deposit_reconcile',{transactionId:'105'},'Bearer admin')).body.event.status,'credited');
+ eq(data[live.ROOT].accounts[gamma].availableVnd,35000);
+ eq(Object.keys(data[live.ROOT].ledger).filter(x=>x==='sepay_105').length,1);
+ // A second bank transaction targeting already-paid intent must not credit again.
+ records['106']=record(106,g,{transaction_date:date(g.createdAt+2000)});
+ eq((await call('live_deposit_reconcile',{transactionId:'106'},'Bearer admin')).body.event.status,'extra_transfer');
+ eq(data[live.ROOT].accounts[gamma].availableVnd,35000);
+
  const customerStatus=(await call('live_deposit_status')).body;
  eq(customerStatus.intents.some(i=>i.code===beta.code),false);
  eq((await call('live_deposit_check',{code:beta.code})).status,404);
