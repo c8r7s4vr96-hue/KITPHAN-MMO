@@ -87,10 +87,20 @@ module.exports=async function handler(req,res){
    const matched=await verifiedPilotOrder(ctx.db,ctx.uid,req.body?.orderId,current.pilotStartedAt);
    const at=Date.now();
    const tx=await settingUpdate(ctx.db,s=>{
+     // Firebase RTDB may invoke a transaction with null before reading the
+     // existing remote value on a cold serverless worker. Returning undefined
+     // here aborts a valid promotion permanently. Proposing null lets the
+     // server detect a stale version and retry with the authoritative state.
+     // Never fabricate the missing pilot record from a prior read.
+     if(s===null)return null;
      if(!validPilot(s,current))return;
      return audited(s,'public',ctx.uid,at,{verifiedOrderId:matched.id});
    });
-   if(!tx.committed)throw Object.assign(Error('Trạng thái pilot đã đổi; tải lại và kiểm tra.'),{status:409});
+   // A null -> null proposal can commit if the pilot record was truly removed.
+   // Do not report success unless the COMMITTED snapshot contains our proof.
+   const saved=tx.snapshot?.val();
+   if(!tx.committed||saved?.mode!=='public'||saved?.verifiedOrderId!==matched.id||saved?.updatedBy!==ctx.uid)
+     throw Object.assign(Error('Không thể lưu mở bán: trạng thái pilot đã thay đổi hoặc chưa được xác nhận từ Firebase. Tải lại trạng thái và kiểm tra.'),{status:409});
    return res.status(200).json({ok:true,mode:'public',verifiedOrderId:matched.id});
   }
   return res.status(422).json({ok:false,error:'Hành động không hợp lệ.'});

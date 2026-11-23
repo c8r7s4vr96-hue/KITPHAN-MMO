@@ -36,7 +36,18 @@ function makeDb(){
    async once(){let result=get(path);if(state.column&&result&&typeof result==='object'){
     result=Object.fromEntries(Object.entries(result).filter(([,v])=>v?.[state.column]===state.equals).slice(-Number(state.limit||1e6)));
    }return snapshot(structuredClone(result??null));},
-   async transaction(fn){const current=get(path)??null,updated=fn(structuredClone(current));if(updated===undefined)return {committed:false,snapshot:snapshot(current)};set(path,updated);return {committed:true,snapshot:snapshot(structuredClone(updated))};}
+   async transaction(fn){
+    const current=get(path)??null;
+    if(path==='shop_checkout_control_v2'&&current?.mode==='pilot'){
+     // Firebase sometimes invokes the updater with local null before reading
+     // remote pilot. An undefined return would abort without server retry.
+     const coldProposal=fn(null);
+     if(coldProposal===undefined)return {committed:false,snapshot:snapshot(current)};
+    }
+    const updated=fn(structuredClone(current));
+    if(updated===undefined)return {committed:false,snapshot:snapshot(current)};
+    set(path,updated);return {committed:true,snapshot:snapshot(structuredClone(updated))};
+   }
  }}};
 }
 const db=makeDb();
