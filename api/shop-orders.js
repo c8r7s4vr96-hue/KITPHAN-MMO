@@ -1,0 +1,44 @@
+'use strict';
+const {identity}=require('../lib/secure-accounts');
+const {jsonError,error}=require('../lib/shop-common');
+const {ROOT}=require('../lib/wallet-commerce');
+const ID=/^[a-zA-Z0-9_-]{12,90}$/;
+module.exports=async(req,res)=>{
+ // Retain /api/shop-session (deprecated) through Vercel's internal rewrite.
+ // This dispatch performs cookie deletion only; it does not grant session auth.
+ if(req.query?.__legacySession==='1')return require('../lib/legacy-shop-session')(req,res);
+ res.setHeader('Cache-Control','private, no-store');
+ if(req.method!=='GET')return res.status(405).json({ok:false});
+ try{
+  const ctx=await identity(req);
+  const live=(await ctx.db.ref(ROOT+'/orders').orderByChild('uid').equalTo(ctx.uid).limitToLast(60).once('value')).val()||{};
+  // Legacy orders stay visible as historical records only; never debited again.
+  const old=(await ctx.db.ref('shop_orders/'+ctx.username).limitToLast(40).once('value')).val()||{};
+  const orders=[...Object.values(live),...Object.entries(old).map(([id,v])=>({id,...v,source:'legacy_history'}))]
+   .filter(o=>o&&typeof o==='object')
+   .map(o=>({id:o.id,name:o.name||o.productId||'Sản phẩm',price:o.price||0,
+     status:o.status||'created',createdAt:o.createdAt,fulfilledAt:o.fulfilledAt,
+     recipientEmail:o.recipientEmail||null,source:o.source||'live_wallet',
+     reviewCode:['needs_review','awaiting_delivery'].includes(o.status)?o.supplierDiagnostic?.code||'AWAITING_SUPPLIER_VERIFICATION':null}))
+   .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,60);
+  const orderId=String(req.query?.orderId||'');let delivery=null;
+  if(orderId){
+    if(!ID.test(orderId))throw error('Mã đơn không hợp lệ.',422);
+    // Paginated history is only a summary. Resolve an explicitly requested
+    // order by its exact key so old purchases do not disappear after 60 orders.
+    const o=live[orderId]||(await ctx.db.ref(ROOT+'/orders/'+orderId).once('value')).val();
+    if(o){
+      if(o.uid!==ctx.uid)throw error('Không tìm thấy đơn trong tài khoản.',404);
+      if(o.status==='delivered')delivery=o.delivery||null;
+    }else{
+      const historical=old[orderId]||(await ctx.db.ref('shop_orders/'+ctx.username+'/'+orderId).once('value')).val();
+      if(!historical)throw error('Không tìm thấy đơn trong tài khoản.',404);
+      if(['completed','delivered'].includes(historical.status)){
+        const record=(await ctx.db.ref('shop_deliveries/'+ctx.username+'/'+orderId).once('value')).val();
+        delivery=typeof record==='string'?record:typeof record?.text==='string'?record.text:null;
+      }
+    }
+  }
+  return res.status(200).json({ok:true,orders,delivery});
+ }catch(e){return jsonError(res,e)}
+};
