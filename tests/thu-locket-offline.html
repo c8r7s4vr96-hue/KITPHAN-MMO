@@ -1,0 +1,126 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'"><title>KITPHAN MMO · Thử Locket Gold</title><style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#101118;color:#f5f5f5}
+*{box-sizing:border-box}body{max-width:660px;margin:auto;padding:24px 16px}section{background:#181921;border:1px solid #393b49;border-radius:16px;padding:clamp(16px,4vw,30px)}
+h1,h2,h3{line-height:1.25}dt,dd{margin:0}dl>div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #454652}
+button,input,select{font:inherit;padding:10px;border-radius:8px;border:1px solid #6e7080;max-width:100%}button{cursor:pointer;margin:4px 4px 4px 0}button:disabled{opacity:.55;cursor:default}label{display:block;margin:12px 0}input,select{width:100%;margin:5px 0}li,p{overflow-wrap:anywhere;line-height:1.5}.hidden,[hidden]{display:none!important}
+</style></head><body><header><h1>KITPHAN MMO</h1><p>Bản thử ngoại tuyến</p></header><main><section id="locket-info-section" class="mono-glass rounded-2xl p-6 border border-zinc-700 space-y-4 ">
+                                <h2 class="text-lg font-black text-white">Locket Gold</h2>
+                                <p class="text-sm text-zinc-400">Giá mỗi lần kích hoạt</p>
+                                <dl class="divide-y divide-zinc-700 text-white">
+                                    <div class="flex justify-between gap-4 py-2"><dt>180 ngày</dt><dd class="font-bold">49.000đ</dd></div>
+                                    <div class="flex justify-between gap-4 py-2"><dt>1 năm</dt><dd class="font-bold">89.000đ</dd></div>
+                                    <div class="flex justify-between gap-4 py-2"><dt>Vĩnh viễn</dt><dd class="font-bold">100.000đ</dd></div>
+                                </dl>
+                                <button type="button" disabled class="px-5 py-2.5 rounded-xl border border-zinc-700 text-zinc-400 text-sm font-semibold cursor-not-allowed">Chưa mở bán</button>
+                                <p class="text-sm text-zinc-300">Chế độ thử dùng username giả. Mỗi đơn chỉ được mô phỏng trong tab này, không trừ ví và không kích hoạt tài khoản.</p>
+                                <button id="locket-demo-start" type="button" class="px-5 py-2.5 rounded-xl bg-white text-black text-sm font-bold">Mua thử</button>
+                                <form id="locket-demo-form" hidden class="space-y-3">
+                                    <label class="block">Chọn gói
+                                        <select id="locket-demo-package" class="mt-1 w-full p-3 rounded-lg bg-zinc-950 border border-zinc-700 text-white">
+                                            <option value="LKG6M">180 ngày · 49.000đ</option>
+                                            <option value="LKG1Y">1 năm · 89.000đ</option>
+                                            <option value="LKGVV">Vĩnh viễn · 100.000đ</option>
+                                        </select>
+                                    </label>
+                                    <label class="block">Username dùng thử
+                                        <input id="locket-demo-username" maxlength="40" required autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Ví dụ: khach_test" class="mt-1 w-full p-3 rounded-lg bg-zinc-950 border border-zinc-700 text-white">
+                                    </label>
+                                    <button id="locket-demo-review" type="submit" class="px-5 py-2.5 rounded-xl bg-white text-black text-sm font-bold">Xem lại đơn thử</button>
+                                </form>
+                                <div id="locket-demo-summary" hidden class="p-4 rounded-xl border border-zinc-700 space-y-3">
+                                    <p id="locket-demo-summary-text"></p>
+                                    <button id="locket-demo-confirm" type="button" class="px-5 py-2 rounded-lg bg-white text-black font-bold">Xác nhận mua thử</button>
+                                    <button id="locket-demo-edit" type="button" class="px-4 py-2 rounded-lg border border-zinc-600">Chỉnh sửa</button>
+                                </div>
+                                <p id="locket-demo-message" role="status" aria-live="polite" class="text-sm"></p>
+                                <div>
+                                    <h3 class="text-sm font-bold">Lịch sử đơn thử trong tab này</h3>
+                                    <ul id="locket-demo-history" class="mt-2 space-y-1 text-sm text-zinc-300 break-words"></ul>
+                                </div>
+                            </section></main><script id="locket-demo-script">
+(() => {
+    const element = name => document.getElementById('locket-demo-' + name);
+    const start = element('start');
+    const form = element('form');
+    const packages = element('package');
+    const username = element('username');
+    const summary = element('summary');
+    const confirm = element('confirm');
+    const message = element('message');
+    const history = element('history');
+    const plans = new Map(Array.from(packages.options, option => [option.value, option.textContent]));
+    const storageKey = 'kitphan.locket.demo.orders.v1';
+    const validName = /^[A-Za-z0-9._-]{1,40}$/;
+    let orders = [];
+    let draft = null;
+
+    function renderHistory() {
+        history.replaceChildren();
+        for (const order of orders) {
+            const row = document.createElement('li');
+            row.textContent = order.id + ' · @' + order.username + ' · ' + plans.get(order.code) + ' · Hoàn tất mô phỏng';
+            history.appendChild(row);
+        }
+        if (!orders.length) {
+            const empty = document.createElement('li');
+            empty.textContent = 'Chưa có đơn thử.';
+            history.appendChild(empty);
+        }
+    }
+
+    try {
+        const stored = JSON.parse(sessionStorage.getItem(storageKey) || '[]');
+        if (Array.isArray(stored)) {
+            orders = stored.filter(o => o && typeof o.id === 'string' && /^TEST-[a-z0-9-]{1,50}$/i.test(o.id) &&
+                typeof o.username === 'string' && validName.test(o.username) && plans.has(o.code)).slice(0, 50);
+        }
+    } catch { /* Demo can also run in memory when storage is unavailable. */ }
+    renderHistory();
+
+    function edit() {
+        draft = null;
+        start.hidden = true;
+        summary.hidden = true;
+        form.hidden = false;
+        message.textContent = '';
+        username.focus();
+    }
+    start.addEventListener('click', edit);
+    element('edit').addEventListener('click', edit);
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        if (form.hidden) return;
+        const name = username.value.trim().replace(/^@/, '');
+        const code = packages.value;
+        if (!validName.test(name) || !plans.has(code)) {
+            message.textContent = 'Nhập username thử từ 1–40 ký tự gồm chữ không dấu, số, dấu chấm, gạch ngang hoặc gạch dưới.';
+            username.focus();
+            return;
+        }
+        const id = 'TEST-' + (globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + '-' + Math.random().toString(36).slice(2));
+        draft = { id, username: name, code };
+        element('summary-text').textContent = 'Kiểm tra đơn mô phỏng: @' + name + ' · ' + plans.get(code) + '. Số tiền thực thu: 0đ.';
+        form.hidden = true;
+        summary.hidden = false;
+        confirm.disabled = false;
+        message.textContent = '';
+        confirm.focus();
+    });
+    confirm.addEventListener('click', () => {
+        if (!draft || confirm.disabled) return;
+        const order = draft;
+        draft = null;
+        confirm.disabled = true;
+        orders = [order, ...orders].slice(0, 50);
+        let result = 'Đã ghi đơn thử ' + order.id + '. Số tiền thực thu: 0đ.';
+        try { sessionStorage.setItem(storageKey, JSON.stringify(orders)); }
+        catch { result += ' Trình duyệt chỉ lưu được lịch sử đến khi tải lại trang.'; }
+        renderHistory();
+        summary.hidden = true;
+        form.reset();
+        start.hidden = false;
+        message.textContent = result;
+        start.focus();
+    });
+})();
+</script></body></html>

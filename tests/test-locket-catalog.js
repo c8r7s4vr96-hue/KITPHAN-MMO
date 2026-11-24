@@ -18,7 +18,8 @@ for (const file of files) {
     assert.ok(html.includes("id: '" + code + "', name: '" + duration + " · Chưa mở bán', price: " + amount + ','));
   }
   assert.match(card, /<button\b[^>]*\bdisabled\b[^>]*>Chưa mở bán<\/button>/);
-  assert.doesNotMatch(card, /<form|onclick=|<a\s/i);
+  assert.match(card, /<form id="locket-demo-form" hidden/);
+  assert.doesNotMatch(card, /\baction=|onclick=|<a\s/i);
 
   const selector = html.match(/function selectPlatform\(platformKey\) \{[\s\S]*?\n        \}/)[0];
   const elements = new Map();
