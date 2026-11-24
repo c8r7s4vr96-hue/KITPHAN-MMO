@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>KITPHAN MMO | Kiểm tra SePay và CanBoSo</title>
+<style>:root{color-scheme:dark;font:15px/1.6 Inter,system-ui,sans-serif;background:#090c12;color:#f2f5fa}*{box-sizing:border-box}body{margin:0;padding:24px 14px;background:radial-gradient(ellipse at 85% 0,rgba(108,92,231,.22),transparent 45%),#090c12;min-height:100vh}main{max-width:1000px;margin:0 auto}a{color:#c9d5ff}h1{font-size:clamp(24px,5vw,34px);line-height:1.15;margin:12px 0}h2{margin:0 0 10px;font-size:17px}.sub{color:#aab8cb;font-size:13px}.links{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:25px}.panel{border:1px solid #343c50;background:#141a27;border-radius:16px;padding:20px;margin:16px 0}.controls{display:flex;gap:9px;align-items:center;flex-wrap:wrap}button{border:0;border-radius:10px;padding:11px 16px;font-weight:800;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}.ghost{background:#303a52;color:white}ul{padding-left:21px}li{padding:5px 0;overflow-wrap:anywhere}.note{background:#30271b;border-color:#6a4e26}.note strong{color:#f8d788}.badge{display:inline-block;border:1px solid #535c71;border-radius:8px;font-size:11px;padding:1px 7px;color:#ced5e6;margin-left:8px}#results[hidden]{display:none}.status{white-space:pre-wrap;overflow-wrap:anywhere}</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+</head><body><main><nav class="links"><a href="/">Trang chủ</a><a href="/admin-finance.html">Tài chính</a><a href="/admin-shop.html">Đơn CanBoSo</a><a href="/admin-checkout.html">Mở mua hàng</a></nav>
+<h1>Kiểm tra kết nối Live</h1><p class="sub">Bảng chỉ dành cho Google Admin chính. Kiểm tra trực tiếp quyền đọc API SePay và CanBoSo trên Vercel Production, không thực hiện nạp tiền, mua hàng, hoàn tiền hay thay đổi số dư.</p>
+<section class="panel note"><strong>Lưu ý:</strong> Kết quả “API hoạt động” KHÔNG tương đương “đã kiểm chứng giao dịch thật”. Phải đối chiếu webhook SePay, khoản tiền nhận và ít nhất một đơn CanBoSo có kiểm soát trước khi mở bán toàn bộ.</section>
+<section class="panel"><h2>Tài khoản quản trị</h2><p id="who" class="sub" aria-live="polite">Chưa đăng nhập Google</p><div class="controls"><button id="login">Đăng nhập Google Admin</button><button id="logout" class="ghost" hidden>Đăng xuất</button><button id="check" class="ghost" disabled>Kiểm tra SePay + CanBoSo (chỉ đọc)</button></div><p id="message" class="sub" aria-live="polite"></p></section>
+<div id="results" hidden><section class="panel"><h2>SePay / MB Bank</h2><ul id="sepay"></ul></section><section class="panel"><h2>CanBoSo</h2><ul id="supplier"></ul></section><section class="panel"><h2>Dấu vết webhook / đối soát từ Firebase</h2><ul id="evidence"></ul></section><section class="panel"><h2>Trạng thái tính năng Production</h2><ul id="flags"></ul><p id="summary" class="sub"></p></section></div>
+<p class="sub">Không nhập API key, webhook secret hoặc mật khẩu ngân hàng vào trang này. Kết quả không chứa khóa bí mật hay thông tin đăng nhập sản phẩm.</p>
+</main><script>
+(()=>{'use strict';
+ const cfg={apiKey:'AIzaSyA5yA1Wc_KrRPVnGsYsKF_FnY901ApfB_E',authDomain:'kitphanmmo.firebaseapp.com',projectId:'kitphanmmo'};
+ const $=id=>document.getElementById(id);
+ if(!window.firebase){$('message').textContent='Không tải được Firebase SDK.';return;}
+ if(!firebase.apps.length)firebase.initializeApp(cfg);const auth=firebase.auth();let user=null;
+ const line=(list,label,value)=>{const li=document.createElement('li');const strong=document.createElement('strong');strong.textContent=label+': ';li.append(strong,document.createTextNode(String(value)));list.append(li);};
+ const yes=v=>v?'Có':'Không';
+ $('login').onclick=async()=>{try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());}catch(e){$('message').textContent=e.message}};
+ $('logout').onclick=()=>auth.signOut();
+ auth.onAuthStateChanged(u=>{user=u;$('who').textContent=u?u.email:'Chưa đăng nhập Google';$('login').hidden=!!u;$('logout').hidden=!u;$('check').disabled=!u;$('results').hidden=true;});
+ $('check').onclick=async()=>{
+  if(!user)return;$('check').disabled=true;$('message').textContent='Đang kiểm tra các API chỉ đọc...';$('results').hidden=true;
+  try{const token=await user.getIdToken();const res=await fetch('/api/wallet?action=integration_check',{
+   method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}',cache:'no-store'});
+   const data=await res.json().catch(()=>({}));if(!res.ok||!data.ok)throw Error(data.error||'HTTP '+res.status);
+   for(const id of ['sepay','supplier','evidence','flags'])$(id).replaceChildren();
+   const sp=data.sepay||{},conn=sp.readApi||{};
+   line($('sepay'),'MB Bank đang kết nối theo API đọc',yes(conn.connected));
+   line($('sepay'),'Số tài khoản (4 số cuối)',conn.accountLast4||'Chưa xác minh');
+   line($('sepay'),'Đọc giao dịch SePay',yes(conn.transactionReadAccess));
+   line($('sepay'),'Tự kiểm tra HMAC nội bộ',yes(sp.localHmacSelfTest));
+   line($('sepay'),'Ghi webhook Live',yes(sp.recordingEnabled));
+   line($('sepay'),'Mở yêu cầu nạp tiền Live',yes(sp.customerDepositsEnabled));
+   line($('sepay'),'Giới hạn kiểm tra',sp.note||'Chưa xác minh webhook thật');
+   const cb=data.canboso||{};
+   line($('supplier'),'Đã cấu hình key',yes(cb.configured));
+   for(const [name,label] of [['productCatalog','Kho sản phẩm'],['buyerBalance','API số dư Buyer'],['buyerOrders','API lịch sử đơn Buyer']]){
+    const item=cb[name];line($('supplier'),label,typeof item==='object'?(item.status+(item.count==null?'':' · '+item.count+' dòng')):item||'Chưa kiểm tra');
+   }
+   line($('supplier'),'Giới hạn kiểm tra',cb.message||'');
+   const ev=data.evidence||{};
+   line($('evidence'),'Đọc được nhật ký Firebase',yes(ev.available));
+   line($('evidence'),'Webhook ký đã ghi (trong 25 gần nhất)',ev.last25SignedWebhookEvents??'Chưa xác minh');
+   line($('evidence'),'Đối soát SePay Read API (25 gần nhất)',ev.last25ReadApiReconciledEvents??'Chưa xác minh');
+   line($('evidence'),'Bản ghi đã cộng tiền theo API đọc',ev.last25VerifiedCreditEvents??'Chưa xác minh');
+   line($('evidence'),'Giới hạn',ev.note||ev.message||'Không thể coi log Firebase là chứng từ ngân hàng độc lập');
+   const flags=data.flags||{};line($('flags'),'Nạp tiền được bật',yes(flags.customerDeposits));
+   line($('flags'),'Mua hàng được bật',yes(flags.purchases));
+   line($('flags'),'Giới hạn UID mua hàng đã cấu hình',yes(flags.buyerPurchaseAllowedUidsConfigured));
+   line($('flags'),'Cộng/trừ ví bởi Admin',yes(flags.manualWalletAdjustments));
+   line($('flags'),'Đã thử nạp tiền thật',yes(data.liveTransactionTested));
+   line($('flags'),'Đã thử mua CanBoSo thật',yes(data.actualCanBoSoPurchaseTested));
+   $('summary').textContent=data.summary||'';$('message').textContent='Đã kiểm tra lúc '+new Date(data.checkedAt).toLocaleString('vi-VN');$('results').hidden=false;
+  }catch(e){$('message').textContent='Không thể kiểm tra: '+e.message;}
+  finally{$('check').disabled=!user;}
+ };
+})();
+</script></body></html>
