@@ -519,6 +519,14 @@
   transition: border-color .18s ease, transform .18s ease, background .18s ease; cursor: pointer; text-align: left; width: 100%;
 }
 .oasel-queue-item:hover { border-color: rgba(255, 255, 255, .32); background: rgba(24, 24, 27, .95); transform: translateX(2px); }
+.kp-shop-card, .kp-shop-panel { backdrop-filter: blur(16px); border-color: rgba(255, 255, 255, .09) !important; }
+@media (max-width: 640px) {
+  #kp-main-scroll { padding: 12px !important; }
+  .oasel-card, #locket-info-section, #service-order-form { padding: 16px !important; border-radius: 16px !important; }
+  .kp-lime-btn, #locket-resolve-btn, #locket-checkout-btn, #locket-copy-dns-btn, #locket-open-dns-link { min-height: 44px; }
+  .oasel-pill-group { width: 100%; justify-content: space-between; }
+  .oasel-pill { flex: 1; text-align: center; padding: 6px 8px; }
+}
 html.kp-light #kp-nav-pill { background: linear-gradient(90deg, rgba(24, 24, 27, .1), rgba(24, 24, 27, .03)); border-color: rgba(24, 24, 27, .22); box-shadow: none; }
 html.kp-light #sidebar nav .nav-link.kp-nav-current { color: #18181b !important; }
 html.kp-light #sidebar nav .nav-link.kp-nav-current i { color: #18181b !important; }
@@ -754,7 +762,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                         </div>
                     </div>
 
-                    <p class="text-[11px] text-zinc-400">Khách mới: hãy xác minh email, rồi đăng nhập bằng email một lần để kích hoạt username đã chọn. Sau đó có thể đăng nhập bằng username + mật khẩu Firebase. Admin chính vẫn dùng Google; tài khoản cũ cần khôi phục riêng.</p>
+                    <p class="text-[11px] text-zinc-400">Đăng nhập bằng <span class="text-zinc-200 font-semibold">Username</span> hoặc <span class="text-zinc-200 font-semibold">Email</span> đã đăng ký, hoặc dùng Google.</p>
                     <!-- CLOUDFLARE TURNSTILE WIDGET CHO LOGIN -->
                     <div class="space-y-1">
                         <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider">Xác minh bảo mật (Cloudflare)</label>
@@ -784,7 +792,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                         <input type="text" id="reg-fullname" required placeholder="Nguyễn Văn A" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Tên đăng nhập (sẽ kích hoạt sau khi xác minh email)</label>
+                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Tên đăng nhập (Username)</label>
                         <input type="text" id="reg-username" required placeholder="user123" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white">
                     </div>
                     <div>
@@ -1349,13 +1357,19 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-2 space-y-6">
-                            <section id="locket-info-section" class="mono-glass rounded-2xl p-6 border border-zinc-700 space-y-6 hidden">
+                            <section id="locket-info-section" class="oasel-card rounded-2xl p-5 md:p-6 space-y-6 hidden">
                                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 pb-4">
                                     <div>
-                                        <h2 class="text-lg font-black text-white flex items-center gap-2"><i class="fa-solid fa-crown text-amber-400"></i> Locket Gold</h2>
-                                        <p class="text-xs text-zinc-400">Kiểm tra tài khoản, chọn gói và kích hoạt tự động 24/7</p>
+                                        <h2 class="text-lg md:text-xl font-black text-white flex items-center gap-2"><i class="fa-solid fa-crown text-amber-400"></i> Locket Gold</h2>
+                                        <p class="text-xs text-zinc-400 mt-0.5">Kiểm tra tài khoản, chọn gói và kích hoạt tự động 24/7</p>
                                     </div>
-                                    <span class="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-bold uppercase tracking-wider">Tự động 24/7</span>
+                                    <span class="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-zinc-100 text-[10px] font-bold uppercase tracking-wider">Tự động 24/7</span>
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-2 text-center text-[10px] font-bold uppercase tracking-wider">
+                                    <div class="px-2 py-2 rounded-xl bg-zinc-900/80 border border-zinc-800 text-zinc-200"><span class="text-zinc-500 mr-1">01</span> Kiểm tra</div>
+                                    <div class="px-2 py-2 rounded-xl bg-zinc-900/80 border border-zinc-800 text-zinc-200"><span class="text-zinc-500 mr-1">02</span> Chọn gói</div>
+                                    <div class="px-2 py-2 rounded-xl bg-zinc-900/80 border border-zinc-800 text-zinc-200"><span class="text-zinc-500 mr-1">03</span> Cài DNS</div>
                                 </div>
 
                                 <!-- Bước 1: Kiểm tra tài khoản Locket -->
@@ -1404,16 +1418,19 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                                         <div class="text-xs font-extrabold uppercase tracking-wider text-amber-300 flex items-center gap-2"><i class="fa-solid fa-shield-halved"></i> Cài đặt DNS Profile</div>
                                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                             <code id="locket-result-dns" class="flex-1 px-3 py-2.5 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-white font-mono break-all select-all"></code>
-                                            <button id="locket-copy-dns-btn" type="button" class="px-4 py-2.5 rounded-lg bg-white text-black text-xs font-bold shrink-0 hover:bg-zinc-200 transition"><i class="fa-solid fa-copy mr-1"></i>Sao chép DNS</button>
+                                            <div class="flex gap-2 shrink-0">
+                                                <a id="locket-open-dns-link" href="#" target="_blank" rel="noopener" class="flex-1 sm:flex-none text-center px-4 py-2.5 rounded-lg border border-zinc-600 bg-zinc-900 text-white text-xs font-bold hover:bg-zinc-800 transition"><i class="fa-solid fa-download mr-1"></i>Tải DNS</a>
+                                                <button id="locket-copy-dns-btn" type="button" class="flex-1 sm:flex-none px-4 py-2.5 rounded-lg bg-white text-black text-xs font-bold hover:bg-zinc-200 transition"><i class="fa-solid fa-copy mr-1"></i>Sao chép</button>
+                                            </div>
                                         </div>
                                         <p id="locket-copy-dns-status" role="status" class="text-[11px] text-emerald-300"></p>
-                                        <ol class="list-decimal list-inside text-xs text-zinc-300 space-y-1">
-                                            <li><strong>xóa Locket tải lại</strong></li>
-                                            <li>Mở <strong>Safari</strong> trên iPhone/iPad và dán liên kết DNS ở trên.</li>
+                                        <ol class="list-decimal list-inside text-xs text-zinc-300 space-y-1.5 leading-relaxed">
+                                            <li><strong>Xóa app Locket</strong> hiện tại và tải lại từ App Store.</li>
+                                            <li>Mở <strong>Safari</strong> trên iPhone/iPad và mở hoặc dán liên kết DNS ở trên.</li>
                                             <li>Chọn <strong>Cho phép</strong> để tải về hồ sơ cấu hình DNS.</li>
-                                            <li>Vào <strong>Cài đặt → Cài Đặt Chung → Quản Lý VPN & Thiết Bị → Cài đặt KITPHAN MEDIA</strong>.</li>
-                                            <li>Thoát ra và vào phần <strong>Giới Thiệu → lướt hết xuống chọn → Cài Đặt Tin Cậy Chứng Nhận(bật locket & Spotify lên) → Thoát Cài Đặt và Vào locket</strong></li>
-                                            <li><strong>vào app Locket có thông báo gì thì CHẤP NHẬN hết</trong></li>
+                                            <li>Vào <strong>Cài đặt → Cài đặt chung → Quản lý VPN &amp; Thiết bị → Cài đặt KITPHAN MEDIA</strong>.</li>
+                                            <li>Vào <strong>Cài đặt → Cài đặt chung → Giới thiệu → Cài đặt tin cậy chứng nhận</strong>, bật tin cậy cho Locket &amp; Spotify.</li>
+                                            <li>Mở app Locket và chọn <strong>Chấp nhận / Cho phép</strong> các thông báo hiện lên.</li>
                                         </ol>
                                     </div>
                                 </div>
@@ -3933,6 +3950,8 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
             resultMeta.textContent = 'Tài khoản: @' + activatedUser + ' · Gói: ' + pkg.name + ' (' + pkg.code + ')';
             resultExpiry.textContent = expiresAt ? 'Hạn sử dụng: ' + formatExpiry(expiresAt) : 'Trạng thái: Đã kích hoạt';
             resultDns.textContent = dnsUrl;
+            const openDnsLink = document.getElementById('locket-open-dns-link');
+            if (openDnsLink) openDnsLink.href = /^https?:\/\//i.test(dnsUrl) ? dnsUrl : '#';
             copyDnsStatus.textContent = '';
             resultBox.hidden = false;
 
