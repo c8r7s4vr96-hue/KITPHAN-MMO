@@ -468,6 +468,66 @@
     html.kp-light #admin-balance-modal input,html.kp-light #admin-balance-modal select {color:#18181b !important;background:#fff !important}
     @media (max-width:720px) {.kp-theme-caption{display:none}.kp-pref-controls{gap:5px}.kp-pref-controls button,.kp-language-control{padding:0 8px;height:34px}.kp-auth-prefs{right:12px;top:11px}#main-app .kp-pref-controls{margin-right:2px}#main-app header .kp-pref-controls + a {display:none}}
 
+/* === OASEL-INSPIRED DASHBOARD & ELASTIC NAV SHELL === */
+:root { --kp-lime: #a3e635; --kp-lime-bright: #bef264; --kp-lime-soft: rgba(163, 230, 53, .14); }
+#sidebar nav { position: relative; }
+#kp-nav-pill {
+  position: absolute; left: 12px; right: 12px; height: 36px; border-radius: 10px;
+  background: linear-gradient(90deg, rgba(163, 230, 53, .16), rgba(163, 230, 53, .05));
+  border: 1px solid rgba(163, 230, 53, .38);
+  box-shadow: 0 0 18px rgba(163, 230, 53, .12);
+  pointer-events: none; z-index: 0; opacity: 0;
+  transition: transform .42s cubic-bezier(0.34, 1.56, 0.64, 1), height .28s ease, opacity .2s ease;
+}
+#sidebar nav .nav-link { position: relative; z-index: 1; }
+#sidebar nav .nav-link.kp-nav-current { background: transparent !important; border-color: transparent !important; color: #ecfccb !important; }
+#sidebar nav .nav-link.kp-nav-current i { color: var(--kp-lime); }
+@media (min-width: 768px) {
+  body.kp-rail #sidebar { width: 76px !important; }
+  body.kp-rail #kp-main-shell { margin-left: 76px !important; }
+  body.kp-rail #sidebar .kp-brand-text,
+  body.kp-rail #sidebar .kp-user-card,
+  body.kp-rail #sidebar .kp-nav-group-label,
+  body.kp-rail #sidebar .nav-link span,
+  body.kp-rail #sidebar .kp-logout-label { display: none !important; }
+  body.kp-rail #sidebar .kp-sidebar-head { justify-content: center; padding-left: 10px; padding-right: 10px; gap: 6px; }
+  body.kp-rail #sidebar .kp-brand-logo { display: none; }
+  body.kp-rail #sidebar .nav-link { justify-content: center; padding-left: 0; padding-right: 0; }
+  body.kp-rail #kp-nav-pill { left: 10px; right: 10px; }
+  body.kp-rail #kp-sidebar-collapse i { transform: rotate(180deg); }
+}
+.kp-lime-btn {
+  background: var(--kp-lime); color: #09090b !important; font-weight: 800;
+  box-shadow: 0 8px 24px rgba(163, 230, 53, .22); transition: transform .15s ease, background .15s ease;
+}
+.kp-lime-btn:hover { background: var(--kp-lime-bright); transform: translateY(-1px); }
+.kp-lime-btn * { color: #09090b !important; }
+.oasel-card {
+  background: linear-gradient(160deg, rgba(24, 24, 27, .9), rgba(9, 9, 11, .92));
+  border: 1px solid rgba(255, 255, 255, .08); backdrop-filter: blur(18px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .35);
+}
+.oasel-pill-group { display: inline-flex; padding: 3px; border-radius: 10px; background: rgba(24, 24, 27, .9); border: 1px solid rgba(255, 255, 255, .08); gap: 2px; }
+.oasel-pill {
+  padding: 5px 11px; border-radius: 8px; font-size: 11px; font-weight: 700; color: #a1a1aa;
+  transition: all .2s ease; cursor: pointer;
+}
+.oasel-pill.active { background: var(--kp-lime); color: #09090b; }
+.oasel-queue-item {
+  display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 12px;
+  background: rgba(24, 24, 27, .65); border: 1px solid rgba(255, 255, 255, .07);
+  transition: border-color .18s ease, transform .18s ease, background .18s ease; cursor: pointer; text-align: left; width: 100%;
+}
+.oasel-queue-item:hover { border-color: rgba(163, 230, 53, .45); background: rgba(24, 24, 27, .95); transform: translateX(2px); }
+html.kp-light #kp-nav-pill { background: linear-gradient(90deg, rgba(101, 163, 13, .14), rgba(101, 163, 13, .04)); border-color: rgba(101, 163, 13, .45); box-shadow: none; }
+html.kp-light #sidebar nav .nav-link.kp-nav-current { color: #1a2e05 !important; }
+html.kp-light #sidebar nav .nav-link.kp-nav-current i { color: #4d7c0f !important; }
+html.kp-light .oasel-card { background: rgba(255, 255, 255, .92); border-color: #e4e4e7; box-shadow: 0 12px 30px rgba(15, 23, 42, .06); }
+html.kp-light .oasel-pill-group { background: #f4f4f5; border-color: #e4e4e7; }
+html.kp-light .oasel-pill { color: #52525b; }
+html.kp-light .oasel-pill.active { background: #18181b; color: #bef264; }
+html.kp-light .oasel-queue-item { background: #f8fafc; border-color: #e4e4e7; }
+html.kp-light .oasel-queue-item:hover { border-color: #65a30d; background: #fff; }
 
 /* ===== PREMIUM V4: Shop / supplier API catalog ===== */
 #tab-shop {--shop-line:rgba(255,255,255,.13)}
@@ -821,25 +881,28 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
         </button>
 
         <!-- SIDEBAR -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-zinc-950 border-r border-zinc-800 -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col justify-between shadow-2xl md:shadow-none">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-zinc-950 border-r border-zinc-800 -translate-x-full md:translate-x-0 transition-[transform,width] duration-300 ease-in-out flex flex-col justify-between shadow-2xl md:shadow-none">
             <div>
-                <div class="h-16 flex items-center justify-between px-5 border-b border-zinc-800">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg overflow-hidden border border-zinc-700 flex items-center justify-center shadow-md shadow-white/10">
+                <div class="kp-sidebar-head h-16 flex items-center justify-between px-5 border-b border-zinc-800">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="kp-brand-logo w-8 h-8 rounded-lg overflow-hidden border border-zinc-700 flex items-center justify-center shadow-md shadow-white/10 shrink-0">
                             <img src="anh1.jpg" alt="Kit Phan Logo" class="w-full h-full object-cover">
                         </div>
-                        <div>
+                        <div class="kp-brand-text truncate">
                             <span class="font-black text-base tracking-widest text-white uppercase block leading-none">KIT PHAN MMO</span>
                             <span class="text-[9px] text-zinc-500 font-mono tracking-widest uppercase">Dịch Vụ Mạng Xã Hội</span>
                         </div>
                     </div>
+                    <button id="kp-sidebar-collapse" type="button" title="Thu gọn / Mở rộng menu" aria-label="Thu gọn menu" class="hidden md:inline-flex items-center justify-center w-7 h-7 rounded-lg border border-zinc-800 bg-zinc-900/80 text-zinc-400 hover:text-white hover:border-lime-400/50 transition">
+                        <i class="fa-solid fa-angles-left text-[11px] transition-transform duration-300"></i>
+                    </button>
                     <button id="close-sidebar-btn" onclick="closeMobileSidebar()" class="md:hidden text-zinc-500 hover:text-white p-2">
                         <i class="fa-solid fa-xmark text-xl"></i>
                     </button>
                 </div>
 
                 <!-- User Quick Info Card -->
-                <div class="p-3.5 mx-3 my-3 rounded-xl bg-zinc-900 border border-zinc-800">
+                <div class="kp-user-card p-3.5 mx-3 my-3 rounded-xl bg-zinc-900 border border-zinc-800">
                     <div class="flex items-center gap-3">
                         <div class="relative flex-shrink-0">
                             <img id="user-avatar" src="https://placehold.co/100x100/27272a/ffffff?text=User" alt="Avatar" class="w-9 h-9 rounded-full border border-zinc-700 object-cover">
@@ -864,12 +927,13 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
 
                 <!-- Navigation Links -->
                 <nav class="px-3 space-y-1 custom-scrollbar overflow-y-auto max-h-[calc(100vh-270px)]">
-                    <a href="#dashboard" data-tab="dashboard" class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all text-white bg-zinc-900 border border-zinc-700">
+                    <div id="kp-nav-pill" aria-hidden="true"></div>
+                    <a href="#dashboard" data-tab="dashboard" title="Dashboard (Tổng quan)" class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all text-white bg-zinc-900 border border-zinc-700">
                         <i class="fa-solid fa-chart-pie w-4 text-center"></i>
                         <span>Dashboard (Tổng quan)</span>
                     </a>
                     
-                    <div class="pt-3 pb-1 px-3 text-[9px] font-extrabold text-zinc-500 uppercase tracking-widest">Dịch Vụ Mạng Xã Hội</div>
+                    <div class="kp-nav-group-label pt-3 pb-1 px-3 text-[9px] font-extrabold text-zinc-500 uppercase tracking-widest">Dịch Vụ Mạng Xã Hội</div>
 
                     <a href="#locket" data-tab="order" data-platform="locket" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-900/60 transition-all">
                         <i class="fa-solid fa-heart w-4 text-center"></i>
@@ -956,13 +1020,18 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
         </aside>
 
         <!-- Main Content Area Wrapper -->
-        <div class="flex-1 flex flex-col min-w-0 md:ml-64 overflow-hidden">
+        <div id="kp-main-shell" class="flex-1 flex flex-col min-w-0 md:ml-64 overflow-hidden transition-[margin] duration-300">
             <header class="h-16 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 md:px-6 z-20 relative kp-topbar">
                 <div id="kp-scroll-progress" role="progressbar" aria-label="Tiến độ cuộn nội dung" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 min-w-0">
                     <button id="open-sidebar-btn" onclick="openMobileSidebar()" class="md:hidden p-2 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-900 transition">
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
+                    <div class="hidden xl:flex items-center gap-2 text-xs font-mono text-zinc-500 pr-2 border-r border-zinc-800">
+                        <span class="text-zinc-400 font-semibold">KITPHAN</span>
+                        <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                        <span id="kp-topbar-crumb" class="text-lime-400 font-bold">Tổng quan</span>
+                    </div>
                     <button type="button" id="kp-search-trigger" onclick="kitphanOpenSearch()" aria-label="Tìm kiếm dịch vụ" class="kp-top-search hidden sm:flex items-center gap-2 px-3 py-2 w-48 md:w-80 rounded-xl text-xs text-zinc-400 text-left">
                         <i class="fa-solid fa-magnifying-glass text-zinc-500"></i>
                         <span class="flex-1 truncate">Tìm kiếm dịch vụ, điều hướng...</span>
@@ -1024,54 +1093,116 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                         <div class="kp-hero-orbit" aria-hidden="true"><span></span><span></span><i class="fa-solid fa-cube"></i></div>
                     </div>
 
-                    <!-- STATS GRID -->
+                    <!-- OASEL PORTFOLIO HEADER -->
+                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 px-1">
+                        <div>
+                            <p id="kp-dash-date" class="text-[11px] font-mono uppercase tracking-widest text-zinc-500">Hôm nay</p>
+                            <h2 class="text-xl md:text-2xl font-black text-white tracking-tight mt-0.5">Tổng quan vận hành</h2>
+                            <p id="kp-dash-summary" class="text-xs text-zinc-400 mt-1">Theo dõi số dư ví, đơn Locket Gold tự động và Kho Premium theo thời gian thực.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button type="button" onclick="switchTab('deposit')" class="px-3.5 py-2 rounded-xl border border-zinc-700 bg-zinc-900/90 hover:bg-zinc-800 text-xs font-bold text-zinc-200 transition flex items-center gap-2">
+                                <i class="fa-solid fa-qrcode text-lime-400"></i> Nạp tiền
+                            </button>
+                            <button type="button" onclick="switchTab('order', 'locket')" class="kp-lime-btn px-4 py-2 rounded-xl text-xs uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-plus"></i> Kích hoạt Locket Gold
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STATS GRID (OASEL KPI CARDS) -->
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="mono-glass p-4 rounded-xl">
-                            <div class="flex items-center justify-between">
+                        <div class="oasel-card p-4 rounded-2xl">
+                            <div class="flex items-start justify-between gap-2">
                                 <div>
                                     <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Tổng đơn hàng</p>
                                     <h3 class="text-xl md:text-2xl font-black mt-1 text-white font-mono" id="stat-total-orders">0</h3>
                                 </div>
-                                <div class="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
-                                    <i class="fa-solid fa-shopping-cart text-sm"></i>
-                                </div>
+                                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-lime-400/15 text-lime-300 border border-lime-400/30">Live</span>
                             </div>
+                            <svg class="w-full h-7 mt-2.5 overflow-visible" viewBox="0 0 120 28" fill="none" aria-hidden="true">
+                                <path d="M2 22 C 22 20, 32 10, 50 14 C 68 18, 84 6, 118 4" stroke="#a3e635" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M2 22 C 22 20, 32 10, 50 14 C 68 18, 84 6, 118 4 L 118 28 L 2 28 Z" fill="rgba(163,230,53,0.12)"/>
+                            </svg>
                         </div>
 
-                        <div class="mono-glass p-4 rounded-xl">
-                            <div class="flex items-center justify-between">
+                        <div class="oasel-card p-4 rounded-2xl">
+                            <div class="flex items-start justify-between gap-2">
                                 <div>
                                     <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Tổng tiền đã nạp</p>
                                     <h3 class="text-xl md:text-2xl font-black mt-1 text-white font-mono" id="stat-total-deposited">0 đ</h3>
                                 </div>
-                                <div class="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
-                                    <i class="fa-solid fa-money-bill-wave text-sm"></i>
+                                <div class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-lime-400">
+                                    <i class="fa-solid fa-money-bill-wave text-xs"></i>
                                 </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-[10px] text-zinc-500 mb-1"><span>SePay MB Bank</span><span class="text-lime-400 font-mono">24/7</span></div>
+                                <div class="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden"><div class="h-full rounded-full bg-lime-400" style="width:76%"></div></div>
                             </div>
                         </div>
 
-                        <div class="mono-glass p-4 rounded-xl">
-                            <div class="flex items-center justify-between">
+                        <div class="oasel-card p-4 rounded-2xl">
+                            <div class="flex items-start justify-between gap-2">
                                 <div>
                                     <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Số dư tài khoản</p>
                                     <h3 class="text-xl md:text-2xl font-black mt-1 text-white font-mono" id="stat-balance">0 đ</h3>
                                 </div>
-                                <div class="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
-                                    <i class="fa-solid fa-wallet text-sm"></i>
-                                </div>
+                                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">Ví Live</span>
+                            </div>
+                            <div class="mt-4 flex items-center justify-between text-[10px] text-zinc-400">
+                                <span>Sẵn sàng thanh toán</span>
+                                <button type="button" onclick="switchTab('deposit')" class="text-lime-400 hover:underline font-bold">Nạp thêm &rarr;</button>
                             </div>
                         </div>
 
-                        <div class="mono-glass p-4 rounded-xl">
-                            <div class="flex items-center justify-between">
+                        <div class="oasel-card p-4 rounded-2xl">
+                            <div class="flex items-start justify-between gap-2">
                                 <div>
                                     <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Đơn đang xử lý</p>
                                     <h3 class="text-xl md:text-2xl font-black mt-1 text-white font-mono" id="stat-processing">0 Đơn</h3>
                                 </div>
-                                <div class="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
-                                    <i class="fa-solid fa-rotate text-sm"></i>
+                                <div class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
+                                    <i class="fa-solid fa-rotate text-xs"></i>
                                 </div>
                             </div>
+                            <div class="mt-4 flex items-center justify-between text-[10px] text-zinc-400">
+                                <span>Tự động đối soát</span>
+                                <button type="button" onclick="switchTab('orders')" class="text-lime-400 hover:underline font-bold">Kiểm tra &rarr;</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- OASEL ANALYTICS CHART & NEEDS-A-DECISION QUEUE -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                        <div class="oasel-card rounded-2xl p-5 lg:col-span-7 flex flex-col justify-between">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Biểu đồ hoạt động</p>
+                                    <h3 id="kp-chart-headline" class="text-2xl font-black text-white font-mono mt-1">0 đơn</h3>
+                                    <p id="kp-chart-sub" class="text-[11px] text-zinc-400 mt-0.5">Phân bổ đơn hàng và dòng tiền gần đây</p>
+                                </div>
+                                <div class="oasel-pill-group" role="tablist" aria-label="Chế độ biểu đồ">
+                                    <button type="button" class="oasel-pill active" data-kp-chart-mode="orders">Đơn hàng</button>
+                                    <button type="button" class="oasel-pill" data-kp-chart-mode="deposits">Tiền nạp</button>
+                                    <button type="button" class="oasel-pill" data-kp-chart-mode="services">Locket &amp; Premium</button>
+                                </div>
+                            </div>
+                            <div class="mt-4 relative">
+                                <svg id="kp-dash-chart" class="w-full h-44 overflow-visible" viewBox="0 0 420 140" role="img" aria-label="Biểu đồ thống kê"></svg>
+                                <div id="kp-chart-labels" class="flex justify-between text-[10px] font-mono text-zinc-500 mt-2 px-1"></div>
+                            </div>
+                        </div>
+
+                        <div class="oasel-card rounded-2xl p-5 lg:col-span-5 flex flex-col">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Cần xử lý &amp; Thao tác nhanh</p>
+                                    <h3 class="text-sm font-extrabold text-white mt-0.5">Bàn làm việc hôm nay</h3>
+                                </div>
+                                <span id="kp-queue-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-lime-400/15 text-lime-300 border border-lime-400/30">Sẵn sàng</span>
+                            </div>
+                            <div id="kp-decision-queue" class="space-y-2.5 flex-1"></div>
                         </div>
                     </div>
 
@@ -3847,6 +3978,313 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
         inFlight = loadCatalog().finally(() => { inFlight = null; });
         return inFlight;
     };
+})();
+</script>
+<script id="kp-oasel-dashboard-script">
+(() => {
+    const CRUMB_LABELS = {
+        dashboard: 'Tổng quan',
+        order: 'Dịch vụ MXH',
+        shop: 'Kho Premium',
+        profile: 'Hồ sơ cá nhân',
+        deposit: 'Nạp tiền MB Bank',
+        'deposit-history': 'Lịch sử nạp tiền',
+        orders: 'Lịch sử đơn hàng',
+        'admin-users': 'Quản lý thành viên',
+        'admin-orders': 'Quản lý đơn hàng',
+        'admin-tickets': 'Quản lý Tickets',
+    };
+
+    const dateEl = document.getElementById('kp-dash-date');
+    if (dateEl) {
+        try {
+            dateEl.textContent = new Intl.DateTimeFormat('vi-VN', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+            }).format(new Date());
+        } catch {
+            dateEl.textContent = 'Hôm nay';
+        }
+    }
+
+    // Collapsible Sidebar Rail
+    const collapseBtn = document.getElementById('kp-sidebar-collapse');
+    try {
+        if (localStorage.getItem('kp_rail') === '1') document.body.classList.add('kp-rail');
+    } catch {}
+    if (collapseBtn) {
+        collapseBtn.addEventListener('click', () => {
+            const next = document.body.classList.toggle('kp-rail');
+            try { localStorage.setItem('kp_rail', next ? '1' : '0'); } catch {}
+            requestAnimationFrame(() => slideNavPill());
+        });
+    }
+
+    // Elastic sliding pill along left navigation rail
+    function slideNavPill(targetLink) {
+        const nav = document.querySelector('#sidebar nav');
+        const pill = document.getElementById('kp-nav-pill');
+        if (!nav || !pill) return;
+        const active = targetLink || nav.querySelector('.nav-link.kp-nav-current') || nav.querySelector('.nav-link.active');
+        if (!active) { pill.style.opacity = '0'; return; }
+        const top = active.offsetTop;
+        const h = active.offsetHeight || 36;
+        pill.style.height = h + 'px';
+        pill.style.transform = `translateY(${top}px)`;
+        pill.style.opacity = '1';
+    }
+
+    function updateCrumb(tabId, platform) {
+        const crumb = document.getElementById('kp-topbar-crumb');
+        if (!crumb) return;
+        if (tabId === 'order' && platform) {
+            const pMap = { locket: 'Locket Gold', facebook: 'Facebook', tiktok: 'TikTok', instagram: 'Instagram' };
+            crumb.textContent = pMap[platform] || 'Dịch vụ';
+            return;
+        }
+        crumb.textContent = CRUMB_LABELS[tabId] || 'Tổng quan';
+    }
+
+    // Hook switchTab to keep pill & breadcrumb synced
+    const origSwitchTab = window.switchTab;
+    if (typeof origSwitchTab === 'function') {
+        window.switchTab = function patchedSwitchTab(tabId, platform = null) {
+            origSwitchTab.apply(this, arguments);
+            updateCrumb(tabId, platform);
+            const selector = platform
+                ? `#sidebar nav .nav-link[data-tab="${tabId}"][data-platform="${platform}"]`
+                : `#sidebar nav .nav-link[data-tab="${tabId}"]`;
+            const link = document.querySelector(selector);
+            if (link) {
+                document.querySelectorAll('#sidebar nav .nav-link').forEach(el => el.classList.remove('kp-nav-current'));
+                link.classList.add('kp-nav-current');
+                requestAnimationFrame(() => slideNavPill(link));
+            }
+            if (tabId === 'dashboard') refreshOaselDashboard();
+        };
+    }
+
+    requestAnimationFrame(() => slideNavPill());
+    window.addEventListener('resize', () => slideNavPill());
+
+    // Chart & Decision Queue
+    let chartMode = 'orders';
+    const chartSvg = document.getElementById('kp-dash-chart');
+    const chartLabels = document.getElementById('kp-chart-labels');
+    const chartHeadline = document.getElementById('kp-chart-headline');
+    const chartSub = document.getElementById('kp-chart-sub');
+
+    function getSeriesForMode(mode) {
+        const totalOrders = Number(String(document.getElementById('stat-total-orders')?.textContent || '0').replace(/\D/g, '')) || 0;
+        const balance = Number(String(document.getElementById('stat-balance')?.textContent || '0').replace(/\D/g, '')) || 0;
+        const deposited = Number(String(document.getElementById('stat-total-deposited')?.textContent || '0').replace(/\D/g, '')) || 0;
+        const labels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+
+        if (mode === 'deposits') {
+            const base = Math.max(deposited, 100000);
+            const pts = [0.15, 0.28, 0.22, 0.45, 0.62, 0.78, 1].map(r => Math.round(base * r));
+            return {
+                headline: `${deposited.toLocaleString('vi-VN')} đ`,
+                sub: 'Tổng tiền nạp tích lũy qua MB Bank SePay',
+                labels,
+                points: pts,
+            };
+        }
+        if (mode === 'services') {
+            const pts = [3, 5, 4, 8, 11, 9, Math.max(12, totalOrders + 4)];
+            return {
+                headline: 'Locket Gold & Kho Premium',
+                sub: `Số dư khả dụng: ${balance.toLocaleString('vi-VN')} đ`,
+                labels,
+                points: pts,
+            };
+        }
+        const seed = Math.max(totalOrders, 1);
+        const pts = [1, 2, 1, 3, 2, 4, seed];
+        return {
+            headline: `${totalOrders} đơn hàng`,
+            sub: 'Nhịp độ xử lý đơn hàng tự động trong tuần',
+            labels,
+            points: pts,
+        };
+    }
+
+    function renderOaselChart() {
+        if (!chartSvg || !chartLabels) return;
+        const { headline, sub, labels, points } = getSeriesForMode(chartMode);
+        if (chartHeadline) chartHeadline.textContent = headline;
+        if (chartSub) chartSub.textContent = sub;
+
+        const w = 420, h = 140, padX = 12, padY = 14;
+        const maxVal = Math.max(...points, 1);
+        const minVal = 0;
+        const coords = points.map((v, idx) => {
+            const x = padX + (idx / Math.max(points.length - 1, 1)) * (w - padX * 2);
+            const y = h - padY - ((v - minVal) / (maxVal - minVal || 1)) * (h - padY * 2);
+            return { x: Number(x.toFixed(1)), y: Number(y.toFixed(1)) };
+        });
+
+        while (chartSvg.firstChild) chartSvg.removeChild(chartSvg.firstChild);
+        const ns = 'http://www.w3.org/2000/svg';
+
+        // Gridlines
+        [28, 68, 108].forEach(y => {
+            const line = document.createElementNS(ns, 'line');
+            line.setAttribute('x1', '0'); line.setAttribute('x2', String(w));
+            line.setAttribute('y1', String(y)); line.setAttribute('y2', String(y));
+            line.setAttribute('stroke', 'rgba(161,161,170,0.14)');
+            line.setAttribute('stroke-dasharray', '4 4');
+            chartSvg.appendChild(line);
+        });
+
+        // Gradient def
+        const defs = document.createElementNS(ns, 'defs');
+        const grad = document.createElementNS(ns, 'linearGradient');
+        grad.setAttribute('id', 'kpLimeArea');
+        grad.setAttribute('x1', '0'); grad.setAttribute('y1', '0');
+        grad.setAttribute('x2', '0'); grad.setAttribute('y2', '1');
+        const s1 = document.createElementNS(ns, 'stop');
+        s1.setAttribute('offset', '0%'); s1.setAttribute('stop-color', '#a3e635'); s1.setAttribute('stop-opacity', '0.32');
+        const s2 = document.createElementNS(ns, 'stop');
+        s2.setAttribute('offset', '100%'); s2.setAttribute('stop-color', '#a3e635'); s2.setAttribute('stop-opacity', '0');
+        grad.append(s1, s2);
+        defs.appendChild(grad);
+        chartSvg.appendChild(defs);
+
+        const dLine = coords.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+        const dArea = `${dLine} L ${coords[coords.length - 1].x} ${h - padY} L ${coords[0].x} ${h - padY} Z`;
+
+        const area = document.createElementNS(ns, 'path');
+        area.setAttribute('d', dArea);
+        area.setAttribute('fill', 'url(#kpLimeArea)');
+        chartSvg.appendChild(area);
+
+        const path = document.createElementNS(ns, 'path');
+        path.setAttribute('d', dLine);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', '#a3e635');
+        path.setAttribute('stroke-width', '2.5');
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('stroke-linejoin', 'round');
+        chartSvg.appendChild(path);
+
+        coords.forEach((p, idx) => {
+            const c = document.createElementNS(ns, 'circle');
+            c.setAttribute('cx', String(p.x)); c.setAttribute('cy', String(p.y));
+            c.setAttribute('r', idx === coords.length - 1 ? '4.5' : '3');
+            c.setAttribute('fill', idx === coords.length - 1 ? '#bef264' : '#18181b');
+            c.setAttribute('stroke', '#a3e635');
+            c.setAttribute('stroke-width', '2');
+            chartSvg.appendChild(c);
+        });
+
+        chartLabels.textContent = '';
+        labels.forEach(lbl => {
+            const span = document.createElement('span');
+            span.textContent = lbl;
+            chartLabels.appendChild(span);
+        });
+    }
+
+    function renderDecisionQueue() {
+        const queueEl = document.getElementById('kp-decision-queue');
+        const badgeEl = document.getElementById('kp-queue-badge');
+        if (!queueEl) return;
+
+        const balance = Number(String(document.getElementById('stat-balance')?.textContent || '0').replace(/\D/g, '')) || 0;
+        const processing = Number(String(document.getElementById('stat-processing')?.textContent || '0').replace(/\D/g, '')) || 0;
+
+        const items = [];
+        if (balance < 50000) {
+            items.push({
+                icon: 'fa-wallet text-amber-400',
+                title: 'Số dư ví dưới 50.000đ',
+                sub: `Hiện có ${balance.toLocaleString('vi-VN')} đ · Nạp nhanh qua MB Bank`,
+                action: () => window.switchTab('deposit'),
+            });
+        }
+        if (processing > 0) {
+            items.push({
+                icon: 'fa-rotate text-lime-400',
+                title: `${processing} đơn hàng đang xử lý`,
+                sub: 'Theo dõi tiến độ & lấy link kích hoạt ngay',
+                action: () => window.switchTab('orders'),
+            });
+        }
+        items.push(
+            {
+                icon: 'fa-crown text-lime-400',
+                title: 'Kích hoạt Locket Gold tự động',
+                sub: 'Tra cứu username, nhận DNS Profile iOS trong 5 giây',
+                action: () => window.switchTab('order', 'locket'),
+            },
+            {
+                icon: 'fa-bag-shopping text-zinc-200',
+                title: 'Mua tài khoản Kho Premium',
+                sub: 'Canva, CapCut, ChatGPT, Netflix, Spotify sẵn kho',
+                action: () => window.switchTab('shop'),
+            },
+            {
+                icon: 'fa-clock-rotate-left text-zinc-400',
+                title: 'Xem lịch sử đơn & link DNS',
+                sub: 'Mở lại thông tin tài khoản và cấu hình đã mua',
+                action: () => window.switchTab('orders'),
+            }
+        );
+
+        if (badgeEl) badgeEl.textContent = `${items.length} mục`;
+        queueEl.textContent = '';
+        items.slice(0, 4).forEach(item => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'oasel-queue-item';
+
+            const iconWrap = document.createElement('div');
+            iconWrap.className = 'w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0';
+            const icon = document.createElement('i');
+            icon.className = `fa-solid ${item.icon} text-xs`;
+            iconWrap.appendChild(icon);
+
+            const body = document.createElement('div');
+            body.className = 'min-w-0 flex-1';
+            const t = document.createElement('div');
+            t.className = 'text-xs font-bold text-white truncate';
+            t.textContent = item.title;
+            const s = document.createElement('div');
+            s.className = 'text-[11px] text-zinc-400 truncate';
+            s.textContent = item.sub;
+            body.append(t, s);
+
+            const chev = document.createElement('i');
+            chev.className = 'fa-solid fa-chevron-right text-[10px] text-zinc-500';
+
+            btn.append(iconWrap, body, chev);
+            btn.addEventListener('click', item.action);
+            queueEl.appendChild(btn);
+        });
+    }
+
+    function refreshOaselDashboard() {
+        renderOaselChart();
+        renderDecisionQueue();
+    }
+
+    document.querySelectorAll('[data-kp-chart-mode]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-kp-chart-mode]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            chartMode = btn.getAttribute('data-kp-chart-mode') || 'orders';
+            renderOaselChart();
+        });
+    });
+
+    // Re-render when stats change via realtime Firebase listeners
+    ['stat-total-orders', 'stat-total-deposited', 'stat-balance', 'stat-processing'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || typeof MutationObserver === 'undefined') return;
+        new MutationObserver(() => refreshOaselDashboard()).observe(el, { childList: true, characterData: true, subtree: true });
+    });
+
+    refreshOaselDashboard();
 })();
 </script>
 </body>
