@@ -2280,6 +2280,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
         function checkAuthSession() {
             localStorage.removeItem('locket_smm_session'); // NEVER trust old cached profile/balance/role.
             auth.onAuthStateChanged(async user=>{
+                if(window.__kpRegistering) return;
                 if(!user){
                     currentUser=null;clearInterval(kpSecurePoll);kpSecurePoll=null;
                     kpHideSetup();showAuthScreen();return;
@@ -2480,6 +2481,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                 return showToast('Username phải dài 3–60 ký tự, chỉ gồm a-z, 0-9, _ hoặc -, và không được là tên Admin.','error');
             if(fullname.length<2||fullname.length>90)return showToast('Tên hiển thị phải dài 2–90 ký tự.','error');
             const button=e.currentTarget.querySelector('[type="submit"]');button.disabled=true;
+            window.__kpRegistering=true;
             try{
                 const result=await auth.createUserWithEmailAndPassword(email,password);
                 kpSavePendingUsername(result.user,username,fullname);
@@ -2494,7 +2496,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                 await kpSecureLoadAccount(true);
                 showToast('Đăng ký thành công tài khoản @'+username+'! Bạn có thể đăng nhập bằng username hoặc email.','success',9000);
             }catch(err){showToast('Không thể tạo tài khoản: '+(err.code||err.message),'error',9000)}
-            finally{button.disabled=false;}
+            finally{window.__kpRegistering=false;button.disabled=false;}
         }
 
                 async function sendOtpToEmail() {
