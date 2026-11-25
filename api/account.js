@@ -20,7 +20,7 @@ module.exports=async function handler(req,res){
       return res.status(200).json(await signInLinkedUsername(req,{firebase:require('../lib/shop-common').firebase}));
     }
     if(action==='register'){
-      const ctx=await verifiedIdentity(req);
+      const ctx=await verifiedIdentity(req,true);
       const p=await createAccount(ctx,String(req.body?.username||'').trim().toLowerCase(),String(req.body?.fullname||''));
       return res.status(201).json({ok:true,profile:p});
     }
@@ -40,9 +40,3 @@ module.exports=async function handler(req,res){
       const subject=clean(req.body?.subject,130);const message=clean(req.body?.message,1500);
       if(subject.length<3||message.length<5)throw error('Chủ đề hoặc nội dung quá ngắn.',422);
       const id='TCK-'+ctx.db.ref('tickets').push().key;
-      await ctx.db.ref('tickets/'+id).set({id,user:ctx.username,subject,message,status:'Chờ phản hồi',date:new Date().toISOString().slice(0,16)});
-      return res.status(201).json({ok:true,id});
-    }
-    throw error('Thao tác không hỗ trợ.',400);
-  }catch(e){return jsonError(res,e)}
-};
