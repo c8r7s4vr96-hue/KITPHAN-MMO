@@ -28,3 +28,14 @@ Giải nén ZIP, mở thư mục `tests`, rồi mở `thu-locket-offline.html` b
 | Tải lại trong cùng tab, chọn lại đúng username và gói đang chờ rồi thử tiếp | Trang hiện mã đơn đang chờ và chặn đơn trùng. Bạn có thể dùng username thử khác để tiếp tục. |
 
 Khi báo lỗi, hãy gửi thao tác bạn vừa thực hiện, kết quả thực tế và ảnh chụp màn hình đã che thông tin tài khoản. Không gửi token.
+
+## Đơn thử lưu trên máy chủ (Vercel Preview)
+
+Mở bản Preview của nhánh đã cập nhật, đăng nhập bằng tài khoản Firebase đã xác minh email, rồi mở Dịch vụ Locket. Dùng phần thử trên máy chủ và nhập một username giả. Phần này cần cấu hình Firebase của website trong môi trường Preview. Vercel tự đặt môi trường Preview cho bản triển khai từ nhánh thử.
+
+- Chọn gói 1 năm và tình huống thành công. Đơn thử hiển thị giá 89.000đ, tiền thực thu 0đ.
+- Tải lại hoặc đăng nhập lại bằng cùng tài khoản. Kiểm tra mã đơn đã lưu trong lịch sử. Khi đổi tài khoản, chỉ lịch sử của tài khoản đang đăng nhập được hiển thị.
+- Chọn tình huống mất phản hồi cho một username thử khác. Đơn ghi nhận trạng thái chờ đối soát. Thử lại cùng username và gói để kiểm tra chống ghi trùng.
+- Nếu kết nối giữa trình duyệt và máy chủ gián đoạn, tải lại lịch sử để kiểm tra đơn trước khi thao tác lại.
+
+Đơn thử được lưu riêng theo UID dưới nhánh Firebase `locket_preview_orders_v1` của database mà website sử dụng. Giới hạn 100 đơn thử mỗi tài khoản. Mỗi đơn thực thu 0đ. Chức năng này không kết nối API mua gói, không ghi vào ví hoặc đơn Kho Premium. Trang HTML ngoại tuyến vẫn dùng lịch sử tạm trong tab. Trên Production chỉ có danh mục và phần thử tại trình duyệt.
