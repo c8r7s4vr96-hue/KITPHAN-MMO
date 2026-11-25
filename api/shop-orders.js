@@ -7,6 +7,7 @@ module.exports=async(req,res)=>{
  // Retain /api/shop-session (deprecated) through Vercel's internal rewrite.
  // This dispatch performs cookie deletion only; it does not grant session auth.
  if(req.query?.__legacySession==='1')return require('../lib/legacy-shop-session')(req,res);
+ if(req.query?.action==='locket_preview')return require('../lib/locket-preview-orders')(req,res);
  res.setHeader('Cache-Control','private, no-store');
  if(req.method!=='GET')return res.status(405).json({ok:false});
  try{

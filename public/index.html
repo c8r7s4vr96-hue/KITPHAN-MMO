@@ -1223,6 +1223,33 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                                 <dl id="locket-catalog-list" class="divide-y divide-zinc-700 text-white"></dl>
                                 <button id="locket-catalog-retry" type="button" hidden class="px-4 py-2 rounded-lg border border-zinc-600 text-sm">Tải lại danh mục</button>
                                 <button type="button" disabled class="px-5 py-2.5 rounded-xl border border-zinc-700 text-zinc-400 text-sm font-semibold cursor-not-allowed">Chưa mở bán</button>
+                                <div id="locket-preview-panel" hidden class="border-y border-zinc-700 py-4 space-y-3">
+                                    <h3 class="font-bold text-white">Thử đơn trên máy chủ Preview</h3>
+                                    <p class="text-sm text-zinc-300">Đơn mô phỏng được lưu theo tài khoản đang đăng nhập. Số tiền thực thu: 0đ.</p>
+                                    <form id="locket-preview-form" hidden class="space-y-3">
+                                        <label class="block">Gói thử trên máy chủ
+                                            <select id="locket-preview-code" class="mt-1 w-full rounded-lg p-3 bg-zinc-950 border border-zinc-700 text-white">
+                                                <option value="LKG6M">180 ngày · 49.000đ</option>
+                                                <option value="LKG1Y">1 năm · 89.000đ</option>
+                                                <option value="LKGVV">Vĩnh viễn · 100.000đ</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">Username thử
+                                            <input id="locket-preview-username" maxlength="40" required autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Ví dụ: khach_test" class="mt-1 w-full rounded-lg p-3 bg-zinc-950 border border-zinc-700 text-white">
+                                        </label>
+                                        <label class="block">Kết quả mô phỏng
+                                            <select id="locket-preview-scenario" class="mt-1 w-full rounded-lg p-3 bg-zinc-950 border border-zinc-700 text-white">
+                                                <option value="success">Thành công</option>
+                                                <option value="timeout">Chờ đối soát</option>
+                                            </select>
+                                        </label>
+                                        <button id="locket-preview-submit" type="submit" class="px-5 py-2 rounded-lg bg-white text-black font-bold">Tạo đơn thử trên máy chủ</button>
+                                    </form>
+                                    <p id="locket-preview-status" role="status" aria-live="polite" class="text-sm"></p>
+                                    <h4 class="font-bold text-sm">Lịch sử thử trên máy chủ</h4>
+                                    <ul id="locket-preview-orders" class="space-y-1 text-sm break-words"></ul>
+                                    <button id="locket-preview-refresh" type="button" class="px-4 py-2 rounded-lg border border-zinc-600">Tải lại lịch sử thử</button>
+                                </div>
                                 <p class="text-sm text-zinc-300">Chế độ thử dùng ba gói mẫu cố định và username giả. Mỗi đơn chỉ được mô phỏng trong tab này, không trừ ví và không kích hoạt tài khoản.</p>
                                 <button id="locket-demo-start" type="button" class="px-5 py-2.5 rounded-xl bg-white text-black text-sm font-bold">Mua thử</button>
                                 <form id="locket-demo-form" hidden class="space-y-3">
@@ -2613,6 +2640,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
             document.getElementById('submit-order-btn').disabled = isLocket;
             if (isLocket) {
                 void window.loadLocketCatalog();
+                void window.loadLocketPreview?.();
                 return;
             }
 
@@ -3430,6 +3458,174 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
         return inFlight;
     };
     retry.addEventListener('click', window.loadLocketCatalog);
+})();
+</script>
+<script id="locket-preview-script">
+(() => {
+    const el = name => document.getElementById('locket-preview-' + name);
+    const panel = el('panel'), form = el('form'), status = el('status');
+    const username = el('username'), code = el('code'), scenario = el('scenario');
+    const submit = el('submit'), refresh = el('refresh'), history = el('orders');
+    const endpoint = '/api/shop-orders?action=locket_preview';
+    const signedIn = () => typeof auth !== 'undefined' ? auth.currentUser : null;
+    const storageKey = uid => 'kitphan.locket.preview.intent.v1.' + uid;
+    let active = null;
+    let opened = false;
+
+    function forAccount(user) {
+        if (active && active.uid === user?.uid) return active;
+        active = null;
+        panel.hidden = true;
+        form.hidden = true;
+        status.textContent = '';
+        history.replaceChildren();
+        form.reset();
+        if (!user) return null;
+        let saved = null;
+        try { saved = JSON.parse(sessionStorage.getItem(storageKey(user.uid))); } catch {}
+        active = { uid: user.uid, intent: saved, busy: false, available: false };
+        return active;
+    }
+
+    function controls(state) {
+        const locked = state.busy || !!state.intent;
+        username.disabled = code.disabled = scenario.disabled = locked;
+        if (state.intent) {
+            username.value = state.intent.username;
+            code.value = state.intent.code;
+            scenario.value = state.intent.scenario;
+        }
+        submit.disabled = refresh.disabled = state.busy;
+        submit.textContent = state.intent ? 'Gửi lại cùng mã đơn thử' : 'Tạo đơn thử trên máy chủ';
+        form.hidden = !state.available;
+    }
+
+    function render(orders) {
+        history.replaceChildren();
+        for (const order of orders) {
+            const item = document.createElement('li');
+            const label = order.status === 'completed' ? 'Hoàn tất mô phỏng' : 'Chờ đối soát mô phỏng';
+            item.textContent = [order.id, '@' + order.username, order.code, label,
+                'Giá niêm yết ' + order.priceVnd.toLocaleString('vi-VN') + 'đ', 'Thực thu 0đ'].join(' · ');
+            history.appendChild(item);
+        }
+        if (!orders.length) history.textContent = 'Chưa có đơn thử trên máy chủ.';
+    }
+
+    function current(state) { return active === state && signedIn()?.uid === state.uid; }
+
+    async function request(state, intent) {
+        if (state.busy) return;
+        state.busy = true;
+        controls(state);
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 15_000);
+        try {
+            const token = await signedIn().getIdToken();
+            if (!current(state)) return;
+            const options = { method: intent ? 'POST' : 'GET', cache: 'no-store',
+                headers: { Authorization: 'Bearer ' + token }, signal: controller.signal };
+            if (intent) {
+                options.headers['Content-Type'] = 'application/json';
+                options.body = JSON.stringify(intent);
+            }
+            const response = await fetch(endpoint, options);
+            if (!current(state)) return;
+            if (response.status === 404) {
+                panel.hidden = true;
+                state.available = false;
+                history.replaceChildren();
+                return;
+            }
+            panel.hidden = false;
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    state.available = false;
+                    history.replaceChildren();
+                    status.textContent = 'Tài khoản chưa có quyền thử trên máy chủ này. Hãy kiểm tra phiên đăng nhập.';
+                    return;
+                }
+                if (intent && [409, 422].includes(response.status)) {
+                    const rejection = await response.json();
+                    if (!current(state)) return;
+                    if (rejection?.ok === false) {
+                        state.intent = null;
+                        try { sessionStorage.removeItem(storageKey(state.uid)); } catch {}
+                        status.textContent = rejection.error === 'PENDING_EXISTS'
+                            ? 'Gói này đã có đơn thử chờ đối soát cho username trên. Tải lại lịch sử để xem.'
+                            : 'Máy chủ đã từ chối đơn thử. ' + String(rejection.error || 'Kiểm tra thông tin rồi thử lại.');
+                        return;
+                    }
+                }
+                throw new Error('http');
+            }
+            const data = await response.json();
+            if (!current(state)) return;
+            if (data?.ok !== true || !Array.isArray(data.orders) || !data.orders.every(order =>
+                order && typeof order.id === 'string' && typeof order.username === 'string' && typeof order.code === 'string' &&
+                ['completed','pending'].includes(order.status) && Number.isSafeInteger(order.priceVnd) && order.chargedVnd === 0)) {
+                throw new Error('invalid');
+            }
+            state.available = true;
+            render(data.orders);
+            const match = state.intent && data.orders.find(order => order.id === state.intent.requestId);
+            if (match) {
+                state.intent = null;
+                try { sessionStorage.removeItem(storageKey(state.uid)); } catch {}
+                form.reset();
+                status.textContent = match.status === 'completed' ? 'Máy chủ đã ghi đơn thử thành công. Thực thu 0đ.' : 'Máy chủ đã ghi đơn thử ở trạng thái chờ đối soát. Thực thu 0đ.';
+            } else {
+                status.textContent = state.intent ? 'Chưa xác nhận được đơn vừa gửi. Bạn có thể gửi lại cùng mã đơn thử.' : '';
+            }
+        } catch {
+            if (!current(state)) return;
+            panel.hidden = false;
+            status.textContent = state.intent ? 'Chưa xác nhận kết quả từ máy chủ. Hãy tải lại lịch sử hoặc gửi lại cùng mã đơn thử.'
+                : 'Chưa tải được lịch sử từ máy chủ Preview.';
+        } finally {
+            clearTimeout(timer);
+            if (current(state)) {
+                state.busy = false;
+                controls(state);
+            }
+        }
+    }
+
+    window.loadLocketPreview = () => {
+        opened = true;
+        const state = forAccount(signedIn());
+        if (state) return request(state, null);
+    };
+    refresh.addEventListener('click', window.loadLocketPreview);
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        const state = forAccount(signedIn());
+        if (!state?.available || state.busy) return;
+        if (!state.intent) {
+            const name = username.value.trim().replace(/^@/, '');
+            if (!/^[A-Za-z0-9._-]{1,40}$/.test(name)) {
+                status.textContent = 'Nhập username thử gồm 1–40 ký tự chữ không dấu, số, chấm, gạch ngang hoặc gạch dưới.';
+                return;
+            }
+            try {
+                const intent = { requestId: crypto.randomUUID(), username: name, code: code.value, scenario: scenario.value };
+                sessionStorage.setItem(storageKey(state.uid), JSON.stringify(intent));
+                state.intent = intent;
+            } catch {
+                status.textContent = 'Trình duyệt chưa lưu được mã đơn để gửi lại an toàn. Hãy bật lưu trữ cho trang Preview dùng HTTPS.';
+                return;
+            }
+        }
+        status.textContent = 'Đang gửi đơn mô phỏng lên máy chủ Preview…';
+        return request(state, state.intent);
+    });
+    if (typeof auth !== 'undefined' && auth?.onAuthStateChanged) {
+        auth.onAuthStateChanged(user => {
+            if (active?.uid === user?.uid) return;
+            forAccount(user);
+            if (opened && user) void window.loadLocketPreview();
+        });
+    }
 })();
 </script>
 <script id="locket-demo-script">
