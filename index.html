@@ -2462,10 +2462,6 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                     if(!response.ok||!data.customToken)throw Error(data.error||'Không xác thực được username.');
                     await auth.signInWithCustomToken(data.customToken);
                 }
-                if(!auth.currentUser.emailVerified){
-                    await auth.currentUser.sendEmailVerification().catch(()=>{});
-                    return showLoginErrorAlert('Email chưa được xác minh. Hãy mở thư xác minh trước khi đăng nhập.');
-                }
                 await kpSecureLoadAccount(true);
                 void fetch('/api/auth-event',{method:'POST',headers:await kpSecureHeaders(),body:JSON.stringify({event:'firebase_sign_in'})}).catch(()=>{});
             }catch(err){showLoginErrorAlert('Đăng nhập không thành công: '+(err.code||err.message));}
@@ -2486,16 +2482,18 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
             const button=e.currentTarget.querySelector('[type="submit"]');button.disabled=true;
             try{
                 const result=await auth.createUserWithEmailAndPassword(email,password);
-                const saved=kpSavePendingUsername(result.user,username,fullname);
-                let verificationSent=true;
-                try{await result.user.sendEmailVerification();}catch(e){verificationSent=false;}
-                await auth.signOut();switchAuthMode('login');
-                if(!verificationSent){
-                    showToast('Đã tạo tài khoản Firebase, nhưng chưa gửi được thư xác minh. Hãy đăng nhập bằng email để gửi lại thư.','error',11000);
-                }else{
-                    showToast('Đã tạo tài khoản. Xác minh email, sau đó đăng nhập bằng EMAIL một lần để '+(saved?'tự kích hoạt @'+username:'liên kết username trên màn hình')+'. Những lần sau dùng username + mật khẩu Firebase.','success',12000);
+                kpSavePendingUsername(result.user,username,fullname);
+                try{
+                    await kpSecureRequest('/api/account',{action:'register',username,fullname});
+                    kpClearPendingUsername(result.user);
+                }catch(regErr){
+                    await result.user.delete().catch(()=>auth.signOut().catch(()=>{}));
+                    throw regErr;
                 }
-            }catch(err){showToast('Không thể tạo tài khoản Firebase: '+(err.code||err.message),'error',9000)}
+                void result.user.sendEmailVerification().catch(()=>{});
+                await kpSecureLoadAccount(true);
+                showToast('Đăng ký thành công tài khoản @'+username+'! Bạn có thể đăng nhập bằng username hoặc email.','success',9000);
+            }catch(err){showToast('Không thể tạo tài khoản: '+(err.code||err.message),'error',9000)}
             finally{button.disabled=false;}
         }
 
