@@ -3,6 +3,7 @@ const {products,getCatalogDiagnostics,jsonError,firebase}=require('../lib/shop-c
 const {pricedProducts,publicProduct}=require('../lib/shop-pricing');
 const {access}=require('../lib/shop-access');
 module.exports=async(req,res)=>{
+ if(req.query?.action==='locket_catalog')return require('../lib/locket-catalog')(req,res);
  if(req.query?.action==='pricing_admin')return require('../lib/shop-admin-prices-handler')(req,res);
  if(req.method!=='GET')return res.status(405).json({ok:false,error:'Method not allowed'});
  res.setHeader('Cache-Control','private, no-store'); // checkoutEnabled is account-scoped

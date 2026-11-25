@@ -22,6 +22,12 @@ button,input,select{font:inherit;padding:10px;border-radius:8px;border:1px solid
                                             <option value="LKGVV">Vĩnh viễn · 100.000đ</option>
                                         </select>
                                     </label>
+                                    <label class="block">Tình huống mô phỏng
+                                        <select id="locket-demo-scenario" class="mt-1 w-full p-3 rounded-lg bg-zinc-950 border border-zinc-700 text-white">
+                                            <option value="success">Thành công</option>
+                                            <option value="timeout">Mất phản hồi</option>
+                                        </select>
+                                    </label>
                                     <label class="block">Username dùng thử
                                         <input id="locket-demo-username" maxlength="40" required autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Ví dụ: khach_test" class="mt-1 w-full p-3 rounded-lg bg-zinc-950 border border-zinc-700 text-white">
                                     </label>
@@ -58,7 +64,7 @@ button,input,select{font:inherit;padding:10px;border-radius:8px;border:1px solid
         history.replaceChildren();
         for (const order of orders) {
             const row = document.createElement('li');
-            row.textContent = order.id + ' · @' + order.username + ' · ' + plans.get(order.code) + ' · Hoàn tất mô phỏng';
+            row.textContent = order.id + ' · @' + order.username + ' · ' + plans.get(order.code) + ' · ' + (order.status === 'pending' ? 'Chờ đối soát' : 'Hoàn tất mô phỏng');
             history.appendChild(row);
         }
         if (!orders.length) {
@@ -72,7 +78,7 @@ button,input,select{font:inherit;padding:10px;border-radius:8px;border:1px solid
         const stored = JSON.parse(sessionStorage.getItem(storageKey) || '[]');
         if (Array.isArray(stored)) {
             orders = stored.filter(o => o && typeof o.id === 'string' && /^TEST-[a-z0-9-]{1,50}$/i.test(o.id) &&
-                typeof o.username === 'string' && validName.test(o.username) && plans.has(o.code)).slice(0, 50);
+                typeof o.username === 'string' && validName.test(o.username) && plans.has(o.code));
         }
     } catch { /* Demo can also run in memory when storage is unavailable. */ }
     renderHistory();
@@ -97,9 +103,18 @@ button,input,select{font:inherit;padding:10px;border-radius:8px;border:1px solid
             username.focus();
             return;
         }
+        const pending = orders.find(o => o.status === 'pending' && o.code === code && o.username.toLowerCase() === name.toLowerCase());
+        if (pending) {
+            message.textContent = 'Đơn thử ' + pending.id + ' đang chờ đối soát. Đã chặn yêu cầu trùng username và gói.';
+            return;
+        }
+        if (orders.filter(o => o.status === 'pending').length >= 50) {
+            message.textContent = 'Tab đã có 50 đơn thử chờ đối soát. Không thể thêm đơn thử trong tab này.';
+            return;
+        }
         const id = 'TEST-' + (globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + '-' + Math.random().toString(36).slice(2));
-        draft = { id, username: name, code };
-        element('summary-text').textContent = 'Kiểm tra đơn mô phỏng: @' + name + ' · ' + plans.get(code) + '. Số tiền thực thu: 0đ.';
+        draft = { id, username: name, code, status: element('scenario').value === 'timeout' ? 'pending' : 'complete' };
+        element('summary-text').textContent = 'Kiểm tra đơn mô phỏng: @' + name + ' · ' + plans.get(code) + (draft.status === 'pending' ? ' · Mô phỏng mất phản hồi.' : '.') + ' Số tiền thực thu: 0đ.';
         form.hidden = true;
         summary.hidden = false;
         confirm.disabled = false;
@@ -111,8 +126,12 @@ button,input,select{font:inherit;padding:10px;border-radius:8px;border:1px solid
         const order = draft;
         draft = null;
         confirm.disabled = true;
-        orders = [order, ...orders].slice(0, 50);
+        // Keep unresolved orders so old pending requests still block duplicates.
+        orders = [order, ...orders];
+        let available = 50 - orders.filter(o => o.status === 'pending').length;
+        orders = orders.filter(o => o.status === 'pending' || available-- > 0);
         let result = 'Đã ghi đơn thử ' + order.id + '. Số tiền thực thu: 0đ.';
+        if (order.status === 'pending') result += ' Mất phản hồi mô phỏng. Chờ đối soát, chưa xác nhận giao gói.';
         try { sessionStorage.setItem(storageKey, JSON.stringify(orders)); }
         catch { result += ' Trình duyệt chỉ lưu được lịch sử đến khi tải lại trang.'; }
         renderHistory();

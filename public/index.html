@@ -1086,7 +1086,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                                     <i class="fa-solid fa-heart"></i>
                                 </div>
                                 <h3 class="font-bold text-sm text-white group-hover:underline">Locket Gold</h3>
-                                <p class="text-[11px] text-zinc-500 mt-0.5">Từ 49.000đ/lần · Chưa mở bán</p>
+                                <p class="text-[11px] text-zinc-500 mt-0.5">Xem danh mục gói Locket</p>
                             </div>
 
                             <div onclick="switchTab('order', 'facebook')" class="mono-glass p-4 rounded-xl cursor-pointer hover:border-white transition group">
@@ -1218,21 +1218,25 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                         <div class="lg:col-span-2 space-y-6">
                             <section id="locket-info-section" class="mono-glass rounded-2xl p-6 border border-zinc-700 space-y-4 hidden">
                                 <h2 class="text-lg font-black text-white">Locket Gold</h2>
-                                <p class="text-sm text-zinc-400">Giá mỗi lần kích hoạt</p>
-                                <dl class="divide-y divide-zinc-700 text-white">
-                                    <div class="flex justify-between gap-4 py-2"><dt>180 ngày</dt><dd class="font-bold">49.000đ</dd></div>
-                                    <div class="flex justify-between gap-4 py-2"><dt>1 năm</dt><dd class="font-bold">89.000đ</dd></div>
-                                    <div class="flex justify-between gap-4 py-2"><dt>Vĩnh viễn</dt><dd class="font-bold">100.000đ</dd></div>
-                                </dl>
+                                <h3 class="text-sm font-semibold text-zinc-300">Danh mục từ nhà cung cấp</h3>
+                                <p id="locket-catalog-status" role="status" class="text-sm text-zinc-400"></p>
+                                <dl id="locket-catalog-list" class="divide-y divide-zinc-700 text-white"></dl>
+                                <button id="locket-catalog-retry" type="button" hidden class="px-4 py-2 rounded-lg border border-zinc-600 text-sm">Tải lại danh mục</button>
                                 <button type="button" disabled class="px-5 py-2.5 rounded-xl border border-zinc-700 text-zinc-400 text-sm font-semibold cursor-not-allowed">Chưa mở bán</button>
-                                <p class="text-sm text-zinc-300">Chế độ thử dùng username giả. Mỗi đơn chỉ được mô phỏng trong tab này, không trừ ví và không kích hoạt tài khoản.</p>
+                                <p class="text-sm text-zinc-300">Chế độ thử dùng ba gói mẫu cố định và username giả. Mỗi đơn chỉ được mô phỏng trong tab này, không trừ ví và không kích hoạt tài khoản.</p>
                                 <button id="locket-demo-start" type="button" class="px-5 py-2.5 rounded-xl bg-white text-black text-sm font-bold">Mua thử</button>
                                 <form id="locket-demo-form" hidden class="space-y-3">
-                                    <label class="block">Chọn gói
+                                    <label class="block">Chọn gói mẫu để thử
                                         <select id="locket-demo-package" class="mt-1 w-full p-3 rounded-lg bg-zinc-950 border border-zinc-700 text-white">
                                             <option value="LKG6M">180 ngày · 49.000đ</option>
                                             <option value="LKG1Y">1 năm · 89.000đ</option>
                                             <option value="LKGVV">Vĩnh viễn · 100.000đ</option>
+                                        </select>
+                                    </label>
+                                    <label class="block">Tình huống mô phỏng
+                                        <select id="locket-demo-scenario" class="mt-1 w-full p-3 rounded-lg bg-zinc-950 border border-zinc-700 text-white">
+                                            <option value="success">Thành công</option>
+                                            <option value="timeout">Mất phản hồi</option>
                                         </select>
                                     </label>
                                     <label class="block">Username dùng thử
@@ -1634,11 +1638,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                         id: 'locket_gold_1y',
                         name: 'Kích hoạt Locket Gold',
                         targetLabel: 'Nhập Username Locket của bạn',
-                        servers: [
-                            { id: 'LKG6M', name: '180 ngày · Chưa mở bán', price: 49000, min: 1, max: 1, speed: 'Chưa mở bán', warranty: '—' },
-                            { id: 'LKG1Y', name: '1 năm · Chưa mở bán', price: 89000, min: 1, max: 1, speed: 'Chưa mở bán', warranty: '—' },
-                            { id: 'LKGVV', name: 'Vĩnh viễn · Chưa mở bán', price: 100000, min: 1, max: 1, speed: 'Chưa mở bán', warranty: '—' }
-                        ]
+                        servers: []
                     }
                 ]
             },
@@ -2611,7 +2611,10 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
             document.getElementById('service-order-form').classList.toggle('hidden', isLocket);
             document.getElementById('service-server-details').classList.toggle('hidden', isLocket);
             document.getElementById('submit-order-btn').disabled = isLocket;
-            if (isLocket) return;
+            if (isLocket) {
+                void window.loadLocketCatalog();
+                return;
+            }
 
             document.getElementById('order-form-title').innerText = `Tạo Đơn Dịch Vụ ${platformData.name}`;
             const badge = document.getElementById('platform-badge');
@@ -2683,6 +2686,10 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
             let html = '';
             for (const pKey in SMM_SERVICES_DATA) {
                 const platform = SMM_SERVICES_DATA[pKey];
+                if (pKey === 'locket') {
+                    html += `<tr><td colspan="6" class="p-3"><button type="button" onclick="switchTab('order','locket')" class="font-bold underline">Xem danh mục gói Locket</button></td></tr>`;
+                    continue;
+                }
                 platform.categories.forEach(cat => {
                     cat.servers.forEach(srv => {
                         html += `
@@ -3053,7 +3060,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
     <script>
     (function () {
       'use strict';
-      const EN = {"Mã đơn:":"Order ID:","Dịch vụ:":"Service:","Thanh toán:":"Payment:","LƯU Ý:":"NOTE:","Đóng":"Close","Điều Chỉnh Số Dư":"Adjust Balance","Tài khoản:":"Account:","Số dư hiện tại:":"Current balance:","Loại thao tác":"Action","➕ Cộng tiền vào số dư":"➕ Add to balance","➖ Trừ tiền khỏi số dư":"➖ Deduct from balance","Số tiền (VNĐ)":"Amount (VND)","Ghi chú":"Note","Hủy":"Cancel","XÁC NHẬN":"CONFIRM","Hệ Thống Dịch Vụ MXH Cao Cấp":"Premium Social Media Services","Tiếp tục với tài khoản Google":"Continue with Google","Hoặc bằng mật khẩu":"Or use a password","Tài khoản hoặc mật khẩu không đúng!":"Incorrect username or password!","Username / Gmail":"Username / Gmail","Mật khẩu":"Password","Xác minh bảo mật (Cloudflare)":"Security verification (Cloudflare)","Ghi nhớ":"Remember me","Quên mật khẩu?":"Forgot password?","ĐĂNG NHẬP NGAY":"SIGN IN NOW","Chưa có tài khoản?":"Don't have an account?","Đăng ký ngay":"Sign up","Họ và Tên":"Full name","Tên đăng nhập":"Username","Địa chỉ Email":"Email address","Xác nhận mật khẩu":"Confirm password","TẠO TÀI KHOẢN MỚI":"CREATE AN ACCOUNT","Đã có tài khoản?":"Already have an account?","Đăng nhập":"Sign in","Nhập email đăng ký của bạn để nhận mã OTP khôi phục.":"Enter your registered email to receive a recovery code.","Email đã đăng ký":"Registered email","GỬI MÃ XÁC THỰC VỀ GMAIL":"SEND VERIFICATION CODE","Mã OTP (6 số)":"OTP code (6 digits)","Mật khẩu mới":"New password","XÁC NHẬN ĐỔI MẬT KHẨU":"CONFIRM PASSWORD RESET","← Quay lại Đăng nhập":"← Back to sign in","TRUY CẬP NHANH":"QUICK ACCESS","↑ ↓ chọn · Enter mở · Esc đóng":"↑ ↓ select · Enter open · Esc close","Tìm kiếm trực tiếp từ danh mục dịch vụ":"Search the service catalog instantly","Dịch Vụ Mạng Xã Hội":"Social Media Services","Chưa đăng nhập":"Not signed in","Thành viên":"Member","Số dư:":"Balance:","User:":"User:","Dashboard (Tổng quan)":"Dashboard (Overview)","Dịch vụ Locket":"Locket Services","Dịch vụ Facebook":"Facebook Services","Dịch vụ TikTok":"TikTok Services","Dịch vụ Instagram":"Instagram Services","Quản Lý Cá Nhân":"My Account","Hồ Sơ Cá Nhân":"My Profile","Nạp Tiền Tự Động":"Automatic Top-Up","Lịch Sử Nạp Tiền":"Top-Up History","Lịch Sử Đơn Hàng":"Order History","Bảng Giá & API Docs":"Pricing & API Docs","Hỗ Trợ / Tickets":"Help & Tickets","Khu Vực Admin":"Admin Area","Quản Lý Thành Viên":"User Management","Quản Lý Đơn Hàng":"Order Management","Quản Lý Tickets":"Ticket Management","Đăng Xuất":"Sign Out","Tìm kiếm dịch vụ, điều hướng...":"Search services and pages...","Hệ Thống Dịch Vụ Mạng Xã Hội":"Social Media Services Platform","Khám phá danh mục dịch vụ, theo dõi tiến độ đơn hàng và quản lý tài khoản trong một không gian làm việc thống nhất.":"Explore services, track orders and manage your account in one streamlined workspace.","Tạo Đơn Ngay":"Create Order","Khám phá dịch vụ":"Explore Services","Tổng đơn hàng":"Total Orders","Tổng tiền đã nạp":"Total Deposited","Số dư tài khoản":"Account Balance","Đơn đang xử lý":"Orders in Progress","Nền Tảng Dịch Vụ":"Service Platforms","Dame acc, mở khóa 180d":"Account services & unlock assistance","Dame tài khoản, live":"Account & live services","Dame IG, mở khóa":"Instagram services & unlock","Đơn Hàng Realtime":"Live Order Feed","Tất cả đơn →":"All orders →","Mã đơn":"Order ID","Khách hàng":"Customer","Dịch vụ":"Service","Tổng tiền":"Total","Trạng thái":"Status","Tạo Đơn Dịch Vụ Facebook":"Create Facebook Service Order","Tự động xử lý 24/7":"24/7 processing","1. Chọn loại dịch vụ":"1. Choose a service","2. Chọn Máy Chủ (Server)":"2. Choose a server","3. Username / Link Bài Viết":"3. Username / Post URL","4. Số Lượng":"4. Quantity","Ghi chú (Tùy chọn)":"Note (Optional)","Tổng Chi Phí:":"Total Cost:","TẠO ĐƠN HÀNG NGAY":"CREATE ORDER NOW","Thông Tin Máy Chủ":"Server Details","Đơn giá / 1 đơn:":"Price / order:","Tốc độ ước tính:":"Estimated speed:","Tỷ lệ hoàn thành:":"Completion rate:","Bảo hành:":"Warranty:","30 ngày":"30 days","Hỗ Trợ Zalo Admin":"Contact Zalo Support","Quản lý thông tin tài khoản và số dư":"Manage your account and balance","Cấp bậc:":"Membership level:","Cập Nhật Thông Tin":"Update Profile","LƯU THAY ĐỔI":"SAVE CHANGES","Theo dõi tiến độ đơn hàng realtime":"Track your order status in real time","Nền tảng":"Platform","SL":"Qty","Ngày tạo":"Created","Mã QR Chuyển Khoản Ngân Hàng":"Bank Transfer QR Code","Số tiền muốn nạp (VNĐ)":"Top-up amount (VND)","Ngân hàng:":"Bank:","Số tài khoản:":"Account number:","Copy":"Copy","Nội dung nạp:":"Transfer reference:","⚠️ Vui lòng nhập đúng nội dung chuyển khoản để hệ thống tự động cộng tiền.":"⚠️ Use the exact transfer reference for automatic crediting.","Hướng Dẫn Nạp Tiền":"How to Top Up","Nhập số tiền muốn nạp (tối thiểu 10,000 VNĐ).":"Enter the top-up amount (minimum 10,000 VND).","Chuyển khoản đến MB BANK với nội dung hiển thị.":"Transfer to MB BANK with the displayed reference.","Hệ thống tự động cộng tiền trong 1 - 3 phút.":"Automatic crediting usually takes 1–3 minutes.","Mã GD":"Transaction ID","Số tiền nạp":"Deposit Amount","Nội dung":"Content","Thời gian":"Time","ID Server":"Server ID","Nền Tảng":"Platform","Tên Dịch Vụ":"Service Name","Giá / 1 đơn":"Price / Order","Gửi Ticket Hỗ Trợ":"Submit Support Ticket","Tiêu đề":"Subject","Nội dung chi tiết":"Message","GỬI TICKET":"SUBMIT TICKET","Liên Hệ Trực Tiếp":"Contact Us","Quản Lý Thành Viên (Admin)":"Manage Members (Admin)","Username":"Username","Đã nạp":"Deposited","Cấp độ":"Tier","Thao tác":"Actions","Quản Lý Tất Cả Đơn Hàng (Admin)":"Manage All Orders (Admin)","Khách":"Customer","Ngày":"Date","Quản Lý Tickets (Admin)":"Manage Tickets (Admin)","Mã Ticket":"Ticket ID","Tin nhắn":"Message","Đang xử lý":"Processing","Hoàn thành":"Completed","Đã hoàn thành":"Completed","Chưa có đơn hàng.":"No orders yet.","Chưa có giao dịch nạp tiền.":"No top-ups yet.","Chưa có ticket nào.":"No tickets yet.","Chưa có thành viên nào.":"No members yet.","Tất cả":"All","Tìm kiếm nhanh":"Quick Search","Tìm dịch vụ, nền tảng, trang...":"Search services, platforms, pages...","Nhập từ khóa tìm kiếm":"Enter a search term","Đóng tìm kiếm":"Close search","Kết quả tìm kiếm":"Search results","Mở tìm kiếm":"Open search","Tìm kiếm dịch vụ":"Search services","Không tìm thấy kết quả. Hãy thử một từ khóa khác.":"No results found. Try another keyword.","Lên đầu trang":"Back to top","Tiến độ cuộn nội dung":"Content scroll progress","Chuyển nền sáng hoặc tối":"Toggle light/dark theme","Giao diện và ngôn ngữ":"Appearance and language","Nhập username hoặc gmail...":"Enter username or email...","Nhập Username Locket hoặc Link...":"Enter Locket username or link...","Nhập 6 số OTP...":"Enter your 6-digit code...","Nhập mật khẩu mới...":"Enter a new password...","Ghi chú thêm...":"Additional notes...","Tìm kiếm dịch vụ, đơn hàng...":"Search services and orders...","Nhập đúng nội dung chuyển khoản":"Use the exact transfer reference","Nhập số tiền":"Enter an amount","Nhập tiêu đề":"Enter a subject","Nhập nội dung":"Enter a message","Đăng nhập để lấy nội dung nạp":"Sign in to view transfer details","Vui lòng đăng nhập và nhập số tiền từ 10.000đ để tạo QR.":"Sign in and enter at least 10,000 VND to generate a QR code.","Không tải được mã QR. Vui lòng kiểm tra kết nối và thử lại.":"Unable to load the QR code. Check your connection.","Thành viên mới":"New member","Thành viên Google":"Google member","Tạo Đơn Dịch Vụ TikTok":"Create TikTok Service Order","Tạo Đơn Dịch Vụ Instagram":"Create Instagram Service Order","Bảo hành vĩnh viễn":"Lifetime warranty","Bảo hành thành công":"Completion warranty","Xong":"Done","Xử lý":"Processing","Tùy chọn":"Optional","Số Lượng":"Quantity","Tài khoản":"Account","Thông tin tài khoản":"Account Information","Bạn cần đăng nhập để tiếp tục":"Sign in to continue","Đăng nhập thành công!":"Signed in successfully!","Đăng ký tài khoản thành công!":"Account created successfully!","Vui lòng chọn dịch vụ và số lượng hợp lệ!":"Choose a valid service and quantity!","Vui lòng nhập Username Locket / Target!":"Enter a Locket username or target!","Số dư tài khoản không đủ!":"Insufficient account balance!","Giá trị đơn hàng không hợp lệ!":"Invalid order amount!","Chỉ Admin mới có quyền truy cập!":"Admin access only!","Thông báo":"Notification","Liên hệ hỗ trợ":"Contact Support","Ghi chú nạp tiền...":"Top-up note...","Vui lòng chọn nền tảng":"Please choose a platform","Min: 1 - Max: 100":"Min: 1 - Max: 100","Tự động qua Bot Telegram":"Automated via Telegram Bot","💥 Dame Tài Khoản TikTok":"💥 TikTok Account Service","📡 Dame Live TikTok":"📡 TikTok Live Service","🔞 Mở Giới Hạn Độ Tuổi TikTok":"🔞 TikTok Age Restriction Assistance","🔞 Tut mở giới hạn độ tuổi tiktok":"🔞 Guide to TikTok Age Restrictions","🔓 Mở Đình Chỉ 180 Ngày Facebook":"🔓 Facebook 180-Day Suspension Support","🚫 Mở Vô Hiệu Hóa Vĩnh Viễn Facebook":"🚫 Facebook Disabled Account Support","🪪 Mở Xác Thực Danh Tính Facebook":"🪪 Facebook Identity Verification Support","💥 Dame acc Facebook":"💥 Facebook Account Service","🎓 Khóa Học Fake Giấy Dùng Để XMDT & Mở Đình Chỉ fb":"🎓 Facebook Documentation Training","📜 Phôi Xác Minh Danh Tính fb":"📜 Facebook ID Verification Templates","📜 TUT CHAT FAQ":"📜 Chat FAQ Tutorial","🔓 Mở Đình Chỉ 180 Ngày Instagram":"🔓 Instagram 180-Day Suspension Support","🚫 Mở Vô Hiệu Hóa Vĩnh Viễn Instagram":"🚫 Instagram Disabled Account Support","💥 Dame Instagram":"💥 Instagram Account Service","Link Profile TikTok (@username)":"TikTok profile URL (@username)","Link Live TikTok / Channel":"TikTok Live URL / Channel","Link Profile TikTok / Username":"TikTok profile URL / Username","Tài khoản nhận tut / Email":"Tutorial recipient account / Email","Link hoặc UID Tài Khoản Facebook":"Facebook account URL or UID","Link Profile Facebook cần dame":"Facebook profile URL","Email / Telegram nhận khóa học":"Course recipient email / Telegram","Email / Telegram nhận phôi":"Template recipient email / Telegram","Email / Telegram nhận TUT":"Tutorial recipient email / Telegram","Link Profile Instagram / Username":"Instagram profile URL / Username","Link Profile Instagram cần dame":"Instagram profile URL","Tự động / Gửi ngay":"Automatic / Instant delivery","Tài liệu hướng dẫn":"Instructional document","Bảo hành hoàn tiền":"Refund guarantee","Bảo hành 30 ngày":"30-day warranty","Học trọn đời":"Lifetime access","Cập nhật trọn đời":"Lifetime updates","Hỗ trợ cập nhật":"Update support","1 - 30 ngày":"1–30 days","1 - 7 ngày":"1–7 days","Chưa mở bán":"Unavailable","Kích hoạt Locket Gold":"Locket Gold activation","Đã ghi nhận đơn hàng":"Order received","Từ 49.000đ/lần · Chưa mở bán":"From 49,000 VND per activation · Unavailable","Giá mỗi lần kích hoạt":"Price per activation","180 ngày":"180 days","1 năm":"1 year","Vĩnh viễn":"Lifetime","180 ngày · Chưa mở bán":"180 days · Unavailable","1 năm · Chưa mở bán":"1 year · Unavailable","Vĩnh viễn · Chưa mở bán":"Lifetime · Unavailable"};
+      const EN = {"Mã đơn:":"Order ID:","Dịch vụ:":"Service:","Thanh toán:":"Payment:","LƯU Ý:":"NOTE:","Đóng":"Close","Điều Chỉnh Số Dư":"Adjust Balance","Tài khoản:":"Account:","Số dư hiện tại:":"Current balance:","Loại thao tác":"Action","➕ Cộng tiền vào số dư":"➕ Add to balance","➖ Trừ tiền khỏi số dư":"➖ Deduct from balance","Số tiền (VNĐ)":"Amount (VND)","Ghi chú":"Note","Hủy":"Cancel","XÁC NHẬN":"CONFIRM","Hệ Thống Dịch Vụ MXH Cao Cấp":"Premium Social Media Services","Tiếp tục với tài khoản Google":"Continue with Google","Hoặc bằng mật khẩu":"Or use a password","Tài khoản hoặc mật khẩu không đúng!":"Incorrect username or password!","Username / Gmail":"Username / Gmail","Mật khẩu":"Password","Xác minh bảo mật (Cloudflare)":"Security verification (Cloudflare)","Ghi nhớ":"Remember me","Quên mật khẩu?":"Forgot password?","ĐĂNG NHẬP NGAY":"SIGN IN NOW","Chưa có tài khoản?":"Don't have an account?","Đăng ký ngay":"Sign up","Họ và Tên":"Full name","Tên đăng nhập":"Username","Địa chỉ Email":"Email address","Xác nhận mật khẩu":"Confirm password","TẠO TÀI KHOẢN MỚI":"CREATE AN ACCOUNT","Đã có tài khoản?":"Already have an account?","Đăng nhập":"Sign in","Nhập email đăng ký của bạn để nhận mã OTP khôi phục.":"Enter your registered email to receive a recovery code.","Email đã đăng ký":"Registered email","GỬI MÃ XÁC THỰC VỀ GMAIL":"SEND VERIFICATION CODE","Mã OTP (6 số)":"OTP code (6 digits)","Mật khẩu mới":"New password","XÁC NHẬN ĐỔI MẬT KHẨU":"CONFIRM PASSWORD RESET","← Quay lại Đăng nhập":"← Back to sign in","TRUY CẬP NHANH":"QUICK ACCESS","↑ ↓ chọn · Enter mở · Esc đóng":"↑ ↓ select · Enter open · Esc close","Tìm kiếm trực tiếp từ danh mục dịch vụ":"Search the service catalog instantly","Dịch Vụ Mạng Xã Hội":"Social Media Services","Chưa đăng nhập":"Not signed in","Thành viên":"Member","Số dư:":"Balance:","User:":"User:","Dashboard (Tổng quan)":"Dashboard (Overview)","Dịch vụ Locket":"Locket Services","Dịch vụ Facebook":"Facebook Services","Dịch vụ TikTok":"TikTok Services","Dịch vụ Instagram":"Instagram Services","Quản Lý Cá Nhân":"My Account","Hồ Sơ Cá Nhân":"My Profile","Nạp Tiền Tự Động":"Automatic Top-Up","Lịch Sử Nạp Tiền":"Top-Up History","Lịch Sử Đơn Hàng":"Order History","Bảng Giá & API Docs":"Pricing & API Docs","Hỗ Trợ / Tickets":"Help & Tickets","Khu Vực Admin":"Admin Area","Quản Lý Thành Viên":"User Management","Quản Lý Đơn Hàng":"Order Management","Quản Lý Tickets":"Ticket Management","Đăng Xuất":"Sign Out","Tìm kiếm dịch vụ, điều hướng...":"Search services and pages...","Hệ Thống Dịch Vụ Mạng Xã Hội":"Social Media Services Platform","Khám phá danh mục dịch vụ, theo dõi tiến độ đơn hàng và quản lý tài khoản trong một không gian làm việc thống nhất.":"Explore services, track orders and manage your account in one streamlined workspace.","Tạo Đơn Ngay":"Create Order","Khám phá dịch vụ":"Explore Services","Tổng đơn hàng":"Total Orders","Tổng tiền đã nạp":"Total Deposited","Số dư tài khoản":"Account Balance","Đơn đang xử lý":"Orders in Progress","Nền Tảng Dịch Vụ":"Service Platforms","Dame acc, mở khóa 180d":"Account services & unlock assistance","Dame tài khoản, live":"Account & live services","Dame IG, mở khóa":"Instagram services & unlock","Đơn Hàng Realtime":"Live Order Feed","Tất cả đơn →":"All orders →","Mã đơn":"Order ID","Khách hàng":"Customer","Dịch vụ":"Service","Tổng tiền":"Total","Trạng thái":"Status","Tạo Đơn Dịch Vụ Facebook":"Create Facebook Service Order","Tự động xử lý 24/7":"24/7 processing","1. Chọn loại dịch vụ":"1. Choose a service","2. Chọn Máy Chủ (Server)":"2. Choose a server","3. Username / Link Bài Viết":"3. Username / Post URL","4. Số Lượng":"4. Quantity","Ghi chú (Tùy chọn)":"Note (Optional)","Tổng Chi Phí:":"Total Cost:","TẠO ĐƠN HÀNG NGAY":"CREATE ORDER NOW","Thông Tin Máy Chủ":"Server Details","Đơn giá / 1 đơn:":"Price / order:","Tốc độ ước tính:":"Estimated speed:","Tỷ lệ hoàn thành:":"Completion rate:","Bảo hành:":"Warranty:","30 ngày":"30 days","Hỗ Trợ Zalo Admin":"Contact Zalo Support","Quản lý thông tin tài khoản và số dư":"Manage your account and balance","Cấp bậc:":"Membership level:","Cập Nhật Thông Tin":"Update Profile","LƯU THAY ĐỔI":"SAVE CHANGES","Theo dõi tiến độ đơn hàng realtime":"Track your order status in real time","Nền tảng":"Platform","SL":"Qty","Ngày tạo":"Created","Mã QR Chuyển Khoản Ngân Hàng":"Bank Transfer QR Code","Số tiền muốn nạp (VNĐ)":"Top-up amount (VND)","Ngân hàng:":"Bank:","Số tài khoản:":"Account number:","Copy":"Copy","Nội dung nạp:":"Transfer reference:","⚠️ Vui lòng nhập đúng nội dung chuyển khoản để hệ thống tự động cộng tiền.":"⚠️ Use the exact transfer reference for automatic crediting.","Hướng Dẫn Nạp Tiền":"How to Top Up","Nhập số tiền muốn nạp (tối thiểu 10,000 VNĐ).":"Enter the top-up amount (minimum 10,000 VND).","Chuyển khoản đến MB BANK với nội dung hiển thị.":"Transfer to MB BANK with the displayed reference.","Hệ thống tự động cộng tiền trong 1 - 3 phút.":"Automatic crediting usually takes 1–3 minutes.","Mã GD":"Transaction ID","Số tiền nạp":"Deposit Amount","Nội dung":"Content","Thời gian":"Time","ID Server":"Server ID","Nền Tảng":"Platform","Tên Dịch Vụ":"Service Name","Giá / 1 đơn":"Price / Order","Gửi Ticket Hỗ Trợ":"Submit Support Ticket","Tiêu đề":"Subject","Nội dung chi tiết":"Message","GỬI TICKET":"SUBMIT TICKET","Liên Hệ Trực Tiếp":"Contact Us","Quản Lý Thành Viên (Admin)":"Manage Members (Admin)","Username":"Username","Đã nạp":"Deposited","Cấp độ":"Tier","Thao tác":"Actions","Quản Lý Tất Cả Đơn Hàng (Admin)":"Manage All Orders (Admin)","Khách":"Customer","Ngày":"Date","Quản Lý Tickets (Admin)":"Manage Tickets (Admin)","Mã Ticket":"Ticket ID","Tin nhắn":"Message","Đang xử lý":"Processing","Hoàn thành":"Completed","Đã hoàn thành":"Completed","Chưa có đơn hàng.":"No orders yet.","Chưa có giao dịch nạp tiền.":"No top-ups yet.","Chưa có ticket nào.":"No tickets yet.","Chưa có thành viên nào.":"No members yet.","Tất cả":"All","Tìm kiếm nhanh":"Quick Search","Tìm dịch vụ, nền tảng, trang...":"Search services, platforms, pages...","Nhập từ khóa tìm kiếm":"Enter a search term","Đóng tìm kiếm":"Close search","Kết quả tìm kiếm":"Search results","Mở tìm kiếm":"Open search","Tìm kiếm dịch vụ":"Search services","Không tìm thấy kết quả. Hãy thử một từ khóa khác.":"No results found. Try another keyword.","Lên đầu trang":"Back to top","Tiến độ cuộn nội dung":"Content scroll progress","Chuyển nền sáng hoặc tối":"Toggle light/dark theme","Giao diện và ngôn ngữ":"Appearance and language","Nhập username hoặc gmail...":"Enter username or email...","Nhập Username Locket hoặc Link...":"Enter Locket username or link...","Nhập 6 số OTP...":"Enter your 6-digit code...","Nhập mật khẩu mới...":"Enter a new password...","Ghi chú thêm...":"Additional notes...","Tìm kiếm dịch vụ, đơn hàng...":"Search services and orders...","Nhập đúng nội dung chuyển khoản":"Use the exact transfer reference","Nhập số tiền":"Enter an amount","Nhập tiêu đề":"Enter a subject","Nhập nội dung":"Enter a message","Đăng nhập để lấy nội dung nạp":"Sign in to view transfer details","Vui lòng đăng nhập và nhập số tiền từ 10.000đ để tạo QR.":"Sign in and enter at least 10,000 VND to generate a QR code.","Không tải được mã QR. Vui lòng kiểm tra kết nối và thử lại.":"Unable to load the QR code. Check your connection.","Thành viên mới":"New member","Thành viên Google":"Google member","Tạo Đơn Dịch Vụ TikTok":"Create TikTok Service Order","Tạo Đơn Dịch Vụ Instagram":"Create Instagram Service Order","Bảo hành vĩnh viễn":"Lifetime warranty","Bảo hành thành công":"Completion warranty","Xong":"Done","Xử lý":"Processing","Tùy chọn":"Optional","Số Lượng":"Quantity","Tài khoản":"Account","Thông tin tài khoản":"Account Information","Bạn cần đăng nhập để tiếp tục":"Sign in to continue","Đăng nhập thành công!":"Signed in successfully!","Đăng ký tài khoản thành công!":"Account created successfully!","Vui lòng chọn dịch vụ và số lượng hợp lệ!":"Choose a valid service and quantity!","Vui lòng nhập Username Locket / Target!":"Enter a Locket username or target!","Số dư tài khoản không đủ!":"Insufficient account balance!","Giá trị đơn hàng không hợp lệ!":"Invalid order amount!","Chỉ Admin mới có quyền truy cập!":"Admin access only!","Thông báo":"Notification","Liên hệ hỗ trợ":"Contact Support","Ghi chú nạp tiền...":"Top-up note...","Vui lòng chọn nền tảng":"Please choose a platform","Min: 1 - Max: 100":"Min: 1 - Max: 100","Tự động qua Bot Telegram":"Automated via Telegram Bot","💥 Dame Tài Khoản TikTok":"💥 TikTok Account Service","📡 Dame Live TikTok":"📡 TikTok Live Service","🔞 Mở Giới Hạn Độ Tuổi TikTok":"🔞 TikTok Age Restriction Assistance","🔞 Tut mở giới hạn độ tuổi tiktok":"🔞 Guide to TikTok Age Restrictions","🔓 Mở Đình Chỉ 180 Ngày Facebook":"🔓 Facebook 180-Day Suspension Support","🚫 Mở Vô Hiệu Hóa Vĩnh Viễn Facebook":"🚫 Facebook Disabled Account Support","🪪 Mở Xác Thực Danh Tính Facebook":"🪪 Facebook Identity Verification Support","💥 Dame acc Facebook":"💥 Facebook Account Service","🎓 Khóa Học Fake Giấy Dùng Để XMDT & Mở Đình Chỉ fb":"🎓 Facebook Documentation Training","📜 Phôi Xác Minh Danh Tính fb":"📜 Facebook ID Verification Templates","📜 TUT CHAT FAQ":"📜 Chat FAQ Tutorial","🔓 Mở Đình Chỉ 180 Ngày Instagram":"🔓 Instagram 180-Day Suspension Support","🚫 Mở Vô Hiệu Hóa Vĩnh Viễn Instagram":"🚫 Instagram Disabled Account Support","💥 Dame Instagram":"💥 Instagram Account Service","Link Profile TikTok (@username)":"TikTok profile URL (@username)","Link Live TikTok / Channel":"TikTok Live URL / Channel","Link Profile TikTok / Username":"TikTok profile URL / Username","Tài khoản nhận tut / Email":"Tutorial recipient account / Email","Link hoặc UID Tài Khoản Facebook":"Facebook account URL or UID","Link Profile Facebook cần dame":"Facebook profile URL","Email / Telegram nhận khóa học":"Course recipient email / Telegram","Email / Telegram nhận phôi":"Template recipient email / Telegram","Email / Telegram nhận TUT":"Tutorial recipient email / Telegram","Link Profile Instagram / Username":"Instagram profile URL / Username","Link Profile Instagram cần dame":"Instagram profile URL","Tự động / Gửi ngay":"Automatic / Instant delivery","Tài liệu hướng dẫn":"Instructional document","Bảo hành hoàn tiền":"Refund guarantee","Bảo hành 30 ngày":"30-day warranty","Học trọn đời":"Lifetime access","Cập nhật trọn đời":"Lifetime updates","Hỗ trợ cập nhật":"Update support","1 - 30 ngày":"1–30 days","1 - 7 ngày":"1–7 days","Chưa mở bán":"Unavailable","Kích hoạt Locket Gold":"Locket Gold activation","Đã ghi nhận đơn hàng":"Order received","Xem danh mục gói Locket":"View Locket packages","Giá mỗi lần kích hoạt":"Price per activation","180 ngày":"180 days","1 năm":"1 year","Vĩnh viễn":"Lifetime","180 ngày · Chưa mở bán":"180 days · Unavailable","1 năm · Chưa mở bán":"1 year · Unavailable","Vĩnh viễn · Chưa mở bán":"Lifetime · Unavailable"};
       const baseText = new WeakMap();
       const baseAttributes = new WeakMap();
       const html = document.documentElement;
@@ -3364,6 +3371,67 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
 })();
 </script>
 
+<script id="locket-catalog-script">
+(() => {
+    const list = document.getElementById('locket-catalog-list');
+    const status = document.getElementById('locket-catalog-status');
+    const retry = document.getElementById('locket-catalog-retry');
+    const freshnessMs = 60_000;
+    let lastSuccess = 0;
+    let inFlight = null;
+
+    function makeRow(plan) {
+        const row = document.createElement('div');
+        row.className = 'flex justify-between gap-4 py-2';
+        const name = document.createElement('dt');
+        name.className = 'min-w-0 break-words';
+        name.textContent = plan.name + ' (' + plan.code + ')';
+        const price = document.createElement('dd');
+        price.className = 'shrink-0 font-bold';
+        price.textContent = Number.isSafeInteger(plan.priceVnd) && plan.priceVnd >= 0
+            ? plan.priceVnd.toLocaleString('vi-VN') + 'đ' : 'Chưa đặt giá';
+        row.append(name, price);
+        return row;
+    }
+
+    async function load() {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 12_000);
+        list.replaceChildren();
+        status.textContent = 'Đang tải danh mục Locket…';
+        retry.hidden = true;
+        try {
+            const response = await fetch('/api/shop-products?action=locket_catalog', {
+                method: 'GET', cache: 'no-store', signal: controller.signal
+            });
+            if (!response.ok) throw new Error('catalog_http');
+            const result = await response.json();
+            if (!result || result.ok !== true || !Array.isArray(result.packages)) throw new Error('catalog_format');
+            for (const plan of result.packages) {
+                if (!plan || typeof plan.code !== 'string' || typeof plan.name !== 'string') throw new Error('catalog_item');
+                list.appendChild(makeRow(plan));
+            }
+            status.textContent = result.packages.length ? '' : 'Nhà cung cấp hiện chưa niêm yết gói Locket nào.';
+            lastSuccess = Date.now();
+        } catch {
+            lastSuccess = 0;
+            list.replaceChildren();
+            status.textContent = 'Chưa tải được danh mục Locket từ nhà cung cấp.';
+            retry.hidden = false;
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    window.loadLocketCatalog = () => {
+        if (inFlight) return inFlight;
+        if (lastSuccess && Date.now() - lastSuccess < freshnessMs) return;
+        inFlight = load().finally(() => { inFlight = null; });
+        return inFlight;
+    };
+    retry.addEventListener('click', window.loadLocketCatalog);
+})();
+</script>
 <script id="locket-demo-script">
 (() => {
     const element = name => document.getElementById('locket-demo-' + name);
@@ -3385,7 +3453,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
         history.replaceChildren();
         for (const order of orders) {
             const row = document.createElement('li');
-            row.textContent = order.id + ' · @' + order.username + ' · ' + plans.get(order.code) + ' · Hoàn tất mô phỏng';
+            row.textContent = order.id + ' · @' + order.username + ' · ' + plans.get(order.code) + ' · ' + (order.status === 'pending' ? 'Chờ đối soát' : 'Hoàn tất mô phỏng');
             history.appendChild(row);
         }
         if (!orders.length) {
@@ -3399,7 +3467,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
         const stored = JSON.parse(sessionStorage.getItem(storageKey) || '[]');
         if (Array.isArray(stored)) {
             orders = stored.filter(o => o && typeof o.id === 'string' && /^TEST-[a-z0-9-]{1,50}$/i.test(o.id) &&
-                typeof o.username === 'string' && validName.test(o.username) && plans.has(o.code)).slice(0, 50);
+                typeof o.username === 'string' && validName.test(o.username) && plans.has(o.code));
         }
     } catch { /* Demo can also run in memory when storage is unavailable. */ }
     renderHistory();
@@ -3424,9 +3492,18 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
             username.focus();
             return;
         }
+        const pending = orders.find(o => o.status === 'pending' && o.code === code && o.username.toLowerCase() === name.toLowerCase());
+        if (pending) {
+            message.textContent = 'Đơn thử ' + pending.id + ' đang chờ đối soát. Đã chặn yêu cầu trùng username và gói.';
+            return;
+        }
+        if (orders.filter(o => o.status === 'pending').length >= 50) {
+            message.textContent = 'Tab đã có 50 đơn thử chờ đối soát. Không thể thêm đơn thử trong tab này.';
+            return;
+        }
         const id = 'TEST-' + (globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + '-' + Math.random().toString(36).slice(2));
-        draft = { id, username: name, code };
-        element('summary-text').textContent = 'Kiểm tra đơn mô phỏng: @' + name + ' · ' + plans.get(code) + '. Số tiền thực thu: 0đ.';
+        draft = { id, username: name, code, status: element('scenario').value === 'timeout' ? 'pending' : 'complete' };
+        element('summary-text').textContent = 'Kiểm tra đơn mô phỏng: @' + name + ' · ' + plans.get(code) + (draft.status === 'pending' ? ' · Mô phỏng mất phản hồi.' : '.') + ' Số tiền thực thu: 0đ.';
         form.hidden = true;
         summary.hidden = false;
         confirm.disabled = false;
@@ -3438,8 +3515,12 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
         const order = draft;
         draft = null;
         confirm.disabled = true;
-        orders = [order, ...orders].slice(0, 50);
+        // Keep unresolved orders so old pending requests still block duplicates.
+        orders = [order, ...orders];
+        let available = 50 - orders.filter(o => o.status === 'pending').length;
+        orders = orders.filter(o => o.status === 'pending' || available-- > 0);
         let result = 'Đã ghi đơn thử ' + order.id + '. Số tiền thực thu: 0đ.';
+        if (order.status === 'pending') result += ' Mất phản hồi mô phỏng. Chờ đối soát, chưa xác nhận giao gói.';
         try { sessionStorage.setItem(storageKey, JSON.stringify(orders)); }
         catch { result += ' Trình duyệt chỉ lưu được lịch sử đến khi tải lại trang.'; }
         renderHistory();

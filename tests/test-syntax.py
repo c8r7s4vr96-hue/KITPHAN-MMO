@@ -1,14 +1,43 @@
+from html.parser import HTMLParser
 from pathlib import Path
-from bs4 import BeautifulSoup
 import subprocess
-root=Path(__file__).resolve().parents[1]
-for script in list(root.glob('api/*.js'))+list(root.glob('lib/*.js')):
-    run=subprocess.run(['node','--check',str(script)],capture_output=True,text=True)
-    assert run.returncode==0,(str(script),run.stderr)
-for name in ['index.html','admin-shop.html','admin-finance.html','admin-integrations.html','admin-checkout.html','admin-wallet.html','admin-accounts.html']:
-    for i,tag in enumerate(BeautifulSoup((root/name).read_text(),'html.parser').find_all('script')):
-        if tag.get('src') or not tag.text.strip():continue
-        temp=Path('/tmp')/f'kp_v5_{name}_{i}.js';temp.write_text(tag.text)
-        run=subprocess.run(['node','--check',str(temp)],capture_output=True,text=True)
-        assert run.returncode==0,(str(temp),run.stderr)
+
+
+class InlineScripts(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.inside = False
+        self.scripts = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'script':
+            self.inside = not dict(attrs).get('src')
+            if self.inside:
+                self.scripts.append('')
+
+    def handle_data(self, data):
+        if self.inside:
+            self.scripts[-1] += data
+
+    def handle_endtag(self, tag):
+        if tag == 'script':
+            self.inside = False
+
+
+root = Path(__file__).resolve().parents[1]
+for folder in ['api', 'lib']:
+    for path in sorted((root / folder).glob('*.js')):
+        subprocess.run(['node', '--check', str(path)], check=True)
+
+pages = [*sorted(root.glob('*.html')), root / 'public/index.html',
+         root / 'tests/thu-locket-offline.html']
+for page in pages:
+    parser = InlineScripts()
+    parser.feed(page.read_text(encoding='utf-8'))
+    parser.close()
+    for index, script in enumerate(parser.scripts, start=1):
+        if script.strip():
+            result = subprocess.run(['node', '--check'], input=script, text=True)
+            if result.returncode:
+                raise SystemExit(f'{page.name}: inline script {index} failed')
 print('PASS server and inline JavaScript syntax')

@@ -48,7 +48,7 @@ function activateDemo(html, storage) {
   return (id) => getElementById('locket-demo-' + id);
 }
 
-for (const file of ['index.html', 'public/index.html']) {
+for (const file of ['index.html', 'public/index.html', 'tests/thu-locket-offline.html']) {
   const html = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
   const storage = new Map();
   const storageKey = 'kitphan.locket.demo.orders.v1';
@@ -82,5 +82,47 @@ for (const file of ['index.html', 'public/index.html']) {
     assert.equal(orders().length, index + 1, 'Reload must preserve test orders');
     assert.ok(control('history').children.some(row => row.textContent.includes('@' + username)));
   }
+  // Records from earlier releases did not include status.
+  const legacy = orders().map(({ status, ...order }) => order);
+  storage.set(storageKey, JSON.stringify(legacy));
+  control = activateDemo(html, storage);
+  assert.ok(control('history').children.every(row => row.textContent.includes('Hoàn tất mô phỏng')));
+  control('start').send('click');
+  control('package').value = 'LKG6M';
+  control('username').value = 'TryTimeout';
+  control('scenario').value = 'timeout';
+  control('form').send('submit');
+  control('confirm').send('click');
+  assert.equal(orders().length, 4);
+  assert.equal(orders()[0].status, 'pending');
+  assert.ok(control('message').textContent.includes('0đ'));
+  control = activateDemo(html, storage);
+  assert.ok(control('history').children[0].textContent.includes('Chờ đối soát'));
+  control('start').send('click');
+  control('package').value = 'LKG6M';
+  control('username').value = '@trytimeout';
+  control('scenario').value = 'success';
+  control('form').send('submit');
+  assert.ok(control('message').textContent.includes('Đã chặn'));
+  control('confirm').send('click');
+  assert.equal(orders().length, 4);
+  control('package').value = 'LKG1Y';
+  control('form').send('submit');
+  control('confirm').send('click');
+  assert.equal(orders().length, 5);
+
+  const pendingRecords = Array.from({ length: 50 }, (_, i) => ({
+    id: 'TEST-' + i, username: 'user' + i, code: 'LKG6M', status: 'pending',
+  }));
+  storage.set(storageKey, JSON.stringify(pendingRecords));
+  control = activateDemo(html, storage);
+  control('start').send('click');
+  control('package').value = 'LKG1Y';
+  control('username').value = 'nextuser';
+  control('form').send('submit');
+  assert.ok(control('message').textContent.includes('50 đơn thử chờ'));
+  control('confirm').send('click');
+  assert.deepEqual(orders(), pendingRecords);
+
 }
-console.log('PASS: all package codes, validation, duplicate confirmation, same-tab reload');
+console.log('PASS: all package codes, validation, duplicate confirmation, same-tab reload, legacy history, timeout and pending duplicate protection');
