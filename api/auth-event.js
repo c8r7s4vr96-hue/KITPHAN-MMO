@@ -15,7 +15,7 @@ module.exports=async(req,res)=>{
     if(!bearer.startsWith('Bearer '))throw error('Firebase token required',401);
     const sdk=firebase();const userToken=await sdk.auth().verifyIdToken(bearer.slice(7),true);
     const user=await sdk.auth().getUser(userToken.uid);
-    if(user.disabled||!user.emailVerified)throw error('Verified email required',403);
+    if(user.disabled)throw error('Account disabled',403);
     const hourBucket=Math.floor(Date.now()/60000);
     const key=crypto.createHash('sha256').update('login:'+user.uid+':'+hourBucket).digest('hex');
     claimRef=sdk.database().ref('telegram_auth_events/'+key);
