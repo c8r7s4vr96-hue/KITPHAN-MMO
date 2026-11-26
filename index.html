@@ -787,12 +787,16 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
 
                 <!-- FORM 2: REGISTER -->
                 <form id="form-register" onsubmit="handleRegister(event)" class="space-y-3 hidden">
+                    <div id="register-error-alert" class="hidden p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-200 text-xs flex items-center gap-2.5">
+                        <i class="fa-solid fa-circle-exclamation text-sm text-white"></i>
+                        <span id="register-error-text" class="font-semibold leading-tight"></span>
+                    </div>
                     <div>
                         <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Họ và Tên</label>
                         <input type="text" id="reg-fullname" required placeholder="Nguyễn Văn A" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Tên đăng nhập (Username)</label>
+                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Tên đăng nhập (3–60 ký tự: a-z, 0-9, _ hoặc -)</label>
                         <input type="text" id="reg-username" required placeholder="user123" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white">
                     </div>
                     <div>
@@ -800,7 +804,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                         <input type="email" id="reg-email" required placeholder="user@gmail.com" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Mật khẩu</label>
+                        <label class="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1">Mật khẩu (tối thiểu 6 ký tự)</label>
                         <div class="relative">
                             <input type="password" id="reg-password" required placeholder="••••••••" class="w-full pl-3.5 pr-9 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white">
                             <button type="button" onclick="togglePasswordVisibility('reg-password', 'eye-reg-icon')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 p-1">
@@ -2295,10 +2299,12 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
             } catch (e) {}
         }
 
+        let kpAuthActionInProgress = false;
+
         function checkAuthSession() {
             localStorage.removeItem('locket_smm_session'); // NEVER trust old cached profile/balance/role.
             auth.onAuthStateChanged(async user=>{
-                if(window.__kpRegistering) return;
+                if(kpAuthActionInProgress) return;
                 if(!user){
                     currentUser=null;clearInterval(kpSecurePoll);kpSecurePoll=null;
                     kpHideSetup();showAuthScreen();return;
@@ -2325,6 +2331,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
             document.getElementById('form-forgot').classList.add('hidden');
 
             hideLoginErrorAlert();
+            hideRegisterErrorAlert();
 
             if (mode === 'login') {
                 document.getElementById('form-login').classList.remove('hidden');
@@ -2365,6 +2372,42 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
         function hideLoginErrorAlert() {
             const alertBox = document.getElementById('login-error-alert');
             if (alertBox) alertBox.classList.add('hidden');
+        }
+
+        function showRegisterErrorAlert(message, fieldToHighlight) {
+            const alertBox = document.getElementById('register-error-alert');
+            const alertText = document.getElementById('register-error-text');
+            if (alertBox && alertText) {
+                alertText.innerText = message;
+                alertBox.classList.remove('hidden');
+            }
+            if (fieldToHighlight) {
+                const el = document.getElementById(fieldToHighlight);
+                if (el) el.focus();
+            }
+        }
+
+        function hideRegisterErrorAlert() {
+            const alertBox = document.getElementById('register-error-alert');
+            if (alertBox) alertBox.classList.add('hidden');
+        }
+
+        function getFirebaseAuthErrorMessage(error) {
+            const code = error && error.code ? error.code : '';
+            const messages = {
+                'auth/email-already-in-use': 'Email này đã được đăng ký. Hãy đăng nhập hoặc dùng Quên mật khẩu.',
+                'auth/invalid-email': 'Địa chỉ email không hợp lệ.',
+                'auth/weak-password': 'Mật khẩu quá yếu (cần tối thiểu 6 ký tự).',
+                'auth/operation-not-allowed': 'Đăng nhập / Đăng ký bằng Email & Mật khẩu chưa được bật trong Firebase.',
+                'auth/user-not-found': 'Tài khoản hoặc mật khẩu không đúng.',
+                'auth/wrong-password': 'Tài khoản hoặc mật khẩu không đúng.',
+                'auth/invalid-credential': 'Tài khoản hoặc mật khẩu không đúng.',
+                'auth/invalid-login-credentials': 'Tài khoản hoặc mật khẩu không đúng.',
+                'auth/too-many-requests': 'Có quá nhiều lần thử. Vui lòng đợi vài phút rồi thử lại.',
+                'auth/network-request-failed': 'Lỗi kết nối mạng. Hãy kiểm tra Internet rồi thử lại.',
+                'auth/user-disabled': 'Tài khoản này đã bị vô hiệu hóa.'
+            };
+            return messages[code] || (error && error.message) || 'Có lỗi xảy ra, vui lòng thử lại.';
         }
 
         /* Lấy đúng token Turnstile của biểu mẫu đang gửi */
@@ -2464,12 +2507,13 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
         // Legacy plaintext password login has been intentionally removed.
         // Users must authenticate using Firebase Auth, and legacy balances require reviewed ownership transfer.
 
-                async function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();hideLoginErrorAlert();
             const email=document.getElementById('login-username').value.trim().toLowerCase();
             const password=document.getElementById('login-password').value;
             if(!email) return showLoginErrorAlert('Hãy nhập tên đăng nhập hoặc email Firebase.','login-username');
             const button=e.currentTarget.querySelector('[type="submit"]');button.disabled=true;
+            kpAuthActionInProgress=true;
             try{
                 if(email.includes('@')) {
                     await auth.signInWithEmailAndPassword(email,password);
@@ -2482,24 +2526,41 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                     await auth.signInWithCustomToken(data.customToken);
                 }
                 await kpSecureLoadAccount(true);
+                if(!kpSecurePoll) kpSecurePoll=setInterval(kpSecureRefresh,30000);
                 void fetch('/api/auth-event',{method:'POST',headers:await kpSecureHeaders(),body:JSON.stringify({event:'firebase_sign_in'})}).catch(()=>{});
-            }catch(err){showLoginErrorAlert('Đăng nhập không thành công: '+(err.code||err.message));}
-            finally{button.disabled=false;}
+            }catch(err){showLoginErrorAlert('Đăng nhập không thành công: '+getFirebaseAuthErrorMessage(err));}
+            finally{kpAuthActionInProgress=false;button.disabled=false;}
         }
 
-                async function handleRegister(e) {
-            e.preventDefault();
+        async function handleRegister(e) {
+            e.preventDefault();hideRegisterErrorAlert();
             const email=document.getElementById('reg-email').value.trim().toLowerCase();
             const password=document.getElementById('reg-password').value;
             const confirmPass=document.getElementById('reg-confirm-password').value;
-            if(password.length<10||password!==confirmPass)return showToast('Mật khẩu mới cần tối thiểu 10 ký tự và phải trùng nhau.','error');
             const username=document.getElementById('reg-username').value.trim().toLowerCase();
             const fullname=document.getElementById('reg-fullname').value.trim();
-            if(!KP_USERNAME_PATTERN.test(username)||username.startsWith('google_')||['admin','administrator','root','adminkit'].includes(username))
-                return showToast('Username phải dài 3–60 ký tự, chỉ gồm a-z, 0-9, _ hoặc -, và không được là tên Admin.','error');
-            if(fullname.length<2||fullname.length>90)return showToast('Tên hiển thị phải dài 2–90 ký tự.','error');
+            if(fullname.length<2||fullname.length>90){
+                const msg='Tên hiển thị phải dài 2–90 ký tự.';
+                showRegisterErrorAlert(msg,'reg-fullname');return showToast(msg,'error');
+            }
+            if(!KP_USERNAME_PATTERN.test(username)||username.startsWith('google_')||['admin','administrator','root','adminkit'].includes(username)){
+                const msg='Username phải dài 3–60 ký tự, chỉ gồm a-z, 0-9, _ hoặc -, và không được là tên Admin.';
+                showRegisterErrorAlert(msg,'reg-username');return showToast(msg,'error');
+            }
+            if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+                const msg='Địa chỉ email không hợp lệ.';
+                showRegisterErrorAlert(msg,'reg-email');return showToast(msg,'error');
+            }
+            if(password.length<6){
+                const msg='Mật khẩu cần tối thiểu 6 ký tự.';
+                showRegisterErrorAlert(msg,'reg-password');return showToast(msg,'error');
+            }
+            if(password!==confirmPass){
+                const msg='Mật khẩu xác nhận không khớp.';
+                showRegisterErrorAlert(msg,'reg-confirm-password');return showToast(msg,'error');
+            }
             const button=e.currentTarget.querySelector('[type="submit"]');button.disabled=true;
-            window.__kpRegistering=true;
+            kpAuthActionInProgress=true;
             try{
                 const result=await auth.createUserWithEmailAndPassword(email,password);
                 kpSavePendingUsername(result.user,username,fullname);
@@ -2507,14 +2568,18 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
                     await kpSecureRequest('/api/account',{action:'register',username,fullname});
                     kpClearPendingUsername(result.user);
                 }catch(regErr){
-                    await result.user.delete().catch(()=>auth.signOut().catch(()=>{}));
+                    await result.user.delete().catch(async()=>{await auth.signOut().catch(()=>{});});
                     throw regErr;
                 }
                 void result.user.sendEmailVerification().catch(()=>{});
-                await kpSecureLoadAccount(true);
+                await kpSecureLoadAccount(false);
+                if(!kpSecurePoll) kpSecurePoll=setInterval(kpSecureRefresh,30000);
                 showToast('Đăng ký thành công tài khoản @'+username+'! Bạn có thể đăng nhập bằng username hoặc email.','success',9000);
-            }catch(err){showToast('Không thể tạo tài khoản: '+(err.code||err.message),'error',9000)}
-            finally{window.__kpRegistering=false;button.disabled=false;}
+                void fetch('/api/auth-event',{method:'POST',headers:await kpSecureHeaders(),body:JSON.stringify({event:'firebase_sign_in'})}).catch(()=>{});
+            }catch(err){
+                const msg='Không thể tạo tài khoản: '+getFirebaseAuthErrorMessage(err);
+                showRegisterErrorAlert(msg);showToast(msg,'error',9000);
+            }finally{kpAuthActionInProgress=false;button.disabled=false;}
         }
 
                 async function sendOtpToEmail() {
