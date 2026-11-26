@@ -32,9 +32,11 @@ async function run() {
     { packageId: 1, code: 'LKG1Y', name: 'Annual', ctvPrice: 70000, minRetailPrice: 89000, durationDays: 365, lifetime: false, videoMode: '4k', aiQuota: 100, isTrial: false },
     { packageId: 2, code: 'LKG6M', name: 'Half year', ctvPrice: 49000, minRetailPrice: 49000, durationDays: 180, lifetime: false, videoMode: 'hd', aiQuota: 50, isTrial: false },
     { packageId: 3, code: 'LKGVV', name: 'Lifetime', ctvPrice: 100000, minRetailPrice: 0, durationDays: null, lifetime: true, videoMode: '4k', aiQuota: 999, isTrial: false },
-    { packageId: 4, code: 'NEW1', name: 'New', ctvPrice: 0, minRetailPrice: 0, durationDays: 3, lifetime: false, isTrial: true },
+    { packageId: 4, code: 'LKG1M', name: '1 month', ctvPrice: 15000, minRetailPrice: 0, durationDays: 30, lifetime: false, videoMode: 'hd', aiQuota: 20, isTrial: false },
+    { packageId: 5, code: 'LKG3M', name: '3 months', ctvPrice: 35000, minRetailPrice: 0, durationDays: 90, lifetime: false, videoMode: 'hd', aiQuota: 40, isTrial: false },
+    { packageId: 6, code: 'NEW1', name: 'New', ctvPrice: 0, minRetailPrice: 0, durationDays: 3, lifetime: false, isTrial: true },
     { packageId: 1, code: 'LKG1Y', name: 'Duplicate', ctvPrice: 70000 },
-    { packageId: 5, code: 'BAD', name: '<script>', ctvPrice: 10000 },
+    { packageId: 7, code: 'BAD', name: '<script>', ctvPrice: 10000 },
     null,
   ];
   let body = { ok: true, packages };
@@ -60,10 +62,12 @@ async function run() {
     assert.deepEqual(res.body, {
       ok: true,
       packages: [
-        { packageId: 1, code: 'LKG1Y', name: 'Annual', priceVnd: 89000, durationDays: 365, lifetime: false, videoMode: '4k', aiQuota: 100, isTrial: false, available: true },
-        { packageId: 2, code: 'LKG6M', name: 'Half year', priceVnd: 49000, durationDays: 180, lifetime: false, videoMode: 'hd', aiQuota: 50, isTrial: false, available: true },
-        { packageId: 3, code: 'LKGVV', name: 'Lifetime', priceVnd: 100000, durationDays: null, lifetime: true, videoMode: '4k', aiQuota: 999, isTrial: false, available: true },
-        { packageId: 4, code: 'NEW1', name: 'New', priceVnd: null, durationDays: 3, lifetime: false, videoMode: null, aiQuota: null, isTrial: true, available: false },
+        { packageId: 1, code: 'LKG1Y', name: 'Annual', priceVnd: 200000, durationDays: 365, lifetime: false, videoMode: '4k', aiQuota: 100, isTrial: false, available: true },
+        { packageId: 2, code: 'LKG6M', name: 'Half year', priceVnd: 110000, durationDays: 180, lifetime: false, videoMode: 'hd', aiQuota: 50, isTrial: false, available: true },
+        { packageId: 3, code: 'LKGVV', name: 'Lifetime', priceVnd: 99000, durationDays: null, lifetime: true, videoMode: '4k', aiQuota: 999, isTrial: false, available: true },
+        { packageId: 4, code: 'LKG1M', name: '1 month', priceVnd: 20000, durationDays: 30, lifetime: false, videoMode: 'hd', aiQuota: 20, isTrial: false, available: true },
+        { packageId: 5, code: 'LKG3M', name: '3 months', priceVnd: 50000, durationDays: 90, lifetime: false, videoMode: 'hd', aiQuota: 40, isTrial: false, available: true },
+        { packageId: 6, code: 'NEW1', name: 'New', priceVnd: null, durationDays: 3, lifetime: false, videoMode: null, aiQuota: null, isTrial: true, available: false },
       ],
     });
 
