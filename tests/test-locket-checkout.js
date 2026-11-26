@@ -1,5 +1,5 @@
 'use strict';
-/** All in memory: tests Locket resolve, Locket Gold checkout (uplocket.io.vn), idempotency, orders history, and refund on provider failure. */
+/** All in memory: tests Locket resolve, Locket Gold checkout, idempotency, orders history, and refund on provider failure. */
 const assert = require('node:assert/strict');
 const Module = require('node:module');
 const native = Module._load;
@@ -8,15 +8,16 @@ Module._load = function (name, parent, main) {
   return native.call(this, name, parent, main);
 };
 const secure = require('../lib/secure-accounts');
+const locketProvider = require('../lib/locket-provider');
 Module._load = native;
 
 const customerUid = 'customerLocketUid_1234';
-const envKeys = ['LOCKET_API_KEY', 'LOCKET_API_BASE_URL', 'LOCKET_MARKUP_VND', 'SHOP_HARD_DISABLE'];
+const envKeys = ['LOCKET_SECRET_KEY', 'LOCKET_API_BASE_URL', 'LOCKET_DNS_URL', 'SHOP_HARD_DISABLE'];
 const saved = Object.fromEntries(envKeys.map(k => [k, process.env[k]]));
 Object.assign(process.env, {
-  LOCKET_API_KEY: 'test-locket-ctv-key-only',
-  LOCKET_API_BASE_URL: 'https://uplocket.io.vn',
-  LOCKET_MARKUP_VND: '0',
+  LOCKET_SECRET_KEY: 'test-locket-secret-only',
+  LOCKET_API_BASE_URL: 'https://locket.2707226.xyz',
+  LOCKET_DNS_URL: 'https://doh.2707226.xyz/kitphan1011',
   SHOP_HARD_DISABLE: 'false',
 });
 
@@ -85,62 +86,44 @@ async function call(fn, ctx, method, body = {}, query = {}) {
 const originalFetch = global.fetch;
 async function test() {
   try {
-    let exportCalls = 0;
-    let shouldFailExport = false;
+    let createCalls = 0;
+    let shouldFailCreate = false;
+    let shouldFailCheck = false;
 
     global.fetch = async (url, opts = {}) => {
-      assert.equal(opts.headers['X-API-KEY'], 'test-locket-ctv-key-only');
-      if (url.endsWith('/api/v1/packages')) {
+      if (url.includes('/api/packages?service=locket')) {
+        return { ok: true, status: 200, json: async () => ({ ok: true, data: [{ code: 'LKG1Y', name: '1 năm', service: 'locket', priceCoin: 50 }] }) };
+      }
+      if (url.includes('/api/uid/resolve')) {
         return {
           ok: true, status: 200,
-          text: async () => JSON.stringify({
-            ok: true,
-            packages: [
-              { packageId: 101, code: 'LKG1Y', name: '1 năm', ctvPrice: 70000, minRetailPrice: 89000, durationDays: 365, lifetime: false, videoMode: '4k', aiQuota: 100, isTrial: false },
-            ],
-          }),
+          text: async () => JSON.stringify({ ok: true, data: { uid: 'uid_locket_999', username: 'kitphantest', avatarUrl: 'https://example.com/a.jpg' } }),
         };
       }
-      if (url.endsWith('/api/v1/dns/lookup')) {
-        const body = JSON.parse(opts.body);
-        assert.equal(body.username, 'kitphantest');
+      if (url.includes('/api/uid/check')) {
+        if (shouldFailCheck) {
+          return { ok: false, status: 503, text: async () => JSON.stringify({ ok: false, message: 'Check down' }) };
+        }
         return {
           ok: true, status: 200,
-          text: async () => JSON.stringify({
-            ok: true,
-            data: {
-              uid: 'uid_locket_999',
-              username: 'kitphantest',
-              avatarUrl: 'https://example.com/a.jpg',
-              active: false,
-              expiresAt: null,
-              packageName: null,
-            },
-          }),
+          text: async () => JSON.stringify({ ok: true, data: { active: false, expiresAt: null, package: null } }),
         };
       }
-      if (url.endsWith('/api/v1/dns/export')) {
-        exportCalls++;
-        if (shouldFailExport) {
-          return { ok: false, status: 402, text: async () => JSON.stringify({ ok: false, error: 'Insufficient CTV credits' }) };
+      if (url.includes('/api/uid/create')) {
+        createCalls++;
+        if (shouldFailCreate) {
+          return { ok: false, status: 502, text: async () => JSON.stringify({ ok: false, message: 'Provider upstream error' }) };
         }
         const body = JSON.parse(opts.body);
         assert.equal(body.username, 'kitphantest');
-        assert.equal(body.packageId, 101);
+        assert.equal(body.packageCode, 'LKG1Y');
         return {
           ok: true, status: 200,
           text: async () => JSON.stringify({
             ok: true,
             data: {
-              uid: 'uid_locket_999',
-              username: 'kitphantest',
-              packageId: 101,
-              packageCode: 'LKG1Y',
-              packageName: '1 năm',
-              activationCode: 'ACT-XYZ-123',
-              expiresAt: '2027-11-26T00:00:00Z',
-              installUrl: 'https://uplocket.io.vn/dns/kitphantest.mobileconfig',
-              reused: false,
+              uid: { uidString: 'uid_locket_999', username: 'kitphantest', expiresAt: '2027-11-25T00:00:00Z' },
+              order: { status: 'completed', expiresAt: '2027-11-25T00:00:00Z' },
             },
           }),
         };
@@ -153,68 +136,72 @@ async function test() {
     assert.equal((await call(products, null, 'POST', { identifier: 'kitphantest' }, { action: 'locket_resolve' })).statusCode, 401);
     assert.equal((await call(products, customer, 'POST', { identifier: '   ' }, { action: 'locket_resolve' })).statusCode, 422);
 
-    const rOk = await call(products, customer, 'POST', { identifier: '@kitphantest' }, { action: 'locket_resolve' });
+    const rOk = await call(products, customer, 'POST', { identifier: 'kitphantest' }, { action: 'locket_resolve' });
     assert.equal(rOk.statusCode, 200, JSON.stringify(rOk.body));
     assert.equal(rOk.body.ok, true);
     assert.equal(rOk.body.data.uid, 'uid_locket_999');
     assert.equal(rOk.body.data.username, 'kitphantest');
     assert.equal(rOk.body.data.check.active, false);
 
+    shouldFailCheck = true;
+    const rCheckFail = await call(products, customer, 'POST', { identifier: 'kitphantest' }, { action: 'locket_resolve' });
+    assert.equal(rCheckFail.statusCode, 200);
+    assert.equal(rCheckFail.body.data.check, null);
+    shouldFailCheck = false;
+
     // 2. Checkout validation
     const missingUser = await call(checkout, customer, 'POST', {
-      productId: 'LKG1Y', service: 'locket', quotedPriceVnd: 89000, requestId: 'locket_req_00000001', locketUsername: '',
+      productId: 'LKG1Y', service: 'locket', quotedPriceVnd: 200000, requestId: 'locket_req_00000001', locketUsername: '',
     });
     assert.equal(missingUser.statusCode, 422);
 
     // 3. Successful Locket checkout
     const buyOk = await call(checkout, customer, 'POST', {
-      productId: 'LKG1Y', service: 'locket', quotedPriceVnd: 89000, requestId: 'locket_req_00000002', locketUsername: 'kitphantest',
+      productId: 'LKG1Y', service: 'locket', quotedPriceVnd: 200000, requestId: 'locket_req_00000002', locketUsername: 'kitphantest',
     });
     assert.equal(buyOk.statusCode, 200, JSON.stringify(buyOk.body));
     assert.equal(buyOk.body.ok, true);
     assert.equal(buyOk.body.status, 'delivered');
     assert.equal(buyOk.body.locket.username, 'kitphantest');
-    assert.equal(buyOk.body.locket.packageId, 101);
+    assert.equal(buyOk.body.locket.uid, 'uid_locket_999');
     assert.equal(buyOk.body.locket.packageCode, 'LKG1Y');
-    assert.equal(buyOk.body.locket.activationCode, 'ACT-XYZ-123');
-    assert.equal(buyOk.body.locket.dnsUrl, 'https://uplocket.io.vn/dns/kitphantest.mobileconfig');
-    assert.match(buyOk.body.delivery, /ACT-XYZ-123/);
-    assert.match(buyOk.body.delivery, /uplocket\.io\.vn\/dns\/kitphantest\.mobileconfig/);
-    assert.equal(db.get(`live_deposits_v1/accounts/${customerUid}/availableVnd`), 111000);
+    assert.equal(buyOk.body.locket.dnsUrl, 'https://doh.2707226.xyz/kitphan1011');
+    assert.match(buyOk.body.delivery, /doh\.2707226\.xyz\/kitphan1011/);
+    assert.equal(db.get(`live_deposits_v1/accounts/${customerUid}/availableVnd`), 0);
     assert.equal(db.get(`live_deposits_v1/accounts/${customerUid}/heldVnd`), 0);
-    assert.equal(exportCalls, 1);
+    assert.equal(createCalls, 1);
 
     // 4. Idempotent replay
     const replay = await call(checkout, customer, 'POST', {
-      productId: 'LKG1Y', service: 'locket', quotedPriceVnd: 89000, requestId: 'locket_req_00000002', locketUsername: 'kitphantest',
+      productId: 'LKG1Y', service: 'locket', quotedPriceVnd: 200000, requestId: 'locket_req_00000002', locketUsername: 'kitphantest',
     });
     assert.equal(replay.statusCode, 200);
     assert.equal(replay.body.id, buyOk.body.id);
-    assert.equal(exportCalls, 1, 'idempotent replay must not call provider again');
+    assert.equal(createCalls, 1, 'idempotent replay must not call provider again');
 
     // 5. Orders history
     const hist = await call(orders, customer, 'GET', {}, { orderId: buyOk.body.id });
     assert.equal(hist.statusCode, 200);
     assert.equal(hist.body.orders.length, 1);
     assert.equal(hist.body.orders[0].service, 'locket');
-    assert.equal(hist.body.orders[0].locket.activationCode, 'ACT-XYZ-123');
+    assert.equal(hist.body.orders[0].locket.packageCode, 'LKG1Y');
     assert.match(hist.body.delivery, /kitphantest/);
 
-    // 6. Provider failure (402) -> refund hold
+    // 6. Provider failure -> refund hold
+    db.data.live_deposits_v1.accounts[customerUid].availableVnd = 200000;
     db.data.live_deposits_v1.accounts[customerUid].lastPurchaseAt = 0;
-    shouldFailExport = true;
+    shouldFailCreate = true;
     const buyFail = await call(checkout, customer, 'POST', {
-      productId: 'LKG1Y', service: 'locket', quotedPriceVnd: 89000, requestId: 'locket_req_00000003', locketUsername: 'kitphantest',
+      productId: 'LKG1Y', service: 'locket', quotedPriceVnd: 200000, requestId: 'locket_req_00000003', locketUsername: 'kitphantest',
     });
-    assert.equal(buyFail.statusCode, 422);
+    assert.equal(buyFail.statusCode, 502);
     assert.equal(buyFail.body.ok, false);
     assert.equal(buyFail.body.status, 'refunded');
-    assert.match(buyFail.body.error, /Insufficient CTV credits/);
     assert.match(buyFail.body.error, /hoàn lại vào ví/);
-    assert.equal(db.get(`live_deposits_v1/accounts/${customerUid}/availableVnd`), 111000);
+    assert.equal(db.get(`live_deposits_v1/accounts/${customerUid}/availableVnd`), 200000);
     assert.equal(db.get(`live_deposits_v1/accounts/${customerUid}/heldVnd`), 0);
 
-    console.log('PASS: Locket resolve, Locket Gold checkout (uplocket.io.vn), idempotency, orders history, and refund on provider failure');
+    console.log('PASS: Locket resolve, Locket Gold checkout, idempotency, orders history, and refund on provider failure');
   } finally {
     global.fetch = originalFetch;
     for (const k of envKeys) {
