@@ -590,6 +590,8 @@ html.kp-light #kp-shop-modal #kp-shop-delivery {background:#f4f5f7;color:#25252a
 #kp-shop-recipient-email:focus { outline:2px solid #a1a1aa; outline-offset:2px; }
 html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#111827 !important;border-color:#d1d5db !important; }
 </style>
+    <!-- KIT PHAN MMO — 3D Spatial Glassmorphism & Interactive Motion Styles -->
+    <link rel="stylesheet" href="kp-3d-styles.css">
 </head>
 <body class="bg-black text-zinc-100 antialiased min-h-screen flex flex-col selection:bg-white selection:text-black">
 
@@ -1985,6 +1987,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
 
         /* HIỆU ỨNG HẠT SÁNG */
         function initParticleTrail() {
+            if (window.__KP_3D_SCENE_BOOTED__) return;
             const canvas = document.getElementById('particle-canvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
@@ -2065,6 +2068,7 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
             }
 
             function animate() {
+                if (window.__KP_3D_SCENE_BOOTED__) return;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
                 const gradient = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 50, canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height));
@@ -4412,5 +4416,9 @@ html.kp-light #kp-shop-recipient-email { background:#fff !important;color:#11182
     refreshOaselDashboard();
 })();
 </script>
+    <!-- KIT PHAN MMO — WebGL Three.js 3D Engine & Spring Physics Motion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+    <script src="kp-3d-scene.js" defer></script>
+    <script src="kp-3d-motion.js" defer></script>
 </body>
 </html>
